@@ -704,8 +704,6 @@ ex basic::subs(const ex & e, bool no_pattern) const
 	return subs(ls, lr, no_pattern);
 }
 
-extern "C" { int putchar(int c); }  // FIXME: removeme
-
 /** Compare objects syntactically to establish canonical ordering.
  *  All compare functions return: -1 for *this less than other, 0 equal,
  *  1 greater. */
