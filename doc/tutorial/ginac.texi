@@ -5471,12 +5471,18 @@ any other programming language.
 @cindex reference counting
 @cindex copy-on-write
 @cindex garbage collection
-An expression is extremely light-weight since internally it works like a
-handle to the actual representation and really holds nothing more than a
-pointer to some other object.  What this means in practice is that
-whenever you create two @code{ex} and set the second equal to the first
-no copying process is involved. Instead, the copying takes place as soon
-as you try to change the second.  Consider the simple sequence of code:
+In GiNaC, there is an @emph{intrusive reference-count} mechanism at work
+where the counter belongs to the algebraic objects derived from class
+@code{basic} but is maintained by the wrapper class @code{ex}.  If you
+understood that, you can safely skip the rest of this passage.
+
+Expressions are extremely light-weight since internally they work like
+handles to the actual representation.  They really hold nothing more
+than a pointer to some other object.  What this means in practice is
+that whenever you create two @code{ex} and set the second equal to the
+first no copying process is involved. Instead, the copying takes place
+as soon as you try to change the second.  Consider the simple sequence
+of code:
 
 @example
 #include <iostream>
