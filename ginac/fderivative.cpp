@@ -73,7 +73,7 @@ fderivative::fderivative(unsigned ser, const paramset & params, exvector * vp) :
 // archiving
 //////////
 
-fderivative::fderivative(const archive_node &n, const lst &sym_lst) : inherited(n, sym_lst)
+fderivative::fderivative(const archive_node &n, lst &sym_lst) : inherited(n, sym_lst)
 {
 	unsigned i = 0;
 	while (true) {

@@ -99,7 +99,7 @@ color::color(unsigned char rl, exvector * vp) : inherited(sy_none(), vp), repres
 // archiving
 //////////
 
-color::color(const archive_node &n, const lst &sym_lst) : inherited(n, sym_lst)
+color::color(const archive_node &n, lst &sym_lst) : inherited(n, sym_lst)
 {
 	unsigned rl;
 	n.find_unsigned("label", rl);

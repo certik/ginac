@@ -34,7 +34,7 @@ class lst;
 
 
 /** Unarchiving function (static member function of every GiNaC class). */
-typedef ex (*unarch_func)(const archive_node &n, const lst &sym_lst);
+typedef ex (*unarch_func)(const archive_node &n, lst &sym_lst);
 
 
 /** Head of list of all registered_class_info structures. */
@@ -65,9 +65,9 @@ public: \
 	typedef supername inherited; \
 	static registered_class_info reg_info; \
 	virtual const char *class_name(void) const; \
-	classname(const archive_node &n, const lst &sym_lst); \
+	classname(const archive_node &n, lst &sym_lst); \
 	virtual void archive(archive_node &n) const; \
-	static ex unarchive(const archive_node &n, const lst &sym_lst);
+	static ex unarchive(const archive_node &n, lst &sym_lst);
 
 /** Macro for inclusion in the declaration of each registered class.
  *  It declares some functions that are common to all classes derived

@@ -28,6 +28,23 @@
 
 namespace GiNaC {
 
+
+/*
+ *  The following classes remain publicly visible for compatibility
+ *  reasons only. New code should use the iostream manipulators defined
+ *  in operators.h instead.
+ */
+
+
+/** Flags to control the behavior of a print_context. */
+class print_options {
+public:
+	enum {
+		print_index_dimensions = 0x0001 ///< print the dimensions of indices
+	};
+};
+
+
 /** Context for default (ginsh-parsable) output. */
 class print_context
 {

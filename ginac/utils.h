@@ -465,13 +465,13 @@ DEFAULT_COPY(classname) \
 DEFAULT_DESTROY(classname)
 
 #define DEFAULT_UNARCHIVE(classname) \
-ex classname::unarchive(const archive_node &n, const lst &sym_lst) \
+ex classname::unarchive(const archive_node &n, lst &sym_lst) \
 { \
 	return (new classname(n, sym_lst))->setflag(status_flags::dynallocated); \
 }
 
 #define DEFAULT_ARCHIVING(classname) \
-classname::classname(const archive_node &n, const lst &sym_lst) : inherited(n, sym_lst) {} \
+classname::classname(const archive_node &n, lst &sym_lst) : inherited(n, sym_lst) {} \
 DEFAULT_UNARCHIVE(classname) \
 void classname::archive(archive_node &n) const \
 { \

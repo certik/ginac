@@ -283,26 +283,29 @@ static int my_ios_index()
 	return i;
 }
 
+// Stream format gets copied or destroyed
 static void my_ios_callback(std::ios_base::event ev, std::ios_base & s, int i)
 {
 	print_context *p = static_cast<print_context *>(s.pword(i));
 	if (ev == std::ios_base::erase_event) {
 		delete p;
 		s.pword(i) = 0;
-	} else if (ev == std::ios_base::copyfmt_event && p != 0) {
+	} else if (ev == std::ios_base::copyfmt_event && p != 0)
 		s.pword(i) = p->duplicate();
-	}
 }
 
 enum {
 	callback_registered = 1
 };
 
-static print_context *get_print_context(std::ios_base & s)
+// Get print_context associated with stream, may return 0 if no context has
+// been associated yet
+static inline print_context *get_print_context(std::ios_base & s)
 {
 	return static_cast<print_context *>(s.pword(my_ios_index()));
 }
 
+// Set print_context associated with stream, retain options
 static void set_print_context(std::ios_base & s, const print_context & c)
 {
 	int i = my_ios_index();
@@ -311,16 +314,38 @@ static void set_print_context(std::ios_base & s, const print_context & c)
 		s.register_callback(my_ios_callback, i);
 		s.iword(i) = flags | callback_registered;
 	}
-	delete static_cast<print_context *>(s.pword(i));
-	s.pword(i) = c.duplicate();
+	print_context *p = static_cast<print_context *>(s.pword(i));
+	unsigned options = p ? p->options : c.options;
+	delete p;
+	p = c.duplicate();
+	p->options = options;
+	s.pword(i) = p;
+}
+
+// Get options for print_context associated with stream
+static inline unsigned get_print_options(std::ios_base & s)
+{
+	print_context *p = get_print_context(s);
+	return p ? p->options : 0;
+}
+
+// Set options for print_context associated with stream
+static void set_print_options(std::ostream & s, unsigned options)
+{
+	print_context *p = get_print_context(s);
+	if (p == 0)
+		set_print_context(s, print_context(s, options));
+	else
+		p->options = options;
 }
 
 std::ostream & operator<<(std::ostream & os, const ex & e)
 {
-	if (get_print_context(os) == 0)
+	print_context *p = get_print_context(os);
+	if (p == 0)
 		e.print(print_context(os));
 	else
-		e.print(*get_print_context(os));
+		e.print(*p);
 	return os;
 }
 
@@ -332,6 +357,7 @@ std::istream & operator>>(std::istream & is, ex & e)
 std::ostream & dflt(std::ostream & os)
 {
 	set_print_context(os, print_context(os));
+	set_print_options(os, 0);
 	return os;
 }
 
@@ -359,6 +385,12 @@ std::ostream & tree(std::ostream & os)
 	return os;
 }
 
+std::ostream & csrc(std::ostream & os)
+{
+	set_print_context(os, print_csrc_double(os));
+	return os;
+}
+
 std::ostream & csrc_float(std::ostream & os)
 {
 	set_print_context(os, print_csrc_float(os));
@@ -377,9 +409,15 @@ std::ostream & csrc_cl_N(std::ostream & os)
 	return os;
 }
 
-std::ostream & csrc(std::ostream & os)
+std::ostream & index_dimensions(std::ostream & os)
 {
-	set_print_context(os, print_csrc_double(os));
+	set_print_options(os, get_print_options(os) | print_options::print_index_dimensions);
+	return os;
+}
+
+std::ostream & no_index_dimensions(std::ostream & os)
+{
+	set_print_options(os, get_print_options(os) & ~print_options::print_index_dimensions);
 	return os;
 }
 

@@ -146,7 +146,7 @@ expairseq::expairseq(epvector *vp, const ex &oc)
 // archiving
 //////////
 
-expairseq::expairseq(const archive_node &n, const lst &sym_lst) : inherited(n, sym_lst)
+expairseq::expairseq(const archive_node &n, lst &sym_lst) : inherited(n, sym_lst)
 #if EXPAIRSEQ_USE_HASHTAB
 	, hashtabsize(0)
 #endif

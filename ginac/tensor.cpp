@@ -107,7 +107,7 @@ DEFAULT_ARCHIVING(spinmetric)
 DEFAULT_UNARCHIVE(minkmetric)
 DEFAULT_UNARCHIVE(tensepsilon)
 
-minkmetric::minkmetric(const archive_node &n, const lst &sym_lst) : inherited(n, sym_lst)
+minkmetric::minkmetric(const archive_node &n, lst &sym_lst) : inherited(n, sym_lst)
 {
 	n.find_bool("pos_sig", pos_sig);
 }
@@ -118,7 +118,7 @@ void minkmetric::archive(archive_node &n) const
 	n.add_bool("pos_sig", pos_sig);
 }
 
-tensepsilon::tensepsilon(const archive_node &n, const lst &sym_lst) : inherited(n, sym_lst)
+tensepsilon::tensepsilon(const archive_node &n, lst &sym_lst) : inherited(n, sym_lst)
 {
 	n.find_bool("minkowski", minkowski);
 	n.find_bool("pos_sig", pos_sig);

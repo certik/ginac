@@ -79,7 +79,7 @@ const basic & basic::operator=(const basic & other)
 //////////
 
 /** Construct object from archive_node. */
-basic::basic(const archive_node &n, const lst &sym_lst) : flags(0), refcount(0)
+basic::basic(const archive_node &n, lst &sym_lst) : flags(0), refcount(0)
 {
 	// Reconstruct tinfo_key from class name
 	std::string class_name;
@@ -128,7 +128,8 @@ void basic::print(const print_context & c, unsigned level) const
  *  debugger because it might not know what cout is.  This method can be
  *  invoked with no argument and it will simply print to stdout.
  *
- *  @see basic::print */
+ *  @see basic::print
+ *  @see basic::dbgprinttree */
 void basic::dbgprint(void) const
 {
 	this->print(std::cerr);
@@ -137,8 +138,7 @@ void basic::dbgprint(void) const
 
 /** Little wrapper around printtree to be called within a debugger.
  *
- *  @see basic::dbgprint
- *  @see basic::printtree */
+ *  @see basic::dbgprint */
 void basic::dbgprinttree(void) const
 {
 	this->print(print_tree(std::cerr));

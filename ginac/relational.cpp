@@ -62,7 +62,7 @@ relational::relational(const ex & lhs, const ex & rhs, operators oper) : basic(T
 // archiving
 //////////
 
-relational::relational(const archive_node &n, const lst &sym_lst) : inherited(n, sym_lst)
+relational::relational(const archive_node &n, lst &sym_lst) : inherited(n, sym_lst)
 {
 	unsigned int opi;
 	if (!(n.find_unsigned("op", opi)))

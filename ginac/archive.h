@@ -110,7 +110,7 @@ public:
 
 	/** Retrieve property of type "ex" from node.
 	 *  @return "true" if property was found, "false" otherwise */
-	bool find_ex(const std::string &name, ex &ret, const lst &sym_lst, unsigned index = 0) const;
+	bool find_ex(const std::string &name, ex &ret, lst &sym_lst, unsigned index = 0) const;
 
 	/** Retrieve property of type "ex" from node, returning the node of
 	 *  the sub-expression. */
@@ -119,7 +119,7 @@ public:
 	/** Return vector of properties stored in node. */
 	void get_properties(propinfovector &v) const;
 
-	ex unarchive(const lst &sym_lst) const;
+	ex unarchive(lst &sym_lst) const;
 	bool has_same_ex_as(const archive_node &other) const;
 
 	void forget(void);

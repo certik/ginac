@@ -103,18 +103,18 @@ spinidx::spinidx(const ex & v, const ex & d, bool cov, bool dot) : inherited(v, 
 // archiving
 //////////
 
-idx::idx(const archive_node &n, const lst &sym_lst) : inherited(n, sym_lst)
+idx::idx(const archive_node &n, lst &sym_lst) : inherited(n, sym_lst)
 {
 	n.find_ex("value", value, sym_lst);
 	n.find_ex("dim", dim, sym_lst);
 }
 
-varidx::varidx(const archive_node &n, const lst &sym_lst) : inherited(n, sym_lst)
+varidx::varidx(const archive_node &n, lst &sym_lst) : inherited(n, sym_lst)
 {
 	n.find_bool("covariant", covariant);
 }
 
-spinidx::spinidx(const archive_node &n, const lst &sym_lst) : inherited(n, sym_lst)
+spinidx::spinidx(const archive_node &n, lst &sym_lst) : inherited(n, sym_lst)
 {
 	n.find_bool("dotted", dotted);
 }

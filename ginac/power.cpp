@@ -73,7 +73,7 @@ DEFAULT_DESTROY(power)
 // archiving
 //////////
 
-power::power(const archive_node &n, const lst &sym_lst) : inherited(n, sym_lst)
+power::power(const archive_node &n, lst &sym_lst) : inherited(n, sym_lst)
 {
 	n.find_ex("basis", basis, sym_lst);
 	n.find_ex("exponent", exponent, sym_lst);

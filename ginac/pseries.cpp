@@ -85,7 +85,7 @@ pseries::pseries(const ex &rel_, const epvector &ops_) : basic(TINFO_pseries), s
  *  Archiving
  */
 
-pseries::pseries(const archive_node &n, const lst &sym_lst) : inherited(n, sym_lst)
+pseries::pseries(const archive_node &n, lst &sym_lst) : inherited(n, sym_lst)
 {
 	for (unsigned int i=0; true; ++i) {
 		ex rest;

@@ -108,7 +108,7 @@ matrix::matrix(unsigned r, unsigned c, const lst & l)
 // archiving
 //////////
 
-matrix::matrix(const archive_node &n, const lst &sym_lst) : inherited(n, sym_lst)
+matrix::matrix(const archive_node &n, lst &sym_lst) : inherited(n, sym_lst)
 {
 	if (!(n.find_unsigned("row", row)) || !(n.find_unsigned("col", col)))
 		throw (std::runtime_error("unknown matrix dimensions in archive"));

@@ -59,13 +59,6 @@ void ex::print(const print_context & c, unsigned level) const
 	bp->print(c, level);
 }
 
-/** Print expression to stream in a tree-like format suitable for debugging. */
-void ex::printtree(std::ostream & os) const
-{
-	GINAC_ASSERT(bp!=0);
-	bp->print(print_tree(os));
-}
-
 /** Little wrapper arount print to be called within a debugger. */
 void ex::dbgprint(void) const
 {

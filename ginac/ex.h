@@ -111,7 +111,6 @@ public:
 	}
 
 	void print(const print_context & c, unsigned level = 0) const;
-	void printtree(std::ostream & os) const;
 	void dbgprint(void) const;
 	void dbgprinttree(void) const;
 	bool info(unsigned inf) const { return bp->info(inf); }

@@ -104,7 +104,7 @@ clifford::clifford(unsigned char rl, exvector * vp) : inherited(sy_none(), vp), 
 // archiving
 //////////
 
-clifford::clifford(const archive_node &n, const lst &sym_lst) : inherited(n, sym_lst)
+clifford::clifford(const archive_node &n, lst &sym_lst) : inherited(n, sym_lst)
 {
 	unsigned rl;
 	n.find_unsigned("label", rl);

@@ -398,7 +398,7 @@ ${constructors_implementation}
 //////////
 
 /** Construct object from archive_node. */
-${CONTAINER}::${CONTAINER}(const archive_node &n, const lst &sym_lst) : inherited(n, sym_lst)
+${CONTAINER}::${CONTAINER}(const archive_node &n, lst &sym_lst) : inherited(n, sym_lst)
 {
 	for (unsigned int i=0; true; i++) {
 		ex e;
@@ -410,7 +410,7 @@ ${CONTAINER}::${CONTAINER}(const archive_node &n, const lst &sym_lst) : inherite
 }
 
 /** Unarchive the object. */
-ex ${CONTAINER}::unarchive(const archive_node &n, const lst &sym_lst)
+ex ${CONTAINER}::unarchive(const archive_node &n, lst &sym_lst)
 {
 	return (new ${CONTAINER}(n, sym_lst))->setflag(status_flags::dynallocated);
 }

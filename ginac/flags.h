@@ -248,14 +248,6 @@ public:
 	};
 };
 
-/** Flags to control the behavior of print(). */
-class print_options {
-public:
-	enum {
-		print_index_dimensions = 0x0001 ///< print the dimensions of indices
-	};
-};
-
 } // namespace GiNaC
 
 #endif // ndef __GINAC_FLAGS_H__

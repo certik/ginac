@@ -93,7 +93,7 @@ symbol::symbol(const std::string & initname, const std::string & texname) : inhe
 //////////
 
 /** Construct object from archive_node. */
-symbol::symbol(const archive_node &n, const lst &sym_lst) : inherited(n, sym_lst)
+symbol::symbol(const archive_node &n, lst &sym_lst) : inherited(n, sym_lst)
 {
 	serial = next_serial++;
 	if (!(n.find_string("name", name)))
@@ -105,15 +105,18 @@ symbol::symbol(const archive_node &n, const lst &sym_lst) : inherited(n, sym_lst
 }
 
 /** Unarchive the object. */
-ex symbol::unarchive(const archive_node &n, const lst &sym_lst)
+ex symbol::unarchive(const archive_node &n, lst &sym_lst)
 {
 	ex s = (new symbol(n, sym_lst))->setflag(status_flags::dynallocated);
-	
+
 	// If symbol is in sym_lst, return the existing symbol
 	for (size_t i=0; i<sym_lst.nops(); i++) {
 		if (is_a<symbol>(sym_lst.op(i)) && (ex_to<symbol>(sym_lst.op(i)).name == ex_to<symbol>(s).name))
 			return sym_lst.op(i);
 	}
+
+	// Otherwise add new symbol to list and return it
+	sym_lst.append(s);
 	return s;
 }
 

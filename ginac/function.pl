@@ -630,7 +630,7 @@ function::function(unsigned ser, exvector * vp)
 //////////
 
 /** Construct object from archive_node. */
-function::function(const archive_node &n, const lst &sym_lst) : inherited(n, sym_lst)
+function::function(const archive_node &n, lst &sym_lst) : inherited(n, sym_lst)
 {
 	// Find serial number by function name
 	std::string s;
@@ -650,7 +650,7 @@ function::function(const archive_node &n, const lst &sym_lst) : inherited(n, sym
 }
 
 /** Unarchive the object. */
-ex function::unarchive(const archive_node &n, const lst &sym_lst)
+ex function::unarchive(const archive_node &n, lst &sym_lst)
 {
 	return (new function(n, sym_lst))->setflag(status_flags::dynallocated);
 }

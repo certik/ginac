@@ -96,9 +96,9 @@ constant::constant(const std::string & initname, const numeric & initnumber, con
 // archiving
 //////////
 
-constant::constant(const archive_node &n, const lst &sym_lst) : inherited(n, sym_lst) {}
+constant::constant(const archive_node &n, lst &sym_lst) : inherited(n, sym_lst) {}
 
-ex constant::unarchive(const archive_node &n, const lst &sym_lst)
+ex constant::unarchive(const archive_node &n, lst &sym_lst)
 {
 	// Find constant by name (!! this is bad: 'twould be better if there
 	// was a list of all global constants that we could search)

@@ -245,7 +245,7 @@ numeric::numeric(const cln::cl_N &z) : basic(TINFO_numeric)
 // archiving
 //////////
 
-numeric::numeric(const archive_node &n, const lst &sym_lst) : inherited(n, sym_lst)
+numeric::numeric(const archive_node &n, lst &sym_lst) : inherited(n, sym_lst)
 {
 	cln::cl_N ctorval = 0;
 

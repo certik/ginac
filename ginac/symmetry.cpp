@@ -90,7 +90,7 @@ symmetry::symmetry(symmetry_type t, const symmetry &c1, const symmetry &c2) : ty
 //////////
 
 /** Construct object from archive_node. */
-symmetry::symmetry(const archive_node &n, const lst &sym_lst) : inherited(n, sym_lst)
+symmetry::symmetry(const archive_node &n, lst &sym_lst) : inherited(n, sym_lst)
 {
 	unsigned t;
 	if (!(n.find_unsigned("type", t)))

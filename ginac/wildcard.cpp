@@ -61,7 +61,7 @@ wildcard::wildcard(unsigned l) : label(l)
 // archiving
 //////////
 
-wildcard::wildcard(const archive_node &n, const lst &sym_lst) : inherited(n, sym_lst)
+wildcard::wildcard(const archive_node &n, lst &sym_lst) : inherited(n, sym_lst)
 {
 	n.find_unsigned("label", label);
 }

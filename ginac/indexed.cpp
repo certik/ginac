@@ -144,7 +144,7 @@ indexed::indexed(const symmetry & symm, exvector * vp) : inherited(vp), symtree(
 // archiving
 //////////
 
-indexed::indexed(const archive_node &n, const lst &sym_lst) : inherited(n, sym_lst)
+indexed::indexed(const archive_node &n, lst &sym_lst) : inherited(n, sym_lst)
 {
 	if (!n.find_ex("symmetry", symtree, sym_lst)) {
 		// GiNaC versions <= 0.9.0 had an unsigned "symmetry" property
