@@ -21,7 +21,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include <iostream>
+#include <numeric>
 #include <stdexcept>
 
 #include "pseries.h"
@@ -747,11 +747,25 @@ ex mul::series(const relational & r, int order, unsigned options) const
 {
 	pseries acc; // Series accumulator
 
+	GINAC_ASSERT(is_a<symbol>(r.lhs()));
+	const ex& sym = r.lhs();
+		
+	// holds ldegrees of the series of individual factors
+	std::vector<int> ldegrees;
+	// flag if series have to be re-calculated
+	bool negldegree = false;
+
 	// Multiply with remaining terms
 	const epvector::const_iterator itbeg = seq.begin();
 	const epvector::const_iterator itend = seq.end();
 	for (epvector::const_iterator it=itbeg; it!=itend; ++it) {
 		ex op = recombine_pair_to_ex(*it).series(r, order, options);
+
+		int ldeg = op.ldegree(sym);
+		ldegrees.push_back(ldeg);
+		if (ldeg < 0) {
+			negldegree = true;
+		}
 
 		// Series multiplication
 		if (it==itbeg)
@@ -759,7 +773,33 @@ ex mul::series(const relational & r, int order, unsigned options) const
 		else
 			acc = ex_to<pseries>(acc.mul_series(ex_to<pseries>(op)));
 	}
-	return acc.mul_const(ex_to<numeric>(overall_coeff));
+
+	if (negldegree && (seq.size() > 1)) {
+
+		// re-calculation of series
+
+		pseries newacc;
+
+		const int degsum = std::accumulate(ldegrees.begin(), ldegrees.end(), 0);
+
+		// Multiply with remaining terms
+		const epvector::const_reverse_iterator itbeg = seq.rbegin();
+		const epvector::const_reverse_iterator itend = seq.rend();
+		std::vector<int>::const_reverse_iterator itd = ldegrees.rbegin();
+		for (epvector::const_reverse_iterator it=itbeg; it!=itend; ++it, ++itd) {
+
+			ex op = recombine_pair_to_ex(*it).series(r, order-degsum+(*itd), options);
+
+			// Series multiplication
+			if (it==itbeg)
+				newacc = ex_to<pseries>(op);
+			else
+				newacc = ex_to<pseries>(newacc.mul_series(ex_to<pseries>(op)));
+		}
+		return newacc.mul_const(ex_to<numeric>(overall_coeff));
+	} else {
+		return acc.mul_const(ex_to<numeric>(overall_coeff));
+	}
 }
 
 
@@ -805,6 +845,9 @@ ex pseries::power_const(const numeric &p, int deg) const
 	if (!(p*ldeg).is_integer())
 		throw std::runtime_error("pseries::power_const(): trying to assemble a Puiseux series");
 
+	// adjust number of coefficients
+	deg = deg - p.to_int()*ldeg;
+	
 	// O(x^n)^(-m) is undefined
 	if (seq.size() == 1 && is_order_function(seq[0].rest) && p.real().is_negative())
 		throw pole_error("pseries::power_const(): division by zero",1);
@@ -842,6 +885,7 @@ ex pseries::power_const(const numeric &p, int deg) const
 	}
 	if (!higher_order && !all_sums_zero)
 		new_seq.push_back(expair(Order(_ex1), p * ldeg + deg));
+
 	return pseries(relational(var,point), new_seq);
 }
 
@@ -895,8 +939,13 @@ ex power::series(const relational & r, int order, unsigned options) const
 	}
 
 	// No, expand basis into series
+	int intexp = ex_to<numeric>(exponent).to_int();
 	ex e = basis.series(r, order, options);
-	return ex_to<pseries>(e).power_const(ex_to<numeric>(exponent), order);
+	int ldeg = ex_to<pseries>(e).ldegree(r.lhs());
+	if (intexp * ldeg < 0) {
+		e = basis.series(r, order + ldeg*(1-intexp), options);
+	}
+	return ex_to<pseries>(e).power_const(intexp, order);
 }
 
 
