@@ -71,9 +71,23 @@ public:
 	virtual ex rhs(void) const;
 
 	// non-virtual functions in this class
-public:
-	operator bool(void) const;
+private:
+	// For conversions to boolean, as would be used in an if conditional,
+	// implicit conversions from bool to int have a large number of
+	// undesirable side effects.  The following safe_bool type enables
+	// use of relational objects in conditionals without those side effects
+	struct safe_bool_helper {
+		void nonnull() {};
+	};
+
+	typedef void (safe_bool_helper::*safe_bool)();
 	
+	safe_bool make_safe_bool(bool) const;
+
+public:
+	operator safe_bool(void) const;
+	safe_bool operator!(void) const;
+
 // member variables
 	
 protected:
@@ -88,6 +102,12 @@ protected:
 template<> inline bool is_exactly_a<relational>(const basic & obj)
 {
 	return obj.tinfo()==TINFO_relational;
+}
+
+// inlined functions for efficiency
+inline relational::safe_bool relational::operator!() const
+{
+	return make_safe_bool(!static_cast<bool>(*this));
 }
 
 } // namespace GiNaC

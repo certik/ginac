@@ -305,31 +305,36 @@ ex relational::rhs(void) const
 // non-virtual functions in this class
 //////////
 
-/** Cast the relational into a boolean, mainly for evaluation within an 
+relational::safe_bool relational::make_safe_bool(bool cond) const
+{
+	return cond? &safe_bool_helper::nonnull : 0;
+}
+
+/** Cast the relational into a boolean, mainly for evaluation within an
  *  if-statement.  Note that (a<b) == false does not imply (a>=b) == true in
  *  the general symbolic case.  A false result means the comparison is either
  *  false or undecidable (except of course for !=, where true means either
  *  unequal or undecidable). */
-relational::operator bool() const
+relational::operator relational::safe_bool() const
 {
 	const ex df = lh-rh;
 	if (!is_ex_exactly_of_type(df,numeric))
 		// cannot decide on non-numerical results
-		return o==not_equal ? true : false;
-	
+		return o==not_equal ? make_safe_bool(true) : make_safe_bool(false);
+
 	switch (o) {
 		case equal:
-			return ex_to<numeric>(df).is_zero();
+			return make_safe_bool(ex_to<numeric>(df).is_zero());
 		case not_equal:
-			return !ex_to<numeric>(df).is_zero();
+			return make_safe_bool(!ex_to<numeric>(df).is_zero());
 		case less:
-			return ex_to<numeric>(df)<_num0;
+			return make_safe_bool(ex_to<numeric>(df)<_num0);
 		case less_or_equal:
-			return ex_to<numeric>(df)<=_num0;
+			return make_safe_bool(ex_to<numeric>(df)<=_num0);
 		case greater:
-			return ex_to<numeric>(df)>_num0;
+			return make_safe_bool(ex_to<numeric>(df)>_num0);
 		case greater_or_equal:
-			return ex_to<numeric>(df)>=_num0;
+			return make_safe_bool(ex_to<numeric>(df)>=_num0);
 		default:
 			throw(std::logic_error("invalid relational operator"));
 	}
