@@ -159,10 +159,12 @@ public:
 	ex symmetrize_cyclic(void) const;
 	ex symmetrize_cyclic(const lst & l) const;
 	ex eval_ncmul(const exvector & v) const { return bp->eval_ncmul(v); }
-	ex operator[](const ex & index) const;
-	ex operator[](int i) const;
 	ex op(int i) const { return bp->op(i); }
+	ex operator[](const ex & index) const { return (*bp)[index]; }
+	ex operator[](int i) const { return (*bp)[i]; }
 	ex & let_op(int i);
+	ex & operator[](const ex & index);
+	ex & operator[](int i);
 	ex lhs(void) const;
 	ex rhs(void) const;
 	int compare(const ex & other) const;

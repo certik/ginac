@@ -705,7 +705,7 @@ ex canonicalize_clifford(const ex & e)
 			// Expand product, if necessary
 			ex rhs_expanded = rhs.expand();
 			if (!is_a<ncmul>(rhs_expanded)) {
-				srl.let_op(i) = (lhs == canonicalize_clifford(rhs_expanded));
+				srl[i] = (lhs == canonicalize_clifford(rhs_expanded));
 				continue;
 
 			} else if (!is_a<clifford>(rhs.op(0)))
@@ -732,7 +732,7 @@ ex canonicalize_clifford(const ex & e)
 					it[0] = save1;
 					it[1] = save0;
 					sum -= ncmul(v, true);
-					srl.let_op(i) = (lhs == canonicalize_clifford(sum));
+					srl[i] = (lhs == canonicalize_clifford(sum));
 					goto next_sym;
 				}
 				++it;

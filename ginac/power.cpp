@@ -233,7 +233,7 @@ unsigned power::nops() const
 	return 2;
 }
 
-ex & power::let_op(int i)
+ex power::op(int i) const
 {
 	GINAC_ASSERT(i>=0);
 	GINAC_ASSERT(i<2);

@@ -46,7 +46,7 @@ public:
 	unsigned precedence(void) const {return 38;} // for clarity just below add::precedence
 	unsigned nops(void) const;
 	ex op(int i) const;
-	ex &let_op(int i);
+	ex & let_op(int i);
 	int degree(const ex &s) const;
 	int ldegree(const ex &s) const;
 	ex coeff(const ex &s, int n = 1) const;

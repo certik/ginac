@@ -292,9 +292,9 @@ ex expairseq::op(int i) const
 	return overall_coeff;
 }
 
-ex &expairseq::let_op(int i)
+ex & expairseq::let_op(int i)
 {
-	throw(std::logic_error("let_op not defined for expairseq and derived classes (add,mul,...)"));
+	throw(std::logic_error("let_op not defined for expairseq and derived classes (add, mul, ...)"));
 }
 
 ex expairseq::map(map_function &f) const

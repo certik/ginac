@@ -98,9 +98,11 @@ public: // only const functions please (may break reference counting)
 	virtual bool info(unsigned inf) const;
 	virtual unsigned nops() const;
 	virtual ex op(int i) const;
-	virtual ex & let_op(int i);
 	virtual ex operator[](const ex & index) const;
 	virtual ex operator[](int i) const;
+	virtual ex & let_op(int i);
+	virtual ex & operator[](const ex & index);
+	virtual ex & operator[](int i);
 	virtual ex expand(unsigned options = 0) const;
 	virtual bool has(const ex & other) const;
 	virtual ex map(map_function & f) const;

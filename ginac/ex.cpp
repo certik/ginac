@@ -130,24 +130,26 @@ bool ex::find(const ex & pattern, lst & found) const
 	return any_found;
 }
 
-ex ex::operator[](const ex & index) const
-{
-	GINAC_ASSERT(bp!=0);
-	return (*bp)[index];
-}
-
-ex ex::operator[](int i) const
-{
-	GINAC_ASSERT(bp!=0);
-	return (*bp)[i];
-}
-
 /** Return modifyable operand/member at position i. */
 ex & ex::let_op(int i)
 {
 	makewriteable();
 	GINAC_ASSERT(bp!=0);
 	return bp->let_op(i);
+}
+
+ex & ex::operator[](const ex & index)
+{
+	makewriteable();
+	GINAC_ASSERT(bp!=0);
+	return (*bp)[index];
+}
+
+ex & ex::operator[](int i)
+{
+	makewriteable();
+	GINAC_ASSERT(bp!=0);
+	return (*bp)[i];
 }
 
 /** Left hand side of relational expression. */

@@ -267,9 +267,9 @@ ex pseries::op(int i) const
 	return seq[i].rest * power(var - point, seq[i].coeff);
 }
 
-ex &pseries::let_op(int i)
+ex & pseries::let_op(int i)
 {
-	throw (std::logic_error("let_op not defined for pseries"));
+	throw (std::logic_error("let_op() not defined for pseries"));
 }
 
 /** Return degree of highest power of the series.  This is usually the exponent

@@ -55,7 +55,8 @@ public:
 	unsigned precedence(void) const {return 20;}
 	bool info(unsigned inf) const;
 	unsigned nops() const;
-	ex & let_op(int i);
+	ex op(int i) const;
+	ex map(map_function & f) const;
 	ex eval(int level=0) const;
 
 protected:

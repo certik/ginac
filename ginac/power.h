@@ -52,7 +52,7 @@ public:
 	unsigned precedence(void) const {return 60;}
 	bool info(unsigned inf) const;
 	unsigned nops() const;
-	ex & let_op(int i);
+	ex op(int i) const;
 	ex map(map_function & f) const;
 	int degree(const ex & s) const;
 	int ldegree(const ex & s) const;

@@ -185,7 +185,7 @@ ex basic::op(int i) const
 /** Return modifyable operand/member at position i. */
 ex & basic::let_op(int i)
 {
-	throw(std::out_of_range("op() out of range"));
+	throw(std::runtime_error(std::string("let_op() not implemented by ") + class_name()));
 }
 
 ex basic::operator[](const ex & index) const
@@ -199,6 +199,19 @@ ex basic::operator[](const ex & index) const
 ex basic::operator[](int i) const
 {
 	return op(i);
+}
+
+ex & basic::operator[](const ex & index)
+{
+	if (is_exactly_a<numeric>(index))
+		return let_op(ex_to<numeric>(index).to_int());
+
+	throw(std::invalid_argument("non-numeric indices not supported by this type"));
+}
+
+ex & basic::operator[](int i)
+{
+	return let_op(i);
 }
 
 /** Test for occurrence of a pattern.  An object 'has' a pattern if it matches

@@ -165,12 +165,17 @@ unsigned relational::nops() const
 	return 2;
 }
 
-ex & relational::let_op(int i)
+ex relational::op(int i) const
 {
 	GINAC_ASSERT(i>=0);
 	GINAC_ASSERT(i<2);
 
 	return i==0 ? lh : rh;
+}
+
+ex relational::map(map_function & f) const
+{
+	return (new relational(f(lh), f(rh), o))->setflag(status_flags::dynallocated);
 }
 
 ex relational::eval(int level) const
