@@ -105,6 +105,10 @@ static unsigned exam_series1(void)
 	result += check_series(e, 0, d, 1);
 	result += check_series(e, 0, d, 2);
 	
+	e = pow(x, 8) * pow(pow(x,3)+ pow(x + pow(x,3), 2), -2);
+	d = pow(x, 4) - 2*pow(x, 5) + Order(pow(x, 6));
+	result += check_series(e, 0, d, 6);
+	
 	return result;
 }
 
