@@ -579,11 +579,13 @@ bool numeric::is_equal_same_type(const basic &other) const
 
 unsigned numeric::calchash(void) const
 {
-	// Use CLN's hashcode.  Warning: It depends only on the number's value, not
-	// its type or precision (i.e. a true equivalence relation on numbers).  As
-	// a consequence, 3 and 3.0 share the same hashvalue.
+	// Base computation of hashvalue on CLN's hashcode.  Note: That depends
+	// only on the number's value, not its type or precision (i.e. a true
+	// equivalence relation on numbers).  As a consequence, 3 and 3.0 share
+	// the same hashvalue.  That shouldn't really matter, though.
 	setflag(status_flags::hash_calculated);
-	return (hashvalue = cln::equal_hashcode(cln::the<cln::cl_N>(value)) | 0x80000000U);
+	hashvalue = golden_ratio_hash(cln::equal_hashcode(cln::the<cln::cl_N>(value))) | 0x80000000U;
+	return hashvalue;
 }
 
 
