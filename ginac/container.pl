@@ -251,6 +251,7 @@ public:
 public:
 	${CONTAINER}(${STLT} const & s, bool discardable = false);
 	${CONTAINER}(${STLT} * vp); // vp will be deleted
+	${CONTAINER}(exvector::const_iterator b, exvector::const_iterator e);
 ${constructors_interface}
 
 public:
@@ -400,6 +401,10 @@ ${CONTAINER}::${CONTAINER}(${STLT} * vp) : basic(TINFO_${CONTAINER})
 	GINAC_ASSERT(vp!=0);
 	seq.swap(*vp);
 	delete vp;
+}
+
+${CONTAINER}::${CONTAINER}(exvector::const_iterator b, exvector::const_iterator e) :  basic(TINFO_${CONTAINER}), seq(b, e)
+{
 }
 
 ${constructors_implementation}

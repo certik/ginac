@@ -826,10 +826,11 @@ contraction_done:
 	// indices, so if the symmetrization vanishes, the whole expression is
 	// zero. This detects things like eps.i.j.k * p.j * p.k = 0.
 	if (local_dummy_indices.size() >= 2) {
-		lst dummy_syms;
-		for (exvector::size_type i=0; i<local_dummy_indices.size(); i++)
-			dummy_syms.append(local_dummy_indices[i].op(0));
-		if (r.symmetrize(dummy_syms).is_zero()) {
+		exvector dummy_syms;
+		dummy_syms.reserve(local_dummy_indices.size());
+		for (exvector::const_iterator it = local_dummy_indices.begin(); it != local_dummy_indices.end(); ++it)
+			dummy_syms.push_back(it->op(0));
+		if (symmetrize(r, dummy_syms).is_zero()) {
 			free_indices.clear();
 			return _ex0;
 		}
@@ -975,17 +976,18 @@ ex simplify_indexed(const ex & e, exvector & free_indices, exvector & dummy_indi
 		if (num_terms_orig < 2 || dummy_indices.size() < 2)
 			return sum;
 
-		// Yes, construct list of all dummy index symbols
-		lst dummy_syms;
-		for (exvector::size_type i=0; i<dummy_indices.size(); i++)
-			dummy_syms.append(dummy_indices[i].op(0));
+		// Yes, construct vector of all dummy index symbols
+		exvector dummy_syms;
+		dummy_syms.reserve(dummy_indices.size());
+		for (exvector::const_iterator it = dummy_indices.begin(); it != dummy_indices.end(); ++it)
+			dummy_syms.push_back(it->op(0));
 
 		// Chop the sum into terms and symmetrize each one over the dummy
 		// indices
 		std::vector<terminfo> terms;
 		for (size_t i=0; i<sum.nops(); i++) {
 			const ex & term = sum.op(i);
-			ex term_symm = term.symmetrize(dummy_syms);
+			ex term_symm = symmetrize(term, dummy_syms);
 			if (term_symm.is_zero())
 				continue;
 			terms.push_back(terminfo(term, term_symm));
