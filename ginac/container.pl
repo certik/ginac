@@ -250,6 +250,7 @@ protected:
 public:
 	virtual ${CONTAINER} & append(const ex & b);
 	virtual ${CONTAINER} & remove_last(void);
+	virtual ${CONTAINER} & remove_all(void);
 ${PREPEND_INTERFACE}
 ${SORT_INTERFACE}
 protected:
@@ -544,6 +545,13 @@ ${CONTAINER} & ${CONTAINER}::remove_last(void)
 {
 	ensure_if_modifiable();
 	seq.pop_back();
+	return *this;
+}
+
+${CONTAINER} & ${CONTAINER}::remove_all(void)
+{
+	ensure_if_modifiable();
+	seq.clear();
 	return *this;
 }
 

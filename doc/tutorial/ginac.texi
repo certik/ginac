@@ -1214,6 +1214,7 @@ canonical form.
 @cindex @code{prepend()}
 @cindex @code{remove_first()}
 @cindex @code{remove_last()}
+@cindex @code{remove_all()}
 
 The GiNaC class @code{lst} serves for holding a @dfn{list} of arbitrary
 expressions. These are sometimes used to supply a variable number of
@@ -1251,13 +1252,21 @@ and @code{prepend()} methods:
     // ...
 @end example
 
-Finally you can remove the first or last element of a list with
+You can remove the first or last element of a list with
 @code{remove_first()} and @code{remove_last()}:
 
 @example
     // ...
     l.remove_first();   // l is now @{x, 2, y, x+y, 4*x@}
     l.remove_last();    // l is now @{x, 2, y, x+y@}
+@end example
+
+Finally, you can remove all the elements of a list with
+@code{remove_all()}:
+
+@example
+    // ...
+    l.remove_all();   // l is now empty
 @}
 @end example
 
