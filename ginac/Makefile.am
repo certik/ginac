@@ -3,7 +3,8 @@
 lib_LTLIBRARIES = libginac.la
 libginac_la_SOURCES = add.cpp archive.cpp basic.cpp constant.cpp ex.cpp \
   expair.cpp expairseq.cpp exprseq.cpp fail.cpp function.cpp inifcns.cpp \
-  inifcns_trans.cpp inifcns_zeta.cpp inifcns_gamma.cpp matrix.cpp mul.cpp \
+  inifcns_trans.cpp inifcns_zeta.cpp inifcns_gamma.cpp inifcns_nstdsums.cpp \
+  matrix.cpp mul.cpp \
   normal.cpp numeric.cpp operators.cpp power.cpp registrar.cpp relational.cpp \
   symbol.cpp pseries.cpp utils.cpp ncmul.cpp structure.cpp exprseq_suppl.cpp \
   lst.cpp lst_suppl.cpp input_parser.yy input_lexer.ll input_lexer.h \
