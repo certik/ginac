@@ -83,7 +83,7 @@ class exhashmap;
 template <typename T, template <class> class A>
 class exhashmap {
 public:
-	static const unsigned min_num_buckets = 5; // must be prime
+	static const unsigned min_num_buckets = 31; // must be prime
 
 	// Standard types
 	typedef ex key_type;
