@@ -7,6 +7,7 @@ This file records noteworthy changes.
 * Fixed the LaTeX output of the varidx class.
 * Symbolic functions without any eval(), evalf() etc. functions now work
   properly.
+* Added method matrix::rank().
 
 1.2.1 (23 April 2004)
 * Fixed infinite recursion in atan2_evalf() and improved atan2_eval().
