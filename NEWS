@@ -1,10 +1,11 @@
 This file records noteworthy changes.
 
-1.1.2 (<date>)
+1.1.2 (11 August 2003)
 * Fixed a bug in the unarchiving of sums and products: terms were not
   reordered in a canonical way.
 * Fixed a bug in normal()/numer_denom(): denominator was not made unit
   normal if it was a simple number
+* Improved the speed of subs() in some cases.
 
 1.1.1 (18 June 2003)
 * lst (and exprseq) provide iterators for read-only element access. For
