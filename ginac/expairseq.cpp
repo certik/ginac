@@ -397,13 +397,12 @@ found:		;
 }
 
 ex expairseq::subs(const lst &ls, const lst &lr, unsigned options) const
-{	
-	if ((options & subs_options::subs_algebraic) && is_exactly_a<mul>(*this))
-		return static_cast<const mul *>(this)->algebraic_subs_mul(ls, lr, options);
-
+{
 	epvector *vp = subschildren(ls, lr, options);
 	if (vp)
 		return ex_to<basic>(thisexpairseq(vp, overall_coeff));
+	else if ((options & subs_options::subs_algebraic) && is_exactly_a<mul>(*this))
+		return static_cast<const mul *>(this)->algebraic_subs_mul(ls, lr, options);
 	else
 		return basic::subs(ls, lr, options);
 }

@@ -524,28 +524,29 @@ ex power::evalm(void) const
 	return (new power(ebasis, eexponent))->setflag(status_flags::dynallocated);
 }
 
-extern bool tryfactsubs(const ex &, const ex &, unsigned &, lst &);
+extern bool tryfactsubs(const ex &, const ex &, int &, lst &);
 
 ex power::subs(const lst & ls, const lst & lr, unsigned options) const
-{
-	if (options & subs_options::subs_algebraic) {
-		for (size_t i=0; i<ls.nops(); i++) {
-			unsigned nummatches = std::numeric_limits<unsigned>::max();
-			lst repls;
-			if (tryfactsubs(*this, ls.op(i), nummatches, repls))
-				return (ex_to<basic>((*this) * power(lr.op(i).subs(ex(repls), subs_options::subs_no_pattern) / ls.op(i).subs(ex(repls), subs_options::subs_no_pattern), nummatches))).basic::subs(ls, lr, options);
-		}
-		return basic::subs(ls, lr, options);
-	}
-
+{	
 	const ex &subsed_basis = basis.subs(ls, lr, options);
 	const ex &subsed_exponent = exponent.subs(ls, lr, options);
 
-	if (are_ex_trivially_equal(basis, subsed_basis)
-	 && are_ex_trivially_equal(exponent, subsed_exponent))
-		return basic::subs(ls, lr, options);
-	else
+	if (!are_ex_trivially_equal(basis, subsed_basis)
+	 || !are_ex_trivially_equal(exponent, subsed_exponent)) 
 		return power(subsed_basis, subsed_exponent).basic::subs(ls, lr, options);
+
+	if(!(options & subs_options::subs_algebraic))
+		return basic::subs(ls, lr, options);
+
+	for (size_t i=0; i<ls.nops(); i++) {
+		int nummatches = std::numeric_limits<int>::max();
+		lst repls;
+		if (tryfactsubs(*this, ls.op(i), nummatches, repls))
+			return (ex_to<basic>((*this) * power(lr.op(i).subs(ex(repls), subs_options::subs_no_pattern) / ls.op(i).subs(ex(repls), subs_options::subs_no_pattern), nummatches))).basic::subs(ls, lr, options);
+	}
+
+	ex result=basic::subs(ls, lr, options);
+	return result;
 }
 
 ex power::eval_ncmul(const exvector & v) const

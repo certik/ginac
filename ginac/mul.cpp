@@ -518,8 +518,8 @@ ex mul::eval_ncmul(const exvector & v) const
 	return inherited::eval_ncmul(v);
 }
 
-bool tryfactsubs(const ex & origfactor, const ex & patternfactor, unsigned & nummatches, lst & repls)
-{
+bool tryfactsubs(const ex & origfactor, const ex & patternfactor, int & nummatches, lst & repls)
+{	
 	ex origbase;
 	int origexponent;
 	int origexpsign;
@@ -556,13 +556,13 @@ bool tryfactsubs(const ex & origfactor, const ex & patternfactor, unsigned & num
 	repls = saverepls;
 
 	int newnummatches = origexponent / patternexponent;
-	if (newnummatches < static_cast<int>(nummatches))
+	if (newnummatches < nummatches)
 		nummatches = newnummatches;
 	return true;
 }
 
 ex mul::algebraic_subs_mul(const lst & ls, const lst & lr, unsigned options) const
-{
+{	
 	std::vector<bool> subsed(seq.size(), false);
 	exvector subsresult(seq.size());
 
@@ -570,7 +570,7 @@ ex mul::algebraic_subs_mul(const lst & ls, const lst & lr, unsigned options) con
 
 		if (is_exactly_a<mul>(ls.op(i))) {
 
-			unsigned nummatches = std::numeric_limits<unsigned>::max();
+			int nummatches = std::numeric_limits<int>::max();
 			std::vector<bool> currsubsed(seq.size(), false);
 			bool succeed = true;
 			lst repls;
@@ -609,7 +609,7 @@ ex mul::algebraic_subs_mul(const lst & ls, const lst & lr, unsigned options) con
 
 		} else {
 
-			unsigned nummatches = std::numeric_limits<unsigned>::max();
+			int nummatches = std::numeric_limits<int>::max();
 			lst repls;
 
 			for (size_t j=0; j<this->nops(); j++) {
