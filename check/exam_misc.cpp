@@ -243,6 +243,27 @@ static unsigned exam_joris(void)
 	return result;
 }
 
+/* Test Chris Dams' algebraic substitutions. */
+static unsigned exam_subs_algebraic()
+{
+	unsigned result = 0;
+	symbol x("x"), y("y");
+
+	ex e = ex(x*x*x*y*y).subs(x*y==2, subs_options::subs_algebraic);
+	if (e != 4*x) {
+		clog << "(x^3*y^2).subs(x*y==2,subs_options::subs_algebraic) erroneously returned " << e << endl;
+		++result;
+	}
+
+	e = ex(x*x*x*x*x).subs(x*x==y, subs_options::subs_algebraic);
+	if (e != y*y*x) {
+		clog << "x^5.subs(x^2==y,subs_options::subs_algebraic) erroneously returned " << e << endl;
+		++result;
+	}
+	
+	return result;
+}
+
 unsigned exam_misc(void)
 {
 	unsigned result = 0;
@@ -257,6 +278,7 @@ unsigned exam_misc(void)
 	result += exam_operator_semantics(); cout << '.' << flush;
 	result += exam_subs(); cout << '.' << flush;
 	result += exam_joris(); cout << '.' << flush;
+	result += exam_subs_algebraic(); cout << '.' << flush;
 	
 	if (!result) {
 		cout << " passed " << endl;
