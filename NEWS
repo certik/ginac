@@ -1,5 +1,11 @@
 This file records noteworthy changes.
 
+1.1.2 (<date>)
+* Fixed a bug in the unarchiving of sums and products: terms were not
+  reordered in a canonical way.
+* Fixed a bug in normal()/numer_denom(): denominator was not made unit
+  normal if it was a simple number
+
 1.1.1 (18 June 2003)
 * lst (and exprseq) provide iterators for read-only element access. For
   sequential access this is one order faster than using op().
