@@ -1416,9 +1416,8 @@ matrix:
 @end example
 
 @cindex @code{transpose()}
-@cindex @code{inverse()}
 There are three ways to do arithmetic with matrices. The first (and most
-efficient one) is to use the methods provided by the @code{matrix} class:
+direct one) is to use the methods provided by the @code{matrix} class:
 
 @example
 matrix matrix::add(const matrix & other) const;
@@ -1427,7 +1426,6 @@ matrix matrix::mul(const matrix & other) const;
 matrix matrix::mul_scalar(const ex & other) const;
 matrix matrix::pow(const ex & expn) const;
 matrix matrix::transpose(void) const;
-matrix matrix::inverse(void) const;
 @end example
 
 All of these methods return the result as a new matrix object. Here is an
@@ -1502,16 +1500,36 @@ The @code{matrix} class provides a couple of additional methods for
 computing determinants, traces, and characteristic polynomials:
 
 @example
-ex matrix::determinant(unsigned algo = determinant_algo::automatic) const;
+ex matrix::determinant(unsigned algo=determinant_algo::automatic) const;
 ex matrix::trace(void) const;
 ex matrix::charpoly(const symbol & lambda) const;
 @end example
 
-The @samp{algo} argument of @code{determinant()} allows to select between
-different algorithms for calculating the determinant. The possible values
-are defined in the @file{flags.h} header file. By default, GiNaC uses a
-heuristic to automatically select an algorithm that is likely to give the
-result most quickly.
+The @samp{algo} argument of @code{determinant()} allows to select
+between different algorithms for calculating the determinant.  The
+asymptotic speed (as parametrized by the matrix size) can greatly differ
+between those algorithms, depending on the nature of the matrix'
+entries.  The possible values are defined in the @file{flags.h} header
+file.  By default, GiNaC uses a heuristic to automatically select an
+algorithm that is likely (but not guaranteed) to give the result most
+quickly.
+
+@cindex @code{inverse()}
+@cindex @code{solve()}
+Matrices may also be inverted using the @code{ex matrix::inverse(void)}
+method and linear systems may be solved with:
+
+@example
+matrix matrix::solve(const matrix & vars, const matrix & rhs, unsigned algo=solve_algo::automatic) const;
+@end example
+
+Assuming the matrix object this method is applied on is an @code{m}
+times @code{n} matrix, then @code{vars} must be a @code{n} times
+@code{p} matrix of symbolic indeterminates and @code{rhs} a @code{m}
+times @code{p} matrix.  The returned matrix then has dimension @code{n}
+times @code{p} and in the case of an underdetermined system will still
+contain some of the indeterminates from @code{vars}.  If the system is
+overdetermined, an exception is thrown.
 
 
 @node Indexed objects, Non-commutative objects, Matrices, Basic Concepts
@@ -2696,6 +2714,7 @@ avoided.
 * Series Expansion::                Taylor and Laurent expansion.
 * Symmetrization::
 * Built-in Functions::              List of predefined mathematical functions.
+* Solving Linear Systems of Equations::
 * Input/Output::                    Input and output of expressions.
 @end menu
 
@@ -3897,12 +3916,13 @@ $\pi=16$~atan~$\!\left(1 \over 5 \right)-4$~atan~$\!\left(1 \over 239 \right)$.
 @math{Pi==16*atan(1/5)-4*atan(1/239)}.
 @end ifnottex
 This equation (and similar ones) were used for over 200 years for
-computing digits of Pi.  We may expand the arcus tangent around @code{0}
-and insert the fractions @code{1/5} and @code{1/239}.  However, as we
-have seen, a series in GiNaC carries an order term with it and the
-question arises what the system is supposed to do when the fractions are
-plugged into that order term.  The solution is to use the function
-@code{series_to_poly()} to simply strip the order term off:
+computing digits of pi (see @cite{Pi Unleashed}).  We may expand the
+arcus tangent around @code{0} and insert the fractions @code{1/5} and
+@code{1/239}.  However, as we have seen, a series in GiNaC carries an
+order term with it and the question arises what the system is supposed
+to do when the fractions are plugged into that order term.  The solution
+is to use the function @code{series_to_poly()} to simply strip the order
+term off:
 
 @example
 #include <ginac/ginac.h>
@@ -3998,7 +4018,7 @@ almost any kind of object (anything that is @code{subs()}able):
 @end example
 
 
-@node Built-in Functions, Input/Output, Symmetrization, Methods and Functions
+@node Built-in Functions, Solving Linear Systems of Equations, Symmetrization, Methods and Functions
 @c    node-name, next, previous, up
 @section Predefined mathematical functions
 
@@ -4112,7 +4132,48 @@ standard incorporate these functions in the complex domain in a manner
 compatible with C99.
 
 
-@node Input/Output, Extending GiNaC, Built-in Functions, Methods and Functions
+@node Solving Linear Systems of Equations, Input/Output, Built-in Functions, Methods and Functions
+@c    node-name, next, previous, up
+@section Solving Linear Systems of Equations
+@cindex @code{lsolve()}
+
+The function @code{lsolve()} provides a convenient wrapper around some
+matrix operations that comes in handy when a system of linear equations
+needs to be solved:
+
+@example
+ex lsolve(const ex &eqns, const ex &symbols, unsigned options=solve_algo::automatic);
+@end example
+
+Here, @code{eqns} is a @code{lst} of equalities (i.e. class
+@code{relational}) while @code{symbols} is a @code{lst} of
+indeterminates.  (@xref{The Class Hierarchy}, for an exposition of class
+@code{lst}).
+
+It returns the @code{lst} of solutions as an expression.  As an example,
+let us solve the two equations @code{a*x+b*y==3} and @code{x-y==b}:
+
+@example
+@{
+    symbol a("a"), b("b"), x("x"), y("y");
+    lst eqns;
+    eqns.append(a*x+b*y==3).append(x-y==b);
+    lst vars;
+    vars.append(x).append(y);
+    cout << lsolve(eqns, vars) << endl;
+    // -> @{x==(3+b^2)/(b+a),y==(3-b*a)/(b+a)@}
+@end example
+
+When the linear equations @code{eqns} are underdetermined, the solution
+will contain one or more tautological entries like @code{x==x},
+depending on the rank of the system.  When they are overdetermined, the
+solution will be an empty @code{lst}.  Note the third optional parameter
+to @code{lsolve()}: it accepts the same parameters as
+@code{matrix::solve()}.  This is because @code{lsolve} is just a wrapper
+around that method.
+
+
+@node Input/Output, Extending GiNaC, Solving Linear Systems of Equations, Methods and Functions
 @c    node-name, next, previous, up
 @section Input and output of expressions
 @cindex I/O
