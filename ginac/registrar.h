@@ -63,11 +63,11 @@ struct registered_class_info {
 #define GINAC_DECLARE_REGISTERED_CLASS_NO_CTORS(classname, supername) \
 public: \
 	typedef supername inherited; \
-	static registered_class_info reg_info; \
+	static GiNaC::registered_class_info reg_info; \
 	virtual const char *class_name(void) const; \
-	classname(const archive_node &n, lst &sym_lst); \
-	virtual void archive(archive_node &n) const; \
-	static ex unarchive(const archive_node &n, lst &sym_lst);
+	classname(const GiNaC::archive_node &n, GiNaC::lst &sym_lst); \
+	virtual void archive(GiNaC::archive_node &n) const; \
+	static GiNaC::ex unarchive(const GiNaC::archive_node &n, GiNaC::lst &sym_lst);
 
 /** Macro for inclusion in the declaration of each registered class.
  *  It declares some functions that are common to all classes derived
@@ -80,16 +80,16 @@ public: \
 	~classname() { destroy(false); } \
 	classname(const classname & other); \
 	const classname & operator=(const classname & other); \
-	basic * duplicate() const; \
+	GiNaC::basic * duplicate() const; \
 protected: \
 	void copy(const classname & other); \
 	void destroy(bool call_parent); \
-	int compare_same_type(const basic & other) const; \
+	int compare_same_type(const GiNaC::basic & other) const; \
 private:
 
 /** Primary macro for inclusion in the implementation of each registered class. */
 #define GINAC_IMPLEMENT_REGISTERED_CLASS_NO_CTORS(classname, supername) \
-	registered_class_info classname::reg_info(#classname, #supername, TINFO_##classname, &classname::unarchive); \
+	GiNaC::registered_class_info classname::reg_info(#classname, #supername, TINFO_##classname, &classname::unarchive); \
 	const char *classname::class_name(void) const {return reg_info.name;}
 
 /** Macro for inclusion in the implementation of each registered class.
@@ -106,7 +106,7 @@ const classname & classname::operator=(const classname & other) \
 	} \
 	return *this; \
 } \
-basic * classname::duplicate() const { \
+GiNaC::basic * classname::duplicate() const { \
 	return new classname(*this); \
 }
 
