@@ -422,7 +422,7 @@ static ex psi1_series(const ex & arg,
 	return (psi(arg+m+_ex1)-recur).series(rel, order, options);
 }
 
-const unsigned function_index_psi1 =
+unsigned psi1_SERIAL::serial =
 	function::register_new(function_options("psi").
 	                       eval_func(psi1_eval).
 	                       evalf_func(psi1_evalf).
@@ -550,7 +550,7 @@ static ex psi2_series(const ex & n,
 	return (psi(n, arg+m+_ex1)-recur).series(rel, order, options);
 }
 
-const unsigned function_index_psi2 =
+unsigned psi2_SERIAL::serial =
 	function::register_new(function_options("psi").
 	                       eval_func(psi2_eval).
 	                       evalf_func(psi2_evalf).

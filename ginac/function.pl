@@ -39,10 +39,9 @@ sub generate {
 $declare_function_macro = generate(
 	<<'END_OF_DECLARE_FUNCTION_MACRO','typename T${N}','const T${N} & p${N}','GiNaC::ex(p${N})');
 #define DECLARE_FUNCTION_${N}P(NAME) \\
-extern const unsigned function_index_##NAME; \\
-template<${SEQ1}> \\
-inline const GiNaC::function NAME(${SEQ2}) { \\
-	return GiNaC::function(function_index_##NAME, ${SEQ3}); \\
+class NAME##_SERIAL { public: static unsigned serial; }; \\
+template<${SEQ1}> const GiNaC::function NAME(${SEQ2}) { \\
+	return GiNaC::function(NAME##_SERIAL::serial, ${SEQ3}); \\
 }
 
 END_OF_DECLARE_FUNCTION_MACRO
@@ -197,7 +196,7 @@ $declare_function_macro
 // end of generated lines
 
 #define REGISTER_FUNCTION(NAME,OPT) \\
-const unsigned function_index_##NAME= \\
+unsigned NAME##_SERIAL::serial = \\
 	GiNaC::function::register_new(GiNaC::function_options(#NAME).OPT);
 
 namespace GiNaC {
@@ -364,8 +363,15 @@ template<> inline bool is_exactly_a<function>(const basic & obj)
 	return obj.tinfo()==TINFO_function;
 }
 
-#define is_ex_the_function(OBJ, FUNCNAME) \\
-	(GiNaC::is_exactly_a<GiNaC::function>(OBJ) && GiNaC::ex_to<GiNaC::function>(OBJ).get_serial() == GiNaC::function_index_##FUNCNAME)
+template <typename T>
+inline bool is_the_function(const ex & x)
+{
+	return is_exactly_a<function>(x)
+	    && ex_to<function>(x).get_serial() == T::serial;
+}
+
+// Check whether OBJ is the specified symbolic function.
+#define is_ex_the_function(OBJ, FUNCNAME) (GiNaC::is_the_function<FUNCNAME##_SERIAL>(OBJ))
 
 } // namespace GiNaC
 
@@ -861,7 +867,7 @@ ex function::derivative(const symbol & s) const
 {
 	ex result;
 
-	if (serial == function_index_Order) {
+	if (serial == Order_SERIAL::serial) {
 		// Order Term function only differentiates the argument
 		return Order(seq[0].diff(s));
 	} else {

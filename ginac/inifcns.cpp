@@ -515,7 +515,7 @@ ex lsolve(const ex &eqns, const ex &symbols, unsigned options)
 
 /* Force inclusion of functions from inifcns_gamma and inifcns_zeta
  * for static lib (so ginsh will see them). */
-unsigned force_include_tgamma = function_index_tgamma;
-unsigned force_include_zeta1 = function_index_zeta1;
+unsigned force_include_tgamma = tgamma_SERIAL::serial;
+unsigned force_include_zeta1 = zeta1_SERIAL::serial;
 
 } // namespace GiNaC
