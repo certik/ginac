@@ -700,7 +700,12 @@ ${STLT} * ${CONTAINER}::subschildren(const lst & ls, const lst & lr, unsigned op
 
 			// copy rest
 			while (cit2 != end) {
-				s->push_back(cit2->subs(ls, lr, options));
+				try {
+					s->push_back(cit2->subs(ls, lr, options));
+				} catch (...) {
+					delete s;
+					throw;
+				}
 				++cit2;
 			}
 			return s;

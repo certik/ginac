@@ -1536,6 +1536,7 @@ epvector * expairseq::evalchildren(int level) const
 				s->push_back(*cit2);
 				++cit2;
 			}
+
 			// copy first changed element
 			s->push_back(combine_ex_with_coeff_to_pair(evaled_ex,
 			                                           cit2->coeff));
@@ -1603,7 +1604,12 @@ epvector * expairseq::subschildren(const lst &ls, const lst &lr, unsigned option
 
 				// Copy rest
 				while (cit != last) {
-					s->push_back(split_ex_to_pair(recombine_pair_to_ex(*cit).subs(ls, lr, options)));
+					try {
+						s->push_back(split_ex_to_pair(recombine_pair_to_ex(*cit).subs(ls, lr, options)));
+					} catch (...) {
+						delete s;
+						throw;
+					}
 					++cit;
 				}
 				return s;
@@ -1634,8 +1640,13 @@ epvector * expairseq::subschildren(const lst &ls, const lst &lr, unsigned option
 
 				// Copy rest
 				while (cit != last) {
-					s->push_back(combine_ex_with_coeff_to_pair(cit->rest.subs(ls, lr, options),
-					                                           cit->coeff));
+					try {
+						s->push_back(combine_ex_with_coeff_to_pair(cit->rest.subs(ls, lr, options),
+						                                           cit->coeff));
+					} catch (...) {
+						delete s;
+						throw;
+					}
 					++cit;
 				}
 				return s;
