@@ -40,8 +40,10 @@ namespace GiNaC {
 
 GINAC_IMPLEMENT_REGISTERED_CLASS(tensor, basic)
 GINAC_IMPLEMENT_REGISTERED_CLASS(tensdelta, tensor)
+GINAC_IMPLEMENT_REGISTERED_CLASS(tens4delta, tensor)
 GINAC_IMPLEMENT_REGISTERED_CLASS(tensmetric, tensor)
 GINAC_IMPLEMENT_REGISTERED_CLASS(minkmetric, tensmetric)
+GINAC_IMPLEMENT_REGISTERED_CLASS(mink4metric, tensor)
 GINAC_IMPLEMENT_REGISTERED_CLASS(spinmetric, tensmetric)
 GINAC_IMPLEMENT_REGISTERED_CLASS(tensepsilon, tensor)
 
@@ -51,15 +53,22 @@ GINAC_IMPLEMENT_REGISTERED_CLASS(tensepsilon, tensor)
 
 DEFAULT_CTORS(tensor)
 DEFAULT_CTORS(tensdelta)
+DEFAULT_CTORS(tens4delta)
 DEFAULT_CTORS(tensmetric)
 DEFAULT_COPY(spinmetric)
 DEFAULT_DESTROY(spinmetric)
 DEFAULT_DESTROY(minkmetric)
+DEFAULT_DESTROY(mink4metric)
 DEFAULT_DESTROY(tensepsilon)
 
 minkmetric::minkmetric() : pos_sig(false)
 {
 	tinfo_key = TINFO_minkmetric;
+}
+
+mink4metric::mink4metric() : pos_sig(false)
+{
+	tinfo_key = TINFO_mink4metric;
 }
 
 spinmetric::spinmetric()
@@ -72,18 +81,29 @@ minkmetric::minkmetric(bool ps) : pos_sig(ps)
 	tinfo_key = TINFO_minkmetric;
 }
 
+mink4metric::mink4metric(bool ps) : pos_sig(ps)
+{
+	tinfo_key = TINFO_mink4metric;
+}
+
 void minkmetric::copy(const minkmetric & other)
 {
 	inherited::copy(other);
 	pos_sig = other.pos_sig;
 }
 
-tensepsilon::tensepsilon() : minkowski(false), pos_sig(false)
+void mink4metric::copy(const mink4metric & other)
+{
+	inherited::copy(other);
+	pos_sig = other.pos_sig;
+}
+
+tensepsilon::tensepsilon() : minkowski(false), pos_sig(false), four_dim(false)
 {
 	tinfo_key = TINFO_tensepsilon;
 }
 
-tensepsilon::tensepsilon(bool mink, bool ps) : minkowski(mink), pos_sig(ps)
+tensepsilon::tensepsilon(bool mink, bool ps, bool fd) : minkowski(mink), pos_sig(ps), four_dim(fd)
 {
 	tinfo_key = TINFO_tensepsilon;
 }
@@ -93,6 +113,7 @@ void tensepsilon::copy(const tensepsilon & other)
 	inherited::copy(other);
 	minkowski = other.minkowski;
 	pos_sig = other.pos_sig;
+	four_dim = other.four_dim;
 }
 
 //////////
@@ -101,9 +122,11 @@ void tensepsilon::copy(const tensepsilon & other)
 
 DEFAULT_ARCHIVING(tensor)
 DEFAULT_ARCHIVING(tensdelta)
+DEFAULT_ARCHIVING(tens4delta)
 DEFAULT_ARCHIVING(tensmetric)
 DEFAULT_ARCHIVING(spinmetric)
 DEFAULT_UNARCHIVE(minkmetric)
+DEFAULT_UNARCHIVE(mink4metric)
 DEFAULT_UNARCHIVE(tensepsilon)
 
 minkmetric::minkmetric(const archive_node &n, const lst &sym_lst) : inherited(n, sym_lst)
@@ -117,10 +140,22 @@ void minkmetric::archive(archive_node &n) const
 	n.add_bool("pos_sig", pos_sig);
 }
 
+mink4metric::mink4metric(const archive_node &n, const lst &sym_lst) : inherited(n, sym_lst)
+{
+	n.find_bool("pos_sig", pos_sig);
+}
+
+void mink4metric::archive(archive_node &n) const
+{
+	inherited::archive(n);
+	n.add_bool("pos_sig", pos_sig);
+}
+
 tensepsilon::tensepsilon(const archive_node &n, const lst &sym_lst) : inherited(n, sym_lst)
 {
 	n.find_bool("minkowski", minkowski);
 	n.find_bool("pos_sig", pos_sig);
+	n.find_bool("4dim", four_dim);
 }
 
 void tensepsilon::archive(archive_node &n) const
@@ -128,6 +163,7 @@ void tensepsilon::archive(archive_node &n) const
 	inherited::archive(n);
 	n.add_bool("minkowski", minkowski);
 	n.add_bool("pos_sig", pos_sig);
+	n.add_bool("4dim", four_dim);
 }
 
 //////////
@@ -136,6 +172,7 @@ void tensepsilon::archive(archive_node &n) const
 
 DEFAULT_COMPARE(tensor)
 DEFAULT_COMPARE(tensdelta)
+DEFAULT_COMPARE(tens4delta)
 DEFAULT_COMPARE(tensmetric)
 DEFAULT_COMPARE(spinmetric)
 
@@ -143,6 +180,17 @@ int minkmetric::compare_same_type(const basic & other) const
 {
 	GINAC_ASSERT(is_a<minkmetric>(other));
 	const minkmetric &o = static_cast<const minkmetric &>(other);
+
+	if (pos_sig != o.pos_sig)
+		return pos_sig ? -1 : 1;
+	else
+		return inherited::compare_same_type(other);
+}
+
+int mink4metric::compare_same_type(const basic & other) const
+{
+	GINAC_ASSERT(is_a<mink4metric>(other));
+	const mink4metric &o = static_cast<const mink4metric &>(other);
 
 	if (pos_sig != o.pos_sig)
 		return pos_sig ? -1 : 1;
@@ -159,13 +207,17 @@ int tensepsilon::compare_same_type(const basic & other) const
 		return minkowski ? -1 : 1;
 	else if (pos_sig != o.pos_sig)
 		return pos_sig ? -1 : 1;
+	else if (four_dim != o.four_dim)
+		return four_dim ? -1 : 1;
 	else
 		return inherited::compare_same_type(other);
 }
 
 DEFAULT_PRINT_LATEX(tensdelta, "delta", "\\delta")
+DEFAULT_PRINT_LATEX(tens4delta, "delta4", "{\\delta^{(4)}}")
 DEFAULT_PRINT(tensmetric, "g")
 DEFAULT_PRINT_LATEX(minkmetric, "eta", "\\eta")
+DEFAULT_PRINT_LATEX(mink4metric, "eta4", "{\\eta^{(4)}}")
 DEFAULT_PRINT_LATEX(spinmetric, "eps", "\\varepsilon")
 DEFAULT_PRINT_LATEX(tensepsilon, "eps", "\\varepsilon")
 
@@ -187,6 +239,39 @@ ex tensdelta::eval_indexed(const basic & i) const
 	if (static_cast<const indexed &>(i).all_index_values_are(info_flags::integer)) {
 		int n1 = ex_to<numeric>(i1.get_value()).to_int(), n2 = ex_to<numeric>(i2.get_value()).to_int();
 		if (n1 == n2)
+			return _ex1;
+		else
+			return _ex0;
+	}
+
+	// No further simplifications
+	return i.hold();
+}
+
+/** Automatic symbolic evaluation of an indexed 4-dimensional delta tensor. */
+ex tens4delta::eval_indexed(const basic & i) const
+{
+	GINAC_ASSERT(is_a<indexed>(i));
+	GINAC_ASSERT(i.nops() == 3);
+	GINAC_ASSERT(is_a<tens4delta>(i.op(0)));
+
+	const idx & i1 = ex_to<idx>(i.op(1));
+	const idx & i2 = ex_to<idx>(i.op(2));
+
+	// Trace of 4-dimensional delta tensor is four
+	if (is_dummy_pair(i1, i2))
+		return _ex4;
+
+	// 4-dimensional delta tensor with numeric index dimension of four or
+	// less gets replaced by ordinary delta tensor
+	if (i1.get_dim().is_equal(i2.get_dim()) && is_a<numeric>(i1.get_dim())
+	 && ex_to<numeric>(i1.get_dim()).to_int() <= 4)
+		return indexed(tensdelta(), sy_symm(), i.op(1), i.op(2));
+
+	// Numeric evaluation
+	if (static_cast<const indexed &>(i).all_index_values_are(info_flags::integer)) {
+		int n1 = ex_to<numeric>(i1.get_value()).to_int(), n2 = ex_to<numeric>(i2.get_value()).to_int();
+		if (n1 == n2 && n1 < 4)
 			return _ex1;
 		else
 			return _ex0;
@@ -242,6 +327,45 @@ ex minkmetric::eval_indexed(const basic & i) const
 
 	// Perform the usual evaluations of a metric tensor
 	return inherited::eval_indexed(i);
+}
+
+/** Automatic symbolic evaluation of an indexed 4-dimensional Lorentz metric
+ *  tensor. */
+ex mink4metric::eval_indexed(const basic & i) const
+{
+	GINAC_ASSERT(is_a<indexed>(i));
+	GINAC_ASSERT(i.nops() == 3);
+	GINAC_ASSERT(is_a<mink4metric>(i.op(0)));
+	GINAC_ASSERT(is_a<varidx>(i.op(1)));
+	GINAC_ASSERT(is_a<varidx>(i.op(2)));
+
+	const varidx & i1 = ex_to<varidx>(i.op(1));
+	const varidx & i2 = ex_to<varidx>(i.op(2));
+
+	// 4-dimensional Lorentz metric tensor with numeric index dimension of
+	// four or less gets replaced by ordinary Lorentz metric tensor
+	if (i1.get_dim().is_equal(i2.get_dim()) && is_a<numeric>(i1.get_dim())
+	 && ex_to<numeric>(i1.get_dim()).to_int() <= 4)
+		return indexed(minkmetric(pos_sig), sy_symm(), i.op(1), i.op(2));
+
+	// A metric tensor with one covariant and one contravariant index gets
+	// replaced by a delta tensor
+	if (i1.is_covariant() != i2.is_covariant())
+		return indexed(tens4delta(), sy_symm(), i.op(1), i.op(2));
+
+	// Numeric evaluation
+	if (static_cast<const indexed &>(i).all_index_values_are(info_flags::nonnegint)) {
+		int n1 = ex_to<numeric>(i1.get_value()).to_int(), n2 = ex_to<numeric>(i2.get_value()).to_int();
+		if (n1 != n2 || n1 > 3)
+			return _ex0;
+		else if (n1 == 0)
+			return pos_sig ? _ex_1 : _ex1;
+		else
+			return pos_sig ? _ex1 : _ex_1;
+	}
+
+	// No further simplifications
+	return i.hold();
 }
 
 /** Automatic symbolic evaluation of an indexed metric tensor. */
@@ -358,6 +482,50 @@ again:
 	return false;
 }
 
+/** Contraction of an indexed 4-dimensional delta tensor with something else. */
+bool tens4delta::contract_with(exvector::iterator self, exvector::iterator other, exvector & v) const
+{
+	GINAC_ASSERT(is_a<indexed>(*self));
+	GINAC_ASSERT(is_a<indexed>(*other));
+	GINAC_ASSERT(self->nops() == 3);
+	GINAC_ASSERT(is_a<tens4delta>(self->op(0)));
+
+	// Only contract with 4-dimensional delta, metric and epsilon tensors
+	if (!(is_a<tens4delta>(other->op(0)) || is_a<mink4metric>(other->op(0)) || is_a<tensepsilon>(other->op(0))))
+		return false;
+
+	// Try to contract first index
+	const idx *self_idx = &ex_to<idx>(self->op(1));
+	const idx *free_idx = &ex_to<idx>(self->op(2));
+	bool first_index_tried = false;
+
+again:
+	if (self_idx->is_symbolic()) {
+		for (unsigned i=1; i<other->nops(); i++) {
+			const idx &other_idx = ex_to<idx>(other->op(i));
+			if (is_dummy_pair(*self_idx, other_idx)) {
+
+				// Contraction found, remove delta tensor and substitute
+				// index in second object
+				*self = _ex1;
+				*other = other->subs(other_idx == *free_idx);
+				return true;
+			}
+		}
+	}
+
+	if (!first_index_tried) {
+
+		// No contraction with first index found, try second index
+		self_idx = &ex_to<idx>(self->op(2));
+		free_idx = &ex_to<idx>(self->op(1));
+		first_index_tried = true;
+		goto again;
+	}
+
+	return false;
+}
+
 /** Contraction of an indexed metric tensor with something else. */
 bool tensmetric::contract_with(exvector::iterator self, exvector::iterator other, exvector & v) const
 {
@@ -402,6 +570,51 @@ again:
 
 	return false;
 }
+
+/** Contraction of an indexed 4-dimensional Lorentz metric tensor with something else. */
+bool mink4metric::contract_with(exvector::iterator self, exvector::iterator other, exvector & v) const
+{
+	GINAC_ASSERT(is_a<indexed>(*self));
+	GINAC_ASSERT(is_a<indexed>(*other));
+	GINAC_ASSERT(self->nops() == 3);
+	GINAC_ASSERT(is_a<mink4metric>(self->op(0)));
+
+	// Only contract with 4-dimensional metric and epsilon tensors
+	if (!(is_a<mink4metric>(other->op(0)) || is_a<tensepsilon>(other->op(0))))
+		return false;
+
+	// Try to contract first index
+	const idx *self_idx = &ex_to<idx>(self->op(1));
+	const idx *free_idx = &ex_to<idx>(self->op(2));
+	bool first_index_tried = false;
+
+again:
+	if (self_idx->is_symbolic()) {
+		for (unsigned i=1; i<other->nops(); i++) {
+			const idx &other_idx = ex_to<idx>(other->op(i));
+			if (is_dummy_pair(*self_idx, other_idx)) {
+
+				// Contraction found, remove metric tensor and substitute
+				// index in second object
+				*self = _ex1;
+				*other = other->subs(other_idx == *free_idx);
+				return true;
+			}
+		}
+	}
+
+	if (!first_index_tried) {
+
+		// No contraction with first index found, try second index
+		self_idx = &ex_to<idx>(self->op(2));
+		free_idx = &ex_to<idx>(self->op(1));
+		first_index_tried = true;
+		goto again;
+	}
+
+	return false;
+}
+
 
 /** Contraction of an indexed spinor metric with something else. */
 bool spinmetric::contract_with(exvector::iterator self, exvector::iterator other, exvector & v) const
@@ -493,11 +706,12 @@ bool tensepsilon::contract_with(exvector::iterator self, exvector::iterator othe
 	if (is_exactly_a<tensepsilon>(other->op(0)) && num+1 == other->nops()) {
 
 		// Contraction of two epsilon tensors is a determinant
-		ex dim = ex_to<idx>(self->op(1)).get_dim();
 		matrix M(num, num);
 		for (int i=0; i<num; i++) {
 			for (int j=0; j<num; j++) {
-				if (minkowski)
+				if (four_dim)
+					M(i, j) = indexed(mink4metric(pos_sig), sy_symm(), self->op(i+1), other->op(j+1));
+				else if (minkowski)
 					M(i, j) = lorentz_g(self->op(i+1), other->op(j+1), pos_sig);
 				else
 					M(i, j) = metric_tensor(self->op(i+1), other->op(j+1));
@@ -507,44 +721,6 @@ bool tensepsilon::contract_with(exvector::iterator self, exvector::iterator othe
 		*self = sign * M.determinant().simplify_indexed();
 		*other = _ex1;
 		return true;
-
-	} else if (other->return_type() == return_types::commutative) {
-
-#if 0
-		// This handles eps.i.j.k * p.j * p.k = 0
-		// Maybe something like this should go to simplify_indexed() because
-		// such relations are true for any antisymmetric tensors...
-		exvector c;
-
-		// Handle all indices of the epsilon tensor
-		for (int i=0; i<num; i++) {
-			ex idx = self->op(i+1);
-
-			// Look whether there's a contraction with this index
-			exvector::const_iterator ait, aitend = v.end();
-			for (ait = v.begin(); ait != aitend; ait++) {
-				if (ait == self)
-					continue;
-				if (is_a<indexed>(*ait) && ait->return_type() == return_types::commutative && ex_to<indexed>(*ait).has_dummy_index_for(idx) && ait->nops() == 2) {
-
-					// Yes, did we already have another contraction with the same base expression?
-					ex base = ait->op(0);
-					if (std::find_if(c.begin(), c.end(), bind2nd(ex_is_equal(), base)) == c.end()) {
-
-						// No, add the base expression to the list
-						c.push_back(base);
-
-					} else {
-
-						// Yes, the contraction is zero
-						*self = _ex0;
-						*other = _ex0;
-						return true;
-					}
-				}
-			}
-		}
-#endif
 	}
 
 	return false;
@@ -633,7 +809,7 @@ ex lorentz_eps(const ex & i1, const ex & i2, const ex & i3, const ex & i4, bool 
 	if (!ex_to<idx>(i1).get_dim().is_equal(_ex4))
 		throw(std::runtime_error("index dimension of epsilon tensor must match number of indices"));
 
-	return indexed(tensepsilon(true, pos_sig), sy_anti(), i1, i2, i3, i4);
+	return indexed(tensepsilon(true, pos_sig, false), sy_anti(), i1, i2, i3, i4);
 }
 
 ex eps0123(const ex & i1, const ex & i2, const ex & i3, const ex & i4, bool pos_sig)
@@ -645,7 +821,7 @@ ex eps0123(const ex & i1, const ex & i2, const ex & i3, const ex & i4, bool pos_
 	if (dim.is_equal(4))
 		return lorentz_eps(i1, i2, i3, i4, pos_sig);
 	else
-		return indexed(tensepsilon(true, pos_sig), sy_anti(), i1, i2, i3, i4);
+		return indexed(tensepsilon(true, pos_sig, true), sy_anti(), i1, i2, i3, i4);
 }
 
 } // namespace GiNaC

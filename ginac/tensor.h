@@ -113,6 +113,46 @@ public:
 };
 
 
+/** This class represents a 4-dimensional delta tensor embedded in a
+ *  higher-dimensional space. Its matrix representation is
+ *  diag(1,1,1,1,0,0...). */
+class tens4delta : public tensor
+{
+	GINAC_DECLARE_REGISTERED_CLASS(tens4delta, tensor)
+
+	// functions overriding virtual functions from base classes
+public:
+	void print(const print_context & c, unsigned level = 0) const;
+	ex eval_indexed(const basic & i) const;
+	bool contract_with(exvector::iterator self, exvector::iterator other, exvector & v) const;
+};
+
+
+/** This class represents a 4-dimensional Minkowski tensor embedded in
+ *  a higher-dimensional space (so it's not really a metric for that space;
+ *  that's why this is not a subclass of tensmetric). Its matrix representation
+ *  is diag(1,-1,-1,-1,0,0,...) or diag(-1,1,1,1,0,0,...). */
+class mink4metric : public tensor
+{
+	GINAC_DECLARE_REGISTERED_CLASS(mink4metric, tensor)
+
+	// other constructors
+public:
+	/** Construct Lorentz metric tensor with given signature. */
+	mink4metric(bool pos_sig);
+
+	// functions overriding virtual functions from base classes
+public:
+	void print(const print_context & c, unsigned level = 0) const;
+	ex eval_indexed(const basic & i) const;
+	bool contract_with(exvector::iterator self, exvector::iterator other, exvector & v) const;
+
+	// member variables
+private:
+	bool pos_sig; /**< If true, the metric is diag(-1,1,...). Otherwise it is diag(1,-1,...). */
+};
+
+
 /** This class represents the totally antisymmetric epsilon tensor. If
  *  indexed, all indices must be of the same type and their number must
  *  be equal to the dimension of the index space. */
@@ -122,7 +162,7 @@ class tensepsilon : public tensor
 
 	// other constructors
 public:
-	tensepsilon(bool minkowski, bool pos_sig);
+	tensepsilon(bool minkowski, bool pos_sig, bool four_dim);
 
 	// functions overriding virtual functions from base classes
 public:
@@ -133,7 +173,8 @@ public:
 	// member variables
 private:
 	bool minkowski; /**< If true, tensor is in Minkowski-type space. Otherwise it is in a Euclidean space. */
-	bool pos_sig;  /**< If true, the metric is assumed to be diag(-1,1,1...). Otherwise it is diag(1,-1,-1,...). This is only relevant if minkowski = true. */
+	bool pos_sig;   /**< If true, the metric is assumed to be diag(-1,1,1...). Otherwise it is diag(1,-1,-1,...). This is only relevant if minkowski = true. */
+	bool four_dim;  /**< If true, this is a four-dimensional object embedded in a higher-dimensional space */
 };
 
 
