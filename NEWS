@@ -14,6 +14,14 @@ This file records noteworthy changes.
   subs_option::subs_algebraic enables "smart" substitutions in products and
   powers.
 
+1.0.14 (1 March 2003)
+* Improved the C-source output: complex numbers are printed correctly (using
+  the STL complex<> template or cln::complex()), rational numbers use cl_RA()
+  in the CLN output, and small integers are printed in a more compact format
+  (e.g. "2.0" instead of "2.0000000e+00").
+* function_options::set_return_type() and function_options::do_not_evalf_params()
+  now actually work.
+
 1.0.13 (27 January 2003)
 * Contracting epsilon tensors with Euclidean indices now works.
 * Improved dummy index symmetrization in sums.
