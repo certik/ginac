@@ -5,8 +5,8 @@
  *    classical polylogarithm              Li(n,x)
  *    multiple polylogarithm               Li(lst(n_1,...,n_k),lst(x_1,...,x_k))
  *    nielsen's generalized polylogarithm  S(n,p,x)
- *    harmonic polylogarithm               H(lst(m_1,...,m_k),x)
- *    multiple zeta value                  mZeta(lst(m_1,...,m_k))
+ *    harmonic polylogarithm               H(n,x) or H(lst(n_1,...,n_k),x)
+ *    multiple zeta value                  zeta(n) or zeta(lst(n_1,...,n_k))
  *
  *  Some remarks:
  *    - All formulae used can be looked up in the following publications:
@@ -48,11 +48,16 @@
 #include <cln/cln.h>
 
 #include "inifcns.h"
+
+#include "constant.h"
 #include "lst.h"
 #include "numeric.h"
 #include "operators.h"
-#include "relational.h"
+#include "power.h"
 #include "pseries.h"
+#include "relational.h"
+#include "symbol.h"
+#include "utils.h"
 
 
 namespace GiNaC {
@@ -398,7 +403,7 @@ static cln::cl_N multipleLi_do_sum(const std::vector<int>& s, const std::vector<
 static ex Li_eval(const ex& x1, const ex& x2)
 {
 	if (x2.is_zero()) {
-		return 0;
+		return _ex0;
 	}
 	else {
 		if (x2.info(info_flags::numeric) && (!x2.info(info_flags::crational)))
@@ -462,7 +467,7 @@ static ex Li_deriv(const ex& x1, const ex& x2, unsigned deriv_param)
 {
 	GINAC_ASSERT(deriv_param < 2);
 	if (deriv_param == 0) {
-		return 0;
+		return _ex0;
 	}
 	if (x1 > 0) {
 		return Li(x1-1, x2) / x2;
@@ -868,7 +873,7 @@ static ex S_deriv(const ex& x1, const ex& x2, const ex& x3, unsigned deriv_param
 {
 	GINAC_ASSERT(deriv_param < 3);
 	if (deriv_param < 2) {
-		return 0;
+		return _ex0;
 	}
 	if (x1 > 0) {
 		return S(x1-1, x2, x3) / x3;
@@ -947,15 +952,11 @@ static ex H_evalf(const ex& x1, const ex& x2)
 			}
 		}
 		if (x1.nops() < 1) {
-			return 1;
+			return _ex1;
 		}
 		cln::cl_N x = ex_to<numeric>(x2).to_cl_N();
 		if (x == 1) {
-			lst x1rev;
-			for (int i=x1.nops()-1; i>=0; i--) {
-				x1rev.append(x1.op(i));
-			}
-			return mZeta(x1rev).evalf();
+			return zeta(x1).evalf();
 		}
 		const int j = x1.nops();
 		if (x2 > 1 || j < 2) {
@@ -986,7 +987,7 @@ static ex H_deriv(const ex& x1, const ex& x2, unsigned deriv_param)
 {
 	GINAC_ASSERT(deriv_param < 2);
 	if (deriv_param == 0) {
-		return 0;
+		return _ex0;
 	}
 	if (is_a<lst>(x1)) {
 		lst newparameter = ex_to<lst>(x1);
@@ -1017,7 +1018,7 @@ REGISTER_FUNCTION(H,
 
 //////////////////////////////////////////////////////////////////////
 //
-// Multiple zeta values  mZeta
+// Multiple zeta values  zeta
 //
 // helper functions
 //
@@ -1169,7 +1170,7 @@ static cln::cl_N crandall_Z(const std::vector<int>& s)
 
 
 // [Cra] (2.4)
-static cln::cl_N mZeta_do_sum_Crandall(const std::vector<int>& s)
+static cln::cl_N zeta_do_sum_Crandall(const std::vector<int>& s)
 {
 	std::vector<int> r = s;
 	const int j = r.size();
@@ -1248,7 +1249,7 @@ static cln::cl_N mZeta_do_sum_Crandall(const std::vector<int>& s)
 }
 
 
-static cln::cl_N mZeta_do_sum_simple(const std::vector<int>& r)
+static cln::cl_N zeta_do_sum_simple(const std::vector<int>& r)
 {
 	const int j = r.size();
 
@@ -1273,7 +1274,129 @@ static cln::cl_N mZeta_do_sum_simple(const std::vector<int>& r)
 
 //////////////////////////////////////////////////////////////////////
 //
+// Multiple zeta values  zeta
+//
+// GiNaC function
+//
+//////////////////////////////////////////////////////////////////////
+
+
+static ex zeta1_evalf(const ex& x)
+{
+	if (is_exactly_a<lst>(x) && (x.nops()>1)) {
+
+		// multiple zeta value
+		const int count = x.nops();
+		const lst& xlst = ex_to<lst>(x);
+		std::vector<int> r(count);
+
+		// check parameters and convert them
+		lst::const_iterator it1 = xlst.begin();
+		std::vector<int>::iterator it2 = r.begin();
+		do {
+			if (!(*it1).info(info_flags::posint)) {
+				return zeta(x).hold();
+			}
+			*it2 = ex_to<numeric>(*it1).to_int();
+			it1++;
+			it2++;
+		} while (it2 != r.end());
+
+		// check for divergence
+		if (r[0] == 1) {
+			return zeta(x).hold();
+		}
+
+		// decide on summation algorithm
+		// this is still a bit clumsy
+		int limit = (Digits>17) ? 10 : 6;
+		if ((r[0] < limit) || ((count > 3) && (r[1] < limit/2))) {
+			return numeric(zeta_do_sum_Crandall(r));
+		} else {
+			return numeric(zeta_do_sum_simple(r));
+		}
+	}
+		
+	// single zeta value
+	if (is_exactly_a<numeric>(x) && (x != 1)) {
+		try {
+			return zeta(ex_to<numeric>(x));
+		} catch (const dunno &e) { }
+	}
+
+	return zeta(x).hold();
+}
+
+
+static ex zeta1_eval(const ex& x)
+{
+	if (is_exactly_a<lst>(x)) {
+		if (x.nops() == 1) {
+			return zeta(x.op(0));
+		}
+		return zeta(x).hold();
+	}
+
+	if (x.info(info_flags::numeric)) {
+		const numeric& y = ex_to<numeric>(x);
+		// trap integer arguments:
+		if (y.is_integer()) {
+			if (y.is_zero()) {
+				return _ex_1_2;
+			}
+			if (y.is_equal(_num1)) {
+				return zeta(x).hold();
+			}
+			if (y.info(info_flags::posint)) {
+				if (y.info(info_flags::odd)) {
+					return zeta(x).hold();
+				} else {
+					return abs(bernoulli(y)) * pow(Pi, y) * pow(_num2, y-_num1) / factorial(y);
+				}
+			} else {
+				if (y.info(info_flags::odd)) {
+					return -bernoulli(_num1-y) / (_num1-y);
+				} else {
+					return _ex0;
+				}
+			}
+		}
+		// zeta(float)
+		if (y.info(info_flags::numeric) && !y.info(info_flags::crational))
+			return zeta1_evalf(x);
+	}
+	return zeta(x).hold();
+}
+
+
+static ex zeta1_deriv(const ex& x, unsigned deriv_param)
+{
+	GINAC_ASSERT(deriv_param==0);
+
+	if (is_exactly_a<lst>(x)) {
+		return _ex0;
+	} else {
+		return zeta(_ex1, x);
+	}
+}
+
+
+unsigned zeta1_SERIAL::serial =
+			function::register_new(function_options("zeta").
+						eval_func(zeta1_eval).
+						evalf_func(zeta1_evalf).
+						do_not_evalf_params().
+						derivative_func(zeta1_deriv).
+						latex_name("\\zeta").
+						overloaded(2));
+
+
+//////////////////////////////////////////////////////////////////////
+//
 // Multiple zeta values  mZeta
+//
+// The use of mZeta is deprecated! This function will be removed
+// from GiNaC source soon. Use zeta instead!!
 //
 // GiNaC function
 //
@@ -1315,23 +1438,15 @@ static ex mZeta_evalf(const ex& x1)
 		// this is still a bit clumsy
 		int limit = (Digits>17) ? 10 : 6;
 		if (r[0]<limit || (j>3 && r[1]<limit/2)) {
-			return numeric(mZeta_do_sum_Crandall(r));
+			return numeric(zeta_do_sum_Crandall(r));
 		} else {
-			return numeric(mZeta_do_sum_simple(r));
+			return numeric(zeta_do_sum_simple(r));
 		}
 	} else if (x1.info(info_flags::posint) && (x1 != 1)) {
 		return numeric(cln::zeta(ex_to<numeric>(x1).to_int()));
 	}
 
 	return mZeta(x1).hold();
-}
-
-
-static ex mZeta_series(const ex& x1, const relational& rel, int order, unsigned options)
-{
-	epvector seq;
-	seq.push_back(expair(mZeta(x1), 0));
-	return pseries(rel,seq);
 }
 
 
@@ -1344,7 +1459,7 @@ static ex mZeta_deriv(const ex& x, unsigned deriv_param)
 REGISTER_FUNCTION(mZeta, 
 		eval_func(mZeta_eval).
 		evalf_func(mZeta_evalf).
-		do_not_evalf_params().series_func(mZeta_series).
+		do_not_evalf_params().
 		derivative_func(mZeta_deriv));
 
 
