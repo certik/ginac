@@ -235,7 +235,7 @@ unsigned symbol::calchash(void) const
 
 void symbol::assign(const ex & value)
 {
-	asexinfop->is_assigned = 1;
+	asexinfop->is_assigned = true;
 	asexinfop->assigned_expression = value;
 	clearflag(status_flags::evaluated | status_flags::expanded);
 }
@@ -243,7 +243,7 @@ void symbol::assign(const ex & value)
 void symbol::unassign(void)
 {
 	if (asexinfop->is_assigned) {
-		asexinfop->is_assigned = 0;
+		asexinfop->is_assigned = false;
 		asexinfop->assigned_expression = _ex0;
 	}
 	setflag(status_flags::evaluated | status_flags::expanded);
@@ -294,7 +294,7 @@ unsigned symbol::next_serial = 0;
 //////////
 
 /** Default ctor.  Defaults to unassigned. */
-symbol::assigned_ex_info::assigned_ex_info(void) : is_assigned(0), refcount(1)
+symbol::assigned_ex_info::assigned_ex_info(void) : is_assigned(false), refcount(1)
 {
 }
 

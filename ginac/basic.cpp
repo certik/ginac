@@ -797,7 +797,7 @@ const basic & basic::hold(void) const
  *  is not the case. */
 void basic::ensure_if_modifiable(void) const
 {
-	if (this->refcount>1)
+	if (refcount > 1)
 		throw(std::runtime_error("cannot modify multiply referenced object"));
 	clearflag(status_flags::hash_calculated);
 }
