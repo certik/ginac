@@ -115,6 +115,7 @@ AC_CHECK_HEADER(sstream, , GINAC_ERROR([The standard <sstream> header file could
 AC_CHECK_HEADER(typeinfo, , GINAC_ERROR([The standard <typeinfo> header file could not be found.]))
 AC_CHECK_HEADER(stdexcept, , GINAC_ERROR([The standard <stdexcept> header file could not be found.]))
 AC_CHECK_HEADER(algorithm, , GINAC_ERROR([The standard <algorithm> header file could not be found.]))
+AC_CHECK_HEADER(limits, , GINAC_ERROR([The standard <limits> header file could not be found.]))
 
 dnl We need to have Bruno Haible's CLN installed.
 dnl (CLN versions >= 1.1.0 must have installed cln.m4 at a visible place,
