@@ -41,7 +41,10 @@ GINAC_IMPLEMENT_REGISTERED_CLASS(constant, basic)
 
 // public
 
-constant::constant() : basic(TINFO_constant), ef(0), number(0), serial(next_serial++) {}
+constant::constant() : basic(TINFO_constant), ef(0), number(0), serial(next_serial++)
+{
+	setflag(status_flags::evaluated | status_flags::expanded);
+}
 
 // protected
 

@@ -35,9 +35,9 @@ GINAC_IMPLEMENT_REGISTERED_CLASS(wildcard, basic)
 // default ctor, dtor, copy ctor, assignment operator and helpers
 //////////
 
-wildcard::wildcard() : label(0)
+wildcard::wildcard() : inherited(TINFO_wildcard), label(0)
 {
-	tinfo_key = TINFO_wildcard;
+	setflag(status_flags::evaluated | status_flags::expanded);
 }
 
 void wildcard::copy(const wildcard & other)
@@ -52,9 +52,9 @@ DEFAULT_DESTROY(wildcard)
 // other constructors
 //////////
 
-wildcard::wildcard(unsigned l) : label(l)
+wildcard::wildcard(unsigned l) : inherited(TINFO_wildcard), label(l)
 {
-	tinfo_key = TINFO_wildcard;
+	setflag(status_flags::evaluated | status_flags::expanded);
 }
 
 //////////

@@ -50,7 +50,14 @@ GINAC_IMPLEMENT_REGISTERED_CLASS(tensepsilon, tensor)
 // default ctor, dtor, copy ctor, assignment operator and helpers
 //////////
 
-DEFAULT_CTORS(tensor)
+tensor::tensor() : inherited(TINFO_tensor)
+{
+	setflag(status_flags::evaluated | status_flags::expanded);
+}
+
+DEFAULT_COPY(tensor)
+DEFAULT_DESTROY(tensor)
+
 DEFAULT_CTORS(tensdelta)
 DEFAULT_CTORS(tensmetric)
 DEFAULT_COPY(spinmetric)
