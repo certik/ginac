@@ -226,6 +226,23 @@ static unsigned exam_subs(void)
 	return result;
 }
 
+/* Joris van der Hoeven (he of TeXmacs fame) is a funny guy.  He has his own
+ * ideas what a symbolic system should do.  Let's make sure we won't disappoint
+ * him some day.  Incidentally, this seems to always have worked. */
+static unsigned exam_joris(void)
+{
+	unsigned result = 0;
+	symbol x("x");
+
+	ex e = expand(pow(x, x-1) * x);
+	if (e != pow(x, x)) {
+		clog << "x^(x-1)*x did not expand to x^x.  Please call Joris!" << endl;
+		++result;
+	}
+
+	return result;
+}
+
 unsigned exam_misc(void)
 {
 	unsigned result = 0;
@@ -239,6 +256,7 @@ unsigned exam_misc(void)
 	result += exam_sqrfree(); cout << '.' << flush;
 	result += exam_operator_semantics(); cout << '.' << flush;
 	result += exam_subs(); cout << '.' << flush;
+	result += exam_joris(); cout << '.' << flush;
 	
 	if (!result) {
 		cout << " passed " << endl;
