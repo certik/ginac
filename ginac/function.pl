@@ -1004,12 +1004,12 @@ std::vector<function_options> & function::registered_functions(void)
 
 bool function::lookup_remember_table(ex & result) const
 {
-	return remember_table::remember_tables()[serial].lookup_entry(*this,result);
+	return remember_table::remember_tables()[this->serial].lookup_entry(*this,result);
 }
 
 void function::store_remember_table(ex const & result) const
 {
-	remember_table::remember_tables()[serial].add_entry(*this,result);
+	remember_table::remember_tables()[this->serial].add_entry(*this,result);
 }
 
 // public
