@@ -209,7 +209,10 @@ bool diracgamma::contract_with(exvector::iterator self, exvector::iterator other
 	GINAC_ASSERT(is_a<indexed>(*other));
 	GINAC_ASSERT(is_a<diracgamma>(self->op(0)));
 	unsigned char rl = ex_to<clifford>(*self).get_representation_label();
+
 	ex dim = ex_to<idx>(self->op(1)).get_dim();
+	if (other->nops() > 1)
+		dim = minimal_dim(dim, ex_to<idx>(self->op(1)).get_dim());
 
 	if (is_a<clifford>(*other)) {
 
@@ -440,7 +443,7 @@ ex clifford::eval_ncmul(const exvector & v) const
 			} else if (!a_is_diracgamma && !b_is_diracgamma && ag.is_equal(bg)) {
 
 				// a\ a\ -> a^2
-				varidx ix((new symbol)->setflag(status_flags::dynallocated), ex_to<idx>(a.op(1)).get_dim());
+				varidx ix((new symbol)->setflag(status_flags::dynallocated), ex_to<idx>(a.op(1)).minimal_dim(ex_to<idx>(b.op(1))));
 				a = indexed(ag, ix) * indexed(ag, ix.toggle_variance());
 				b = dirac_ONE(representation_label);
 				something_changed = true;
