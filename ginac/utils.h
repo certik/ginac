@@ -68,17 +68,14 @@ inline int compare_pointers(const void * a, const void * b)
 /** Rotate bits of unsigned value by one bit to the left. */
 inline unsigned rotate_left(unsigned n)
 {
-	if (n & 0x80000000U)
-		n = n << 1 | 0x00000001U;
-	else
-		n = n << 1;
-	return n;
+	return (n & 0x80000000U) ? (n << 1 | 0x00000001U) : (n << 1);
 }
 
 /** Truncated multiplication with golden ratio, for computing hash values. */
 inline unsigned golden_ratio_hash(unsigned n)
 {
-	// This function requires arithmetic with at least 64 significant bits
+	// This function works much better when fast arithmetic with at
+	// least 64 significant bits is available.
 #if SIZEOF_LONG >= 8
 	// So 'long' has 64 bits.  Excellent!  We prefer it because it might be
 	// more efficient than 'long long'.
@@ -91,8 +88,8 @@ inline unsigned golden_ratio_hash(unsigned n)
 	unsigned long long l = n * 0x4f1bbcddULL;
 	return (unsigned)l;
 #else
-	// Do the multiplication manually by splitting n up into the lower and
-	// upper two bytes.
+	// Without a type with 64 significant bits do the multiplication manually
+	// by splitting n up into the lower and upper two bytes.
 	const unsigned n0 = (n & 0x0000ffffU);
 	const unsigned n1 = (n & 0xffff0000U) >> 16;
 	return (n0 * 0x0000bcddU) + ((n1 * 0x0000bcddU + n0 * 0x00004f1bU) << 16);
