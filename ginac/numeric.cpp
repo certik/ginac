@@ -873,7 +873,7 @@ bool numeric::is_zero(void) const
 /** True if object is not complex and greater than zero. */
 bool numeric::is_positive(void) const
 {
-	if (this->is_real())
+	if (cln::instanceof(value, cln::cl_R_ring))  // real?
 		return cln::plusp(cln::the<cln::cl_R>(value));
 	return false;
 }
@@ -882,7 +882,7 @@ bool numeric::is_positive(void) const
 /** True if object is not complex and less than zero. */
 bool numeric::is_negative(void) const
 {
-	if (this->is_real())
+	if (cln::instanceof(value, cln::cl_R_ring))  // real?
 		return cln::minusp(cln::the<cln::cl_R>(value));
 	return false;
 }
@@ -898,28 +898,28 @@ bool numeric::is_integer(void) const
 /** True if object is an exact integer greater than zero. */
 bool numeric::is_pos_integer(void) const
 {
-	return (this->is_integer() && cln::plusp(cln::the<cln::cl_I>(value)));
+	return (cln::instanceof(value, cln::cl_I_ring) && cln::plusp(cln::the<cln::cl_I>(value)));
 }
 
 
 /** True if object is an exact integer greater or equal zero. */
 bool numeric::is_nonneg_integer(void) const
 {
-	return (this->is_integer() && !cln::minusp(cln::the<cln::cl_I>(value)));
+	return (cln::instanceof(value, cln::cl_I_ring) && !cln::minusp(cln::the<cln::cl_I>(value)));
 }
 
 
 /** True if object is an exact even integer. */
 bool numeric::is_even(void) const
 {
-	return (this->is_integer() && cln::evenp(cln::the<cln::cl_I>(value)));
+	return (cln::instanceof(value, cln::cl_I_ring) && cln::evenp(cln::the<cln::cl_I>(value)));
 }
 
 
 /** True if object is an exact odd integer. */
 bool numeric::is_odd(void) const
 {
-	return (this->is_integer() && cln::oddp(cln::the<cln::cl_I>(value)));
+	return (cln::instanceof(value, cln::cl_I_ring) && cln::oddp(cln::the<cln::cl_I>(value)));
 }
 
 
@@ -928,7 +928,9 @@ bool numeric::is_odd(void) const
  *  @return  true if object is exact integer and prime. */
 bool numeric::is_prime(void) const
 {
-	return (this->is_integer() && cln::isprobprime(cln::the<cln::cl_I>(value)));
+	return (cln::instanceof(value, cln::cl_I_ring)  // integer?
+	     && cln::plusp(cln::the<cln::cl_I>(value))  // positive?
+	     && cln::isprobprime(cln::the<cln::cl_I>(value)));
 }
 
 
@@ -1091,8 +1093,8 @@ const numeric numeric::imag(void) const
  *  cases. */
 const numeric numeric::numer(void) const
 {
-	if (this->is_integer())
-		return numeric(*this);
+	if (cln::instanceof(value, cln::cl_I_ring))
+		return numeric(*this);  // integer case
 	
 	else if (cln::instanceof(value, cln::cl_RA_ring))
 		return numeric(cln::numerator(cln::the<cln::cl_RA>(value)));
@@ -1122,8 +1124,8 @@ const numeric numeric::numer(void) const
  *  (i.e denom(4/3+5/6*I) == 6), one in all other cases. */
 const numeric numeric::denom(void) const
 {
-	if (this->is_integer())
-		return _num1;
+	if (cln::instanceof(value, cln::cl_I_ring))
+		return _num1;  // integer case
 	
 	if (cln::instanceof(value, cln::cl_RA_ring))
 		return numeric(cln::denominator(cln::the<cln::cl_RA>(value)));
@@ -1153,7 +1155,7 @@ const numeric numeric::denom(void) const
  *  in two's complement if it is an integer, 0 otherwise. */    
 int numeric::int_length(void) const
 {
-	if (this->is_integer())
+	if (cln::instanceof(value, cln::cl_I_ring))
 		return cln::integer_length(cln::the<cln::cl_I>(value));
 	else
 		return 0;
@@ -1713,9 +1715,12 @@ const numeric smod(const numeric &a, const numeric &b)
  *  In general, mod(a,b) has the sign of b or is zero, and irem(a,b) has the
  *  sign of a or is zero.
  *
- *  @return remainder of a/b if both are integer, 0 otherwise. */
+ *  @return remainder of a/b if both are integer, 0 otherwise.
+ *  @exception overflow_error (division by zero) if b is zero. */
 const numeric irem(const numeric &a, const numeric &b)
 {
+	if (b.is_zero())
+		throw std::overflow_error("numeric::irem(): division by zero");
 	if (a.is_integer() && b.is_integer())
 		return cln::rem(cln::the<cln::cl_I>(a.to_cl_N()),
 		                cln::the<cln::cl_I>(b.to_cl_N()));
@@ -1727,12 +1732,15 @@ const numeric irem(const numeric &a, const numeric &b)
 /** Numeric integer remainder.
  *  Equivalent to Maple's irem(a,b,'q') it obeyes the relation
  *  irem(a,b,q) == a - q*b.  In general, mod(a,b) has the sign of b or is zero,
- *  and irem(a,b) has the sign of a or is zero.  
+ *  and irem(a,b) has the sign of a or is zero.
  *
  *  @return remainder of a/b and quotient stored in q if both are integer,
- *  0 otherwise. */
+ *  0 otherwise.
+ *  @exception overflow_error (division by zero) if b is zero. */
 const numeric irem(const numeric &a, const numeric &b, numeric &q)
 {
+	if (b.is_zero())
+		throw std::overflow_error("numeric::irem(): division by zero");
 	if (a.is_integer() && b.is_integer()) {
 		const cln::cl_I_div_t rem_quo = cln::truncate2(cln::the<cln::cl_I>(a.to_cl_N()),
 		                                               cln::the<cln::cl_I>(b.to_cl_N()));
@@ -1748,9 +1756,12 @@ const numeric irem(const numeric &a, const numeric &b, numeric &q)
 /** Numeric integer quotient.
  *  Equivalent to Maple's iquo as far as sign conventions are concerned.
  *  
- *  @return truncated quotient of a/b if both are integer, 0 otherwise. */
+ *  @return truncated quotient of a/b if both are integer, 0 otherwise.
+ *  @exception overflow_error (division by zero) if b is zero. */
 const numeric iquo(const numeric &a, const numeric &b)
 {
+	if (b.is_zero())
+		throw std::overflow_error("numeric::iquo(): division by zero");
 	if (a.is_integer() && b.is_integer())
 		return cln::truncate1(cln::the<cln::cl_I>(a.to_cl_N()),
 	                          cln::the<cln::cl_I>(b.to_cl_N()));
@@ -1764,9 +1775,12 @@ const numeric iquo(const numeric &a, const numeric &b)
  *  r == a - iquo(a,b,r)*b.
  *
  *  @return truncated quotient of a/b and remainder stored in r if both are
- *  integer, 0 otherwise. */
+ *  integer, 0 otherwise.
+ *  @exception overflow_error (division by zero) if b is zero. */
 const numeric iquo(const numeric &a, const numeric &b, numeric &r)
 {
+	if (b.is_zero())
+		throw std::overflow_error("numeric::iquo(): division by zero");
 	if (a.is_integer() && b.is_integer()) {
 		const cln::cl_I_div_t rem_quo = cln::truncate2(cln::the<cln::cl_I>(a.to_cl_N()),
 		                                               cln::the<cln::cl_I>(b.to_cl_N()));
