@@ -1706,6 +1706,9 @@ int main()
     symbol A("A");
     cout << indexed(A, i, j) << endl;
      // -> A.i.j
+    cout << index_dimensions << indexed(A, i, j) << endl;
+     // -> A.i[3].j[3]
+    cout << dflt; // reset cout to default output format (dimensions hidden)
     ...
 @end example
 
@@ -1717,6 +1720,10 @@ symbol @code{i_sym} (which prints as @samp{i}) and the value of the index
 construct an expression containing one indexed object, @samp{A.i.j}. It has
 the symbol @code{A} as its base expression and the two indices @code{i} and
 @code{j}.
+
+The dimensions of indices are normally not visible in the output, but one
+can request them to be printed with the @code{index_dimensions} manipulator,
+as shown above.
 
 Note the difference between the indices @code{i} and @code{j} which are of
 class @code{idx}, and the index values which are the symbols @code{i_sym}
@@ -4398,70 +4405,99 @@ around that method.
 @cindex printing
 @cindex output of expressions
 
-The easiest way to print an expression is to write it to a stream:
+Expressions can simply be written to any stream:
 
 @example
 @{
     symbol x("x");
-    ex e = 4.5+pow(x,2)*3/2;
-    cout << e << endl;    // prints '(4.5)+3/2*x^2'
+    ex e = 4.5*I+pow(x,2)*3/2;
+    cout << e << endl;    // prints '4.5*I+3/2*x^2'
     // ...
 @end example
 
-The output format is identical to the @command{ginsh} input syntax and
+The default output format is identical to the @command{ginsh} input syntax and
 to that used by most computer algebra systems, but not directly pastable
 into a GiNaC C++ program (note that in the above example, @code{pow(x,2)}
 is printed as @samp{x^2}).
 
 It is possible to print expressions in a number of different formats with
-the method
+a set of stream manipulators;
 
 @example
-void ex::print(const print_context & c, unsigned level = 0);
+std::ostream & dflt(std::ostream & os);
+std::ostream & latex(std::ostream & os);
+std::ostream & tree(std::ostream & os);
+std::ostream & csrc(std::ostream & os);
+std::ostream & csrc_float(std::ostream & os);
+std::ostream & csrc_double(std::ostream & os);
+std::ostream & csrc_cl_N(std::ostream & os);
+std::ostream & index_dimensions(std::ostream & os);
+std::ostream & no_index_dimensions(std::ostream & os);
 @end example
 
-@cindex @code{print_context} (class)
-The type of @code{print_context} object passed in determines the format
-of the output. The possible types are defined in @file{ginac/print.h}.
-All constructors of @code{print_context} and derived classes take an
-@code{ostream &} as their first argument.
+The @code{tree}, @code{latex} and @code{csrc} formats are also available in
+@command{ginsh} via the @code{print()}, @code{print_latex()} and
+@code{print_csrc()} functions, respectively.
 
-To print an expression in a way that can be directly used in a C or C++
-program, you pass a @code{print_csrc} object like this:
+@cindex @code{dflt}
+All manipulators affect the stream state permanently. To reset the output
+format to the default, use the @code{dflt} manipulator:
 
 @example
     // ...
-    cout << "float f = ";
-    e.print(print_csrc_float(cout));
-    cout << ";\n";
-
-    cout << "double d = ";
-    e.print(print_csrc_double(cout));
-    cout << ";\n";
-
-    cout << "cl_N n = ";
-    e.print(print_csrc_cl_N(cout));
-    cout << ";\n";
+    cout << latex;            // all output to cout will be in LaTeX format from now on
+    cout << e << endl;        // prints '4.5 i+\frac@{3@}@{2@} x^@{2@}'
+    cout << sin(x/2) << endl; // prints '\sin(\frac@{1@}@{2@} x)'
+    cout << dflt;             // revert to default output format
+    cout << e << endl;        // prints '4.5*I+3/2*x^2'
     // ...
 @end example
 
-The three possible types mostly affect the way in which floating point
-numbers are written.
-
-The above example will produce (note the @code{x^2} being converted to @code{x*x}):
-
-@example
-float f = (3.0/2.0)*(x*x)+4.500000e+00;
-double d = (3.0/2.0)*(x*x)+4.5000000000000000e+00;
-cl_N n = cln::cl_RA("3/2")*(x*x)+cln::cl_F("4.5_17");
-@end example
-
-The @code{print_context} type @code{print_tree} provides a dump of the
-internal structure of an expression for debugging purposes:
+If you don't want to affect the format of the stream you're working with,
+you can output to a temporary @code{ostringstream} like this:
 
 @example
     // ...
-    e.print(print_tree(cout));
+    ostringstream s;
+    s << latex << e;         // format of cout remains unchanged
+    cout << s.str() << endl; // prints '4.5 i+\frac@{3@}@{2@} x^@{2@}'
+    // ...
+@end example
+
+@cindex @code{csrc}
+@cindex @code{csrc_float}
+@cindex @code{csrc_double}
+@cindex @code{csrc_cl_N}
+The @code{csrc} (an alias for @code{csrc_double}), @code{csrc_float},
+@code{csrc_double} and @code{csrc_cl_N} manipulators set the output to a
+format that can be directly used in a C or C++ program. The three possible
+formats select the data types used for numbers (@code{csrc_cl_N} uses the
+classes provided by the CLN library):
+
+@example
+    // ...
+    cout << "f = " << csrc_float << e << ";\n";
+    cout << "d = " << csrc_double << e << ";\n";
+    cout << "n = " << csrc_cl_N << e << ";\n";
+    // ...
+@end example
+
+The above example will produce (note the @code{x^2} being converted to
+@code{x*x}):
+
+@example
+f = (3.0/2.0)*(x*x)+std::complex<float>(0.0,4.5000000e+00);
+d = (3.0/2.0)*(x*x)+std::complex<double>(0.0,4.5000000000000000e+00);
+n = cln::cl_RA("3/2")*(x*x)+cln::complex(cln::cl_I("0"),cln::cl_F("4.5_17"));
+@end example
+
+@cindex @code{tree}
+The @code{tree} manipulator allows dumping the internal structure of an
+expression for debugging purposes:
+
+@example
+    // ...
+    cout << tree << e;
 @}
 @end example
 
@@ -4469,40 +4505,62 @@ produces
 
 @example
 add, hash=0x0, flags=0x3, nops=2
-    power, hash=0x9, flags=0x3, nops=2
-        x (symbol), serial=3, hash=0x44a113a6, flags=0xf
-        2 (numeric), hash=0x80000042, flags=0xf
-    3/2 (numeric), hash=0x80000061, flags=0xf
+    power, hash=0x0, flags=0x3, nops=2
+        x (symbol), serial=0, hash=0xc8d5bcdd, flags=0xf
+        2 (numeric), hash=0x6526b0fa, flags=0xf
+    3/2 (numeric), hash=0xf9828fbd, flags=0xf
     -----
     overall_coeff
-    4.5L0 (numeric), hash=0x8000004b, flags=0xf
+    4.5L0i (numeric), hash=0xa40a97e0, flags=0xf
     =====
 @end example
 
-This kind of output is also available in @command{ginsh} as the @code{print()}
-function.
-
-Another useful output format is for LaTeX parsing in mathematical mode.
-It is rather similar to the default @code{print_context} but provides
-some braces needed by LaTeX for delimiting boxes and also converts some
-common objects to conventional LaTeX names. It is possible to give symbols
-a special name for LaTeX output by supplying it as a second argument to
-the @code{symbol} constructor.
+@cindex @code{latex}
+The @code{latex} output format is for LaTeX parsing in mathematical mode.
+It is rather similar to the default format but provides some braces needed
+by LaTeX for delimiting boxes and also converts some common objects to
+conventional LaTeX names. It is possible to give symbols a special name for
+LaTeX output by supplying it as a second argument to the @code{symbol}
+constructor.
 
 For example, the code snippet
 
 @example
-    // ...
-    symbol x("x");
-    ex foo = lgamma(x).series(x==0,3);
-    foo.print(print_latex(std::cout));
+@{
+    symbol x("x", "\\circ");
+    ex e = lgamma(x).series(x==0,3);
+    cout << latex << e << endl;
+@}
 @end example
 
-will print out:
+will print
 
 @example
-    @{(-\ln(x))@}+@{(-\gamma_E)@} x+@{(1/12 \pi^2)@} x^@{2@}+\mathcal@{O@}(x^3)
+    @{(-\ln(\circ))@}+@{(-\gamma_E)@} \circ+@{(\frac@{1@}@{12@} \pi^@{2@})@} \circ^@{2@}+\mathcal@{O@}(\circ^@{3@})
 @end example
+
+@cindex @code{index_dimensions}
+@cindex @code{no_index_dimensions}
+Index dimensions are normally hidden in the output. To make them visible, use
+the @code{index_dimensions} manipulator. The dimensions will be written in
+square brackets behind each index value in the default and LaTeX output
+formats:
+
+@example
+@{
+    symbol x("x"), y("y");
+    varidx mu(symbol("mu"), 4), nu(symbol("nu"), 4);
+    ex e = indexed(x, mu) * indexed(y, nu);
+
+    cout << e << endl;
+     // prints 'x~mu*y~nu'
+    cout << index_dimensions << e << endl;
+     // prints 'x~mu[4]*y~nu[4]'
+    cout << no_index_dimensions << e << endl;
+     // prints 'x~mu*y~nu'
+@}
+@end example
+
 
 @cindex Tree traversal
 If you need any fancy special output format, e.g. for interfacing GiNaC
@@ -5234,12 +5292,12 @@ information needed to reconstruct an object of this class inside an
 @code{archive_node}.
 
 @item
-@code{mystring(const archive_node &n, const lst &sym_lst)}, the unarchiving
+@code{mystring(const archive_node &n, lst &sym_lst)}, the unarchiving
 constructor. This constructs an instance of the class from the information
 found in an @code{archive_node}.
 
 @item
-@code{ex unarchive(const archive_node &n, const lst &sym_lst)}, the static
+@code{ex unarchive(const archive_node &n, lst &sym_lst)}, the static
 unarchiving function. It constructs a new instance by calling the unarchiving
 constructor.
 
@@ -5345,7 +5403,7 @@ The unarchiving constructor is basically the inverse of the archiving
 function:
 
 @example
-mystring::mystring(const archive_node &n, const lst &sym_lst) : inherited(n, sym_lst)
+mystring::mystring(const archive_node &n, lst &sym_lst) : inherited(n, sym_lst)
 @{
     n.find_string("string", str);
 @}
@@ -5359,7 +5417,7 @@ by the unarchiving constructor of the @code{basic} class.
 Finally, the unarchiving function:
 
 @example
-ex mystring::unarchive(const archive_node &n, const lst &sym_lst)
+ex mystring::unarchive(const archive_node &n, lst &sym_lst)
 @{
     return (new mystring(n, sym_lst))->setflag(status_flags::dynallocated);
 @}
