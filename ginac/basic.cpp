@@ -712,7 +712,7 @@ ex basic::subs(const ex & e, unsigned options) const
 		return subs(lst(e.lhs()), lst(e.rhs()), options);
 	}
 	if (!e.info(info_flags::list)) {
-		throw(std::invalid_argument("basic::subs(ex): argument must be a list"));
+		throw(std::invalid_argument("basic::subs(ex): argument must be a relation_equal or a list"));
 	}
 
 	// Split list into two
