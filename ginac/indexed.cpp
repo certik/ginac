@@ -876,14 +876,6 @@ public:
 	{
 		int comp = si1.symmterm.compare(si2.symmterm);
 		if (comp < 0) return true;
-#if 0
-		if (comp > 0) return false;
-		comp = si1.orig.compare(si2.orig);
-		if (comp < 0) return true;
-		if (comp > 0) return false;
-		comp = si1.coeff.compare(si2.coeff);
-		if (comp < 0) return true;
-#endif
 		return false;
 	}
 };
@@ -894,14 +886,6 @@ public:
 	{
 		int comp = si1.orig.compare(si2.orig);
 		if (comp < 0) return true;
-#if 0
-		if (comp > 0) return false;
-		comp = si1.symmterm.compare(si2.symmterm);
-		if (comp < 0) return true;
-		if (comp > 0) return false;
-		comp = si1.coeff.compare(si2.coeff);
-		if (comp < 0) return true;
-#endif
 		return false;
 	}
 };
