@@ -1,6 +1,13 @@
 This file records noteworthy changes.
 
-1.1.5 (<date>)
+1.1.5 (4 November 2003)
+* Harmonic polylogarithms now numerically evaluate for arbitrary arguments
+  (parameter must still be positive integers).
+* The zeta function now can also be given a lst as a parameter in which case
+  it becomes a multiple zeta value. The use of mZeta is deprecated.
+* The order of parameters for the multiple polylogarithm has been corrected.
+* Documentation for the nested sums functions zeta, harmonic polylog, multiple
+  polylog, etc. has been added.
 
 1.1.4 (17 October 2003)
 * Lists and matrices can now be initialized from comma-separated lists of
