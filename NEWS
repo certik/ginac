@@ -4,6 +4,8 @@ This file records noteworthy changes.
 * Added a function option "dummy()" which means "no options". This simplifies
   the implementation of symbolic functions which are not to be further
   evaluated.
+* Removed a bug in the numerical evaluation of Li, that caused the system
+  to hang for certain parameter combinations.
 
 1.1.5 (5 November 2003)
 * Harmonic polylogarithms now numerically evaluate for arbitrary arguments
