@@ -29,6 +29,7 @@
 #include "mul.h"
 #include "ncmul.h"
 #include "power.h"
+#include "relational.h"
 #include "symmetry.h"
 #include "operators.h"
 #include "lst.h"
@@ -491,7 +492,7 @@ exvector power::get_free_indices(void) const
 
 /** Rename dummy indices in an expression.
  *
- *  @param e Expression to be worked on
+ *  @param e Expression to work on
  *  @param local_dummy_indices The set of dummy indices that appear in the
  *    expression "e"
  *  @param global_dummy_indices The set of dummy indices that have appeared
@@ -551,6 +552,80 @@ static ex rename_dummy_indices(const ex & e, exvector & global_dummy_indices, ex
 		return e.subs(lst(local_uniq), lst(global_uniq));
 	}
 }
+
+/** Given a set of indices, extract those of class varidx. */
+static void find_variant_indices(const exvector & v, exvector & variant_indices)
+{
+	exvector::const_iterator it1, itend;
+	for (it1 = v.begin(), itend = v.end(); it1 != itend; ++it1) {
+		if (is_exactly_a<varidx>(*it1))
+			variant_indices.push_back(*it1);
+	}
+}
+
+/** Raise/lower dummy indices in a single indexed objects to canonicalize their
+ *  variance.
+ *
+ *  @param e Object to work on
+ *  @param variant_dummy_indices The set of indices that might need repositioning (will be changed by this function)
+ *  @param moved_indices The set of indices that have been repositioned (will be changed by this function)
+ *  @return true if 'e' was changed */
+bool reposition_dummy_indices(ex & e, exvector & variant_dummy_indices, exvector & moved_indices)
+{
+	bool something_changed = false;
+
+	// If a dummy index is encountered for the first time in the
+	// product, pull it up, otherwise, pull it down
+	exvector::const_iterator it2, it2start, it2end;
+	for (it2start = ex_to<indexed>(e).seq.begin(), it2end = ex_to<indexed>(e).seq.end(), it2 = it2start + 1; it2 != it2end; ++it2) {
+		if (!is_exactly_a<varidx>(*it2))
+			continue;
+
+		exvector::iterator vit, vitend;
+		for (vit = variant_dummy_indices.begin(), vitend = variant_dummy_indices.end(); vit != vitend; ++vit) {
+			if (it2->op(0).is_equal(vit->op(0))) {
+				if (ex_to<varidx>(*it2).is_covariant()) {
+					e = e.subs(lst(
+						*it2 == ex_to<varidx>(*it2).toggle_variance(),
+						ex_to<varidx>(*it2).toggle_variance() == *it2
+					));
+					something_changed = true;
+					it2 = ex_to<indexed>(e).seq.begin() + (it2 - it2start);
+					it2start = ex_to<indexed>(e).seq.begin();
+					it2end = ex_to<indexed>(e).seq.end();
+				}
+				moved_indices.push_back(*vit);
+				variant_dummy_indices.erase(vit);
+				goto next_index;
+			}
+		}
+
+		for (vit = moved_indices.begin(), vitend = moved_indices.end(); vit != vitend; ++vit) {
+			if (it2->op(0).is_equal(vit->op(0))) {
+				if (ex_to<varidx>(*it2).is_contravariant()) {
+					e = e.subs(*it2 == ex_to<varidx>(*it2).toggle_variance());
+					something_changed = true;
+					it2 = ex_to<indexed>(e).seq.begin() + (it2 - it2start);
+					it2start = ex_to<indexed>(e).seq.begin();
+					it2end = ex_to<indexed>(e).seq.end();
+				}
+				goto next_index;
+			}
+		}
+
+next_index: ;
+	}
+
+	return something_changed;
+}
+
+/* Ordering that only compares the base expressions of indexed objects. */
+struct ex_base_is_less : public std::binary_function<ex, ex, bool> {
+	bool operator() (const ex &lh, const ex &rh) const
+	{
+		return (is_a<indexed>(lh) ? lh.op(0) : lh).compare(is_a<indexed>(rh) ? rh.op(0) : rh) < 0;
+	}
+};
 
 /** Simplify product of indexed expressions (commutative, noncommutative and
  *  simple squares), return list of free indices. */
@@ -669,8 +744,7 @@ contraction_done:
 	// Find free indices (concatenate them all and call find_free_and_dummy())
 	// and all dummy indices that appear
 	exvector un, individual_dummy_indices;
-	it1 = v.begin(); itend = v.end();
-	while (it1 != itend) {
+	for (it1 = v.begin(), itend = v.end(); it1 != itend; ++it1) {
 		exvector free_indices_of_factor;
 		if (is_a<indexed>(*it1)) {
 			exvector dummy_indices_of_factor;
@@ -679,11 +753,34 @@ contraction_done:
 		} else
 			free_indices_of_factor = it1->get_free_indices();
 		un.insert(un.end(), free_indices_of_factor.begin(), free_indices_of_factor.end());
-		it1++;
 	}
 	exvector local_dummy_indices;
 	find_free_and_dummy(un, free_indices, local_dummy_indices);
 	local_dummy_indices.insert(local_dummy_indices.end(), individual_dummy_indices.begin(), individual_dummy_indices.end());
+
+	// Filter out the dummy indices with variance
+	exvector variant_dummy_indices;
+	find_variant_indices(local_dummy_indices, variant_dummy_indices);
+
+	// Any indices with variance present at all?
+	if (!variant_dummy_indices.empty()) {
+
+		// Yes, bring the product into a canonical order that only depends on
+		// the base expressions of indexed objects
+		if (!non_commutative)
+			std::sort(v.begin(), v.end(), ex_base_is_less());
+
+		exvector moved_indices;
+
+		// Iterate over all indexed objects in the product
+		for (it1 = v.begin(), itend = v.end(); it1 != itend; ++it1) {
+			if (!is_a<indexed>(*it1))
+				continue;
+
+			if (reposition_dummy_indices(*it1, variant_dummy_indices, moved_indices))
+				something_changed = true;
+		}
+	}
 
 	ex r;
 	if (something_changed)
@@ -722,11 +819,27 @@ ex simplify_indexed(const ex & e, exvector & free_indices, exvector & dummy_indi
 	ex e_expanded = e.expand();
 
 	// Simplification of single indexed object: just find the free indices
-	// and perform dummy index renaming
+	// and perform dummy index renaming/repositioning
 	if (is_a<indexed>(e_expanded)) {
+
+		// Find the dummy indices
 		const indexed &i = ex_to<indexed>(e_expanded);
 		exvector local_dummy_indices;
 		find_free_and_dummy(i.seq.begin() + 1, i.seq.end(), free_indices, local_dummy_indices);
+
+		// Filter out the dummy indices with variance
+		exvector variant_dummy_indices;
+		find_variant_indices(local_dummy_indices, variant_dummy_indices);
+
+		// Any indices with variance present at all?
+		if (!variant_dummy_indices.empty()) {
+
+			// Yes, reposition them
+			exvector moved_indices;
+			reposition_dummy_indices(e_expanded, variant_dummy_indices, moved_indices);
+		}
+
+		// Rename the dummy indices
 		return rename_dummy_indices(e_expanded, dummy_indices, local_dummy_indices);
 	}
 
@@ -754,6 +867,27 @@ ex simplify_indexed(const ex & e, exvector & free_indices, exvector & dummy_indi
 						sum += term;
 				}
 			}
+		}
+
+		if (sum.is_zero()) {
+			free_indices.clear();
+			return sum;
+		}
+
+		// Symmetrizing over the dummy indices may cancel terms
+		int num_terms_orig = (is_a<add>(sum) ? sum.nops() : 1);
+		if (num_terms_orig > 1 && dummy_indices.size() >= 2) {
+			lst dummy_syms;
+			for (int i=0; i<dummy_indices.size(); i++)
+				dummy_syms.append(dummy_indices[i].op(0));
+			ex sum_symm = sum.symmetrize(dummy_syms);
+			if (sum_symm.is_zero()) {
+				free_indices.clear();
+				return _ex0;
+			}
+			int num_terms = (is_a<add>(sum_symm) ? sum_symm.nops() : 1);
+			if (num_terms < num_terms_orig)
+				return sum_symm;
 		}
 
 		return sum;

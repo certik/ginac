@@ -136,8 +136,10 @@ static unsigned epsilon_check(void)
 	// contraction with symmetric tensor is zero
 	result += check_equal_simplify(lorentz_eps(mu, nu, rho, sigma) * indexed(d, sy_symm(), mu_co, nu_co), 0);
 	result += check_equal_simplify(lorentz_eps(mu, nu, rho, sigma) * indexed(d, sy_symm(), nu_co, sigma_co, rho_co), 0);
-	ex e = lorentz_eps(mu, nu, rho, sigma) * indexed(d, sy_symm(), mu_co, tau);
-	result += check_equal_simplify(e, e);
+	result += check_equal_simplify(lorentz_eps(mu, nu, rho, sigma) * indexed(d, mu_co) * indexed(d, nu_co), 0);
+	result += check_equal_simplify(lorentz_eps(mu_co, nu, rho, sigma) * indexed(d, mu) * indexed(d, nu_co), 0);
+	ex e = lorentz_eps(mu, nu, rho, sigma) * indexed(d, mu_co) - lorentz_eps(mu_co, nu, rho, sigma) * indexed(d, mu);
+	result += check_equal_simplify(e, 0);
 
 	// contractions of epsilon tensors
 	result += check_equal_simplify(lorentz_eps(mu, nu, rho, sigma) * lorentz_eps(mu_co, nu_co, rho_co, sigma_co), -24);
@@ -153,7 +155,7 @@ static unsigned symmetry_check(void)
 	unsigned result = 0;
 
 	idx i(symbol("i"), 3), j(symbol("j"), 3), k(symbol("k"), 3), l(symbol("l"), 3);
-	symbol A("A"), B("B");
+	symbol A("A"), B("B"), C("C");
 	ex e;
 
 	result += check_equal(indexed(A, sy_symm(), i, j), indexed(A, sy_symm(), j, i));
@@ -184,6 +186,9 @@ static unsigned symmetry_check(void)
 	e = indexed(A, sy_anti(), i, j, k, l);
 	result += check_equal(symmetrize(e), 0);
 	result += check_equal(antisymmetrize(e), e);
+
+	e = (indexed(A, sy_anti(), i, j, k, l) * (indexed(B, j) * indexed(C, k) + indexed(B, k) * indexed(C, j)) + indexed(B, i, l)).expand();
+	result += check_equal_simplify(e, indexed(B, i, l));
 
 	return result;
 }
@@ -305,7 +310,7 @@ static unsigned spinor_check(void)
 	unsigned result = 0;
 
 	symbol psi("psi");
-	spinidx A(symbol("A"), 2), B(symbol("B"), 2), C(symbol("C"), 2);
+	spinidx A(symbol("A")), B(symbol("B")), C(symbol("C")), D(symbol("D"));
 	ex A_co = A.toggle_variance(), B_co = B.toggle_variance();
 	ex e;
 
@@ -327,13 +332,15 @@ static unsigned spinor_check(void)
 	result += check_equal_simplify(e, -indexed(psi, A_co));
 	e = spinor_metric(A_co, B_co) * indexed(psi, A);
 	result += check_equal_simplify(e, indexed(psi, B_co));
+	e = spinor_metric(D, A) * spinor_metric(A_co, B_co) * spinor_metric(B, C) - spinor_metric(D, A_co) * spinor_metric(A, B_co) * spinor_metric(B, C);
+	result += check_equal_simplify(e, 0);
 
 	return result;
 }
 
 static unsigned dummy_check(void)
 {
-	// check dummy index renaming
+	// check dummy index renaming/repositioning
 
 	unsigned result = 0;
 
@@ -350,6 +357,15 @@ static unsigned dummy_check(void)
 	result += check_equal_simplify(e, 0);
 
 	e = indexed(p, mu, mu.toggle_variance()) - indexed(p, nu, nu.toggle_variance());
+	result += check_equal_simplify(e, 0);
+
+	e = indexed(p, mu.toggle_variance(), nu, mu) * indexed(q, i)
+	  - indexed(p, mu, nu, mu.toggle_variance()) * indexed(q, i);
+	result += check_equal_simplify(e, 0);
+
+	e = indexed(p, mu, mu.toggle_variance()) - indexed(p, nu.toggle_variance(), nu);
+	result += check_equal_simplify(e, 0);
+	e = indexed(p, mu.toggle_variance(), mu) - indexed(p, nu, nu.toggle_variance());
 	result += check_equal_simplify(e, 0);
 
 	return result;
