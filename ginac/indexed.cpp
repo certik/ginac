@@ -178,7 +178,7 @@ void indexed::print(const print_context & c, unsigned level) const
 {
 	GINAC_ASSERT(seq.size() > 0);
 
-	if (is_of_type(c, print_tree)) {
+	if (is_a<print_tree>(c)) {
 
 		c.s << std::string(level, ' ') << class_name()
 		    << std::hex << ", hash=0x" << hashvalue << ", flags=0x" << flags << std::dec
@@ -190,11 +190,11 @@ void indexed::print(const print_context & c, unsigned level) const
 
 	} else {
 
-		bool is_tex = is_of_type(c, print_latex);
+		bool is_tex = is_a<print_latex>(c);
 		const ex & base = seq[0];
-		bool need_parens = is_ex_exactly_of_type(base, add) || is_ex_exactly_of_type(base, mul)
-		                || is_ex_exactly_of_type(base, ncmul) || is_ex_exactly_of_type(base, power)
-		                || is_ex_of_type(base, indexed);
+		bool need_parens = is_exactly_a<add>(base) || is_exactly_a<mul>(base)
+		                || is_exactly_a<ncmul>(base) || is_exactly_a<power>(base)
+		                || is_a<indexed>(base);
 		if (is_tex)
 			c.s << "{";
 		if (need_parens)
@@ -250,7 +250,7 @@ ex indexed::eval(int level) const
 		return _ex0;
 
 	// If the base object is a product, pull out the numeric factor
-	if (is_ex_exactly_of_type(base, mul) && is_ex_exactly_of_type(base.op(base.nops() - 1), numeric)) {
+	if (is_exactly_a<mul>(base) && is_exactly_a<numeric>(base.op(base.nops() - 1))) {
 		exvector v(seq);
 		ex f = ex_to<numeric>(base.op(base.nops() - 1));
 		v[0] = seq[0] / f;
@@ -288,7 +288,7 @@ ex indexed::expand(unsigned options) const
 {
 	GINAC_ASSERT(seq.size() > 0);
 
-	if ((options & expand_options::expand_indexed) && is_ex_exactly_of_type(seq[0], add)) {
+	if ((options & expand_options::expand_indexed) && is_exactly_a<add>(seq[0])) {
 
 		// expand_indexed expands (a+b).i -> a.i + b.i
 		const ex & base = seq[0];
@@ -320,14 +320,14 @@ void indexed::printindices(const print_context & c, unsigned level) const
 
 		exvector::const_iterator it=seq.begin() + 1, itend = seq.end();
 
-		if (is_of_type(c, print_latex)) {
+		if (is_a<print_latex>(c)) {
 
 			// TeX output: group by variance
 			bool first = true;
 			bool covariant = true;
 
 			while (it != itend) {
-				bool cur_covariant = (is_ex_of_type(*it, varidx) ? ex_to<varidx>(*it).is_covariant() : true);
+				bool cur_covariant = (is_a<varidx>(*it) ? ex_to<varidx>(*it).is_covariant() : true);
 				if (first || cur_covariant != covariant) { // Variance changed
 					// The empty {} prevents indices from ending up on top of each other
 					if (!first)
@@ -364,13 +364,13 @@ void indexed::validate(void) const
 	GINAC_ASSERT(seq.size() > 0);
 	exvector::const_iterator it = seq.begin() + 1, itend = seq.end();
 	while (it != itend) {
-		if (!is_ex_of_type(*it, idx))
+		if (!is_a<idx>(*it))
 			throw(std::invalid_argument("indices of indexed object must be of type idx"));
 		it++;
 	}
 
 	if (!symtree.is_zero()) {
-		if (!is_ex_exactly_of_type(symtree, symmetry))
+		if (!is_exactly_a<symmetry>(symtree))
 			throw(std::invalid_argument("symmetry of indexed object must be of type symmetry"));
 		const_cast<symmetry &>(ex_to<symmetry>(symtree)).validate(seq.size() - 1);
 	}
@@ -559,13 +559,13 @@ ex simplify_indexed_product(const ex & e, exvector & free_indices, exvector & du
 {
 	// Remember whether the product was commutative or noncommutative
 	// (because we chop it into factors and need to reassemble later)
-	bool non_commutative = is_ex_exactly_of_type(e, ncmul);
+	bool non_commutative = is_exactly_a<ncmul>(e);
 
 	// Collect factors in an exvector, store squares twice
 	exvector v;
 	v.reserve(e.nops() * 2);
 
-	if (is_ex_exactly_of_type(e, power)) {
+	if (is_exactly_a<power>(e)) {
 		// We only get called for simple squares, split a^2 -> a*a
 		GINAC_ASSERT(e.op(1).is_equal(_ex2));
 		v.push_back(e.op(0));
@@ -573,10 +573,10 @@ ex simplify_indexed_product(const ex & e, exvector & free_indices, exvector & du
 	} else {
 		for (unsigned i=0; i<e.nops(); i++) {
 			ex f = e.op(i);
-			if (is_ex_exactly_of_type(f, power) && f.op(1).is_equal(_ex2)) {
+			if (is_exactly_a<power>(f) && f.op(1).is_equal(_ex2)) {
 				v.push_back(f.op(0));
 	            v.push_back(f.op(0));
-			} else if (is_ex_exactly_of_type(f, ncmul)) {
+			} else if (is_exactly_a<ncmul>(f)) {
 				// Noncommutative factor found, split it as well
 				non_commutative = true; // everything becomes noncommutative, ncmul will sort out the commutative factors later
 				for (unsigned j=0; j<f.nops(); j++)
@@ -593,7 +593,7 @@ ex simplify_indexed_product(const ex & e, exvector & free_indices, exvector & du
 	for (it1 = v.begin(); it1 != next_to_last; it1++) {
 
 try_again:
-		if (!is_ex_of_type(*it1, indexed))
+		if (!is_a<indexed>(*it1))
 			continue;
 
 		bool first_noncommutative = (it1->return_type() != return_types::commutative);
@@ -606,7 +606,7 @@ try_again:
 		exvector::iterator it2;
 		for (it2 = it1 + 1; it2 != itend; it2++) {
 
-			if (!is_ex_of_type(*it2, indexed))
+			if (!is_a<indexed>(*it2))
 				continue;
 
 			bool second_noncommutative = (it2->return_type() != return_types::commutative);
@@ -645,9 +645,9 @@ try_again:
 			if (contracted) {
 contraction_done:
 				if (first_noncommutative || second_noncommutative
-				 || is_ex_exactly_of_type(*it1, add) || is_ex_exactly_of_type(*it2, add)
-				 || is_ex_exactly_of_type(*it1, mul) || is_ex_exactly_of_type(*it2, mul)
-				 || is_ex_exactly_of_type(*it1, ncmul) || is_ex_exactly_of_type(*it2, ncmul)) {
+				 || is_exactly_a<add>(*it1) || is_exactly_a<add>(*it2)
+				 || is_exactly_a<mul>(*it1) || is_exactly_a<mul>(*it2)
+				 || is_exactly_a<ncmul>(*it1) || is_exactly_a<ncmul>(*it2)) {
 
 					// One of the factors became a sum or product:
 					// re-expand expression and run again
@@ -673,7 +673,7 @@ contraction_done:
 	it1 = v.begin(); itend = v.end();
 	while (it1 != itend) {
 		exvector free_indices_of_factor;
-		if (is_ex_of_type(*it1, indexed)) {
+		if (is_a<indexed>(*it1)) {
 			exvector dummy_indices_of_factor;
 			find_free_and_dummy(ex_to<indexed>(*it1).seq.begin() + 1, ex_to<indexed>(*it1).seq.end(), free_indices_of_factor, dummy_indices_of_factor);
 			individual_dummy_indices.insert(individual_dummy_indices.end(), dummy_indices_of_factor.begin(), dummy_indices_of_factor.end());
@@ -709,8 +709,8 @@ contraction_done:
 	r = rename_dummy_indices(r, dummy_indices, local_dummy_indices);
 
 	// Product of indexed object with a scalar?
-	if (is_ex_exactly_of_type(r, mul) && r.nops() == 2
-	 && is_ex_exactly_of_type(r.op(1), numeric) && is_ex_of_type(r.op(0), indexed))
+	if (is_exactly_a<mul>(r) && r.nops() == 2
+	 && is_exactly_a<numeric>(r.op(1)) && is_a<indexed>(r.op(0)))
 		return ex_to<basic>(r.op(0).op(0)).scalar_mul_indexed(r.op(0), ex_to<numeric>(r.op(1)));
 	else
 		return r;
@@ -724,7 +724,7 @@ ex simplify_indexed(const ex & e, exvector & free_indices, exvector & dummy_indi
 
 	// Simplification of single indexed object: just find the free indices
 	// and perform dummy index renaming
-	if (is_ex_of_type(e_expanded, indexed)) {
+	if (is_a<indexed>(e_expanded)) {
 		const indexed &i = ex_to<indexed>(e_expanded);
 		exvector local_dummy_indices;
 		find_free_and_dummy(i.seq.begin() + 1, i.seq.end(), free_indices, local_dummy_indices);
@@ -733,7 +733,7 @@ ex simplify_indexed(const ex & e, exvector & free_indices, exvector & dummy_indi
 
 	// Simplification of sum = sum of simplifications, check consistency of
 	// free indices in each term
-	if (is_ex_exactly_of_type(e_expanded, add)) {
+	if (is_exactly_a<add>(e_expanded)) {
 		bool first = true;
 		ex sum = _ex0;
 		free_indices.clear();
@@ -749,7 +749,7 @@ ex simplify_indexed(const ex & e, exvector & free_indices, exvector & dummy_indi
 				} else {
 					if (!indices_consistent(free_indices, free_indices_of_term))
 						throw (std::runtime_error("simplify_indexed: inconsistent indices in sum"));
-					if (is_ex_of_type(sum, indexed) && is_ex_of_type(term, indexed))
+					if (is_a<indexed>(sum) && is_a<indexed>(term))
 						sum = ex_to<basic>(sum.op(0)).add_indexed(sum, term);
 					else
 						sum += term;
@@ -761,9 +761,9 @@ ex simplify_indexed(const ex & e, exvector & free_indices, exvector & dummy_indi
 	}
 
 	// Simplification of products
-	if (is_ex_exactly_of_type(e_expanded, mul)
-	 || is_ex_exactly_of_type(e_expanded, ncmul)
-	 || (is_ex_exactly_of_type(e_expanded, power) && is_ex_of_type(e_expanded.op(0), indexed) && e_expanded.op(1).is_equal(_ex2)))
+	if (is_exactly_a<mul>(e_expanded)
+	 || is_exactly_a<ncmul>(e_expanded)
+	 || (is_exactly_a<power>(e_expanded) && is_a<indexed>(e_expanded.op(0)) && e_expanded.op(1).is_equal(_ex2)))
 		return simplify_indexed_product(e_expanded, free_indices, dummy_indices, sp);
 
 	// Cannot do anything
@@ -869,8 +869,8 @@ void scalar_products::debugprint(void) const
 spmapkey scalar_products::make_key(const ex & v1, const ex & v2)
 {
 	// If indexed, extract base objects
-	ex s1 = is_ex_of_type(v1, indexed) ? v1.op(0) : v1;
-	ex s2 = is_ex_of_type(v2, indexed) ? v2.op(0) : v2;
+	ex s1 = is_a<indexed>(v1) ? v1.op(0) : v1;
+	ex s2 = is_a<indexed>(v2) ? v2.op(0) : v2;
 
 	// Enforce canonical order in pair
 	if (s1.compare(s2) > 0)

@@ -52,7 +52,7 @@ static ex abs_evalf(const ex & arg)
 
 static ex abs_eval(const ex & arg)
 {
-	if (is_ex_exactly_of_type(arg, numeric))
+	if (is_exactly_a<numeric>(arg))
 		return abs(ex_to<numeric>(arg));
 	else
 		return abs(arg).hold();
@@ -76,11 +76,11 @@ static ex csgn_evalf(const ex & arg)
 
 static ex csgn_eval(const ex & arg)
 {
-	if (is_ex_exactly_of_type(arg, numeric))
+	if (is_exactly_a<numeric>(arg))
 		return csgn(ex_to<numeric>(arg));
 	
-	else if (is_ex_of_type(arg, mul) &&
-	         is_ex_of_type(arg.op(arg.nops()-1),numeric)) {
+	else if (is_a<mul>(arg) &&
+	         is_a<numeric>(arg.op(arg.nops()-1))) {
 		numeric oc = ex_to<numeric>(arg.op(arg.nops()-1));
 		if (oc.is_real()) {
 			if (oc > 0)
@@ -365,7 +365,7 @@ static ex factorial_evalf(const ex & x)
 
 static ex factorial_eval(const ex & x)
 {
-	if (is_ex_exactly_of_type(x, numeric))
+	if (is_exactly_a<numeric>(x))
 		return factorial(ex_to<numeric>(x));
 	else
 		return factorial(x).hold();
@@ -385,7 +385,7 @@ static ex binomial_evalf(const ex & x, const ex & y)
 
 static ex binomial_eval(const ex & x, const ex &y)
 {
-	if (is_ex_exactly_of_type(x, numeric) && is_ex_exactly_of_type(y, numeric))
+	if (is_exactly_a<numeric>(x) && is_exactly_a<numeric>(y))
 		return binomial(ex_to<numeric>(x), ex_to<numeric>(y));
 	else
 		return binomial(x, y).hold();
@@ -400,16 +400,16 @@ REGISTER_FUNCTION(binomial, eval_func(binomial_eval).
 
 static ex Order_eval(const ex & x)
 {
-	if (is_ex_exactly_of_type(x, numeric)) {
+	if (is_exactly_a<numeric>(x)) {
 		// O(c) -> O(1) or 0
 		if (!x.is_zero())
 			return Order(_ex1).hold();
 		else
 			return _ex0;
-	} else if (is_ex_exactly_of_type(x, mul)) {
+	} else if (is_exactly_a<mul>(x)) {
 		const mul &m = ex_to<mul>(x);
 		// O(c*expr) -> O(expr)
-		if (is_ex_exactly_of_type(m.op(m.nops() - 1), numeric))
+		if (is_exactly_a<numeric>(m.op(m.nops() - 1)))
 			return Order(x / m.op(m.nops() - 1)).hold();
 	}
 	return Order(x).hold();

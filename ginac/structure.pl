@@ -113,7 +113,7 @@ $compare_statements=generate(
 $is_equal_statements=generate('    if (!m_${MEMBER}.is_equal(o.m_${MEMBER})) return false;',"\n");
 $types_ok_statements=generate(
 '#ifndef SKIP_TYPE_CHECK_FOR_${TYPE}'."\n".
-'    if (!is_ex_exactly_of_type(m_${MEMBER},${TYPE})) return false;'."\n".
+'    if (!is_exactly_a<${TYPE}>(m_${MEMBER})) return false;'."\n".
 '#endif // ndef SKIP_TYPE_CHECK_FOR_${TYPE}',"\n");
 
 $interface=<<END_OF_INTERFACE;
@@ -425,7 +425,7 @@ ${subs_statements}
 
 int ${STRUCTURE}::compare_same_type(const basic & other) const
 {
-	GINAC_ASSERT(is_of_type(other,${STRUCTURE}));
+	GINAC_ASSERT(is_a<${STRUCTURE}>(other));
 	${STRUCTURE} const &o = static_cast<const ${STRUCTURE} &>(other);
 	int cmpval;
 ${compare_statements}
@@ -434,7 +434,7 @@ ${compare_statements}
 
 bool ${STRUCTURE}::is_equal_same_type(const basic & other) const
 {
-	GINAC_ASSERT(is_of_type(other,${STRUCTURE}));
+	GINAC_ASSERT(is_a<${STRUCTURE}>(other));
 	${STRUCTURE} const &o = static_cast<const ${STRUCTURE} &>(other);
 ${is_equal_statements}
 	return true;
@@ -458,8 +458,7 @@ unsigned ${STRUCTURE}::return_type(void) const
 // public
 
 #define SKIP_TYPE_CHECK_FOR_ex
-// this is a hack since there is no meaningful
-// is_ex_exactly_of_type(...,ex) macro definition
+// this is a hack since there is no meaningful is_a<ex>(...) definition
 
 bool ${STRUCTURE}::types_ok(void) const
 {

@@ -166,7 +166,7 @@ ex & ex::let_op(int i)
 /** Left hand side of relational expression. */
 ex ex::lhs(void) const
 {
-	if (!is_ex_of_type(*this,relational))
+	if (!is_a<relational>(*this))
 		throw std::runtime_error("ex::lhs(): not a relation");
 	return (*static_cast<relational *>(bp)).lhs();
 }
@@ -174,7 +174,7 @@ ex ex::lhs(void) const
 /** Right hand side of relational expression. */
 ex ex::rhs(void) const
 {
-	if (!is_ex_of_type(*this,relational))
+	if (!is_a<relational>(*this))
 		throw std::runtime_error("ex::rhs(): not a relation");
 	return (*static_cast<relational *>(bp)).rhs();
 }

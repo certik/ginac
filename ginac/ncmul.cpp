@@ -253,8 +253,8 @@ ex ncmul::coeff(const ex & s, int n) const
 
 unsigned ncmul::count_factors(const ex & e) const
 {
-	if ((is_ex_exactly_of_type(e,mul)&&(e.return_type()!=return_types::commutative))||
-		(is_ex_exactly_of_type(e,ncmul))) {
+	if ((is_exactly_a<mul>(e)&&(e.return_type()!=return_types::commutative))||
+		(is_exactly_a<ncmul>(e))) {
 		unsigned factors=0;
 		for (unsigned i=0; i<e.nops(); i++)
 			factors += count_factors(e.op(i));
@@ -266,8 +266,8 @@ unsigned ncmul::count_factors(const ex & e) const
 		
 void ncmul::append_factors(exvector & v, const ex & e) const
 {
-	if ((is_ex_exactly_of_type(e,mul)&&(e.return_type()!=return_types::commutative))||
-		(is_ex_exactly_of_type(e,ncmul))) {
+	if ((is_exactly_a<mul>(e)&&(e.return_type()!=return_types::commutative))||
+		(is_exactly_a<ncmul>(e))) {
 		for (unsigned i=0; i<e.nops(); i++)
 			append_factors(v,e.op(i));
 	} else 
@@ -440,11 +440,11 @@ ex ncmul::evalm(void) const
 
 	// If there are only matrices, simply multiply them
 	it = s->begin(); itend = s->end();
-	if (is_ex_of_type(*it, matrix)) {
+	if (is_a<matrix>(*it)) {
 		matrix prod(ex_to<matrix>(*it));
 		it++;
 		while (it != itend) {
-			if (!is_ex_of_type(*it, matrix))
+			if (!is_a<matrix>(*it))
 				goto no_matrix;
 			prod = prod.mul(ex_to<matrix>(*it));
 			it++;

@@ -667,7 +667,7 @@ void function::print(const print_context & c, unsigned level) const
 {
 	GINAC_ASSERT(serial<registered_functions().size());
 
-	if (is_of_type(c, print_tree)) {
+	if (is_a<print_tree>(c)) {
 
 		c.s << std::string(level, ' ') << class_name() << " "
 		    << registered_functions()[serial].name
@@ -679,7 +679,7 @@ void function::print(const print_context & c, unsigned level) const
 			seq[i].print(c, level + delta_indent);
 		c.s << std::string(level + delta_indent, ' ') << "=====" << std::endl;
 
-	} else if (is_of_type(c, print_csrc)) {
+	} else if (is_a<print_csrc>(c)) {
 
 		// Print function name in lowercase
 		std::string lname = registered_functions()[serial].name;
@@ -698,7 +698,7 @@ void function::print(const print_context & c, unsigned level) const
 		}
 		c.s << ")";
 
-	} else if (is_of_type(c, print_latex)) {
+	} else if (is_a<print_latex>(c)) {
 		c.s << registered_functions()[serial].TeX_name;
 		printseq(c, '(', ',', ')', exprseq::precedence(), function::precedence());
 	} else {
@@ -883,7 +883,7 @@ ex function::derivative(const symbol & s) const
 
 int function::compare_same_type(const basic & other) const
 {
-	GINAC_ASSERT(is_of_type(other, function));
+	GINAC_ASSERT(is_a<function>(other));
 	const function & o = static_cast<const function &>(other);
 
 	if (serial != o.serial)
@@ -894,7 +894,7 @@ int function::compare_same_type(const basic & other) const
 
 bool function::is_equal_same_type(const basic & other) const
 {
-	GINAC_ASSERT(is_of_type(other, function));
+	GINAC_ASSERT(is_a<function>(other));
 	const function & o = static_cast<const function &>(other);
 
 	if (serial != o.serial)
@@ -905,7 +905,7 @@ bool function::is_equal_same_type(const basic & other) const
 
 bool function::match_same_type(const basic & other) const
 {
-	GINAC_ASSERT(is_of_type(other, function));
+	GINAC_ASSERT(is_a<function>(other));
 	const function & o = static_cast<const function &>(other);
 
 	return serial == o.serial;

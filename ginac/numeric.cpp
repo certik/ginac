@@ -515,7 +515,7 @@ ex numeric::coeff(const ex & s, int n) const
  *  sign as a multiplicative factor. */
 bool numeric::has(const ex &other) const
 {
-	if (!is_ex_exactly_of_type(other, numeric))
+	if (!is_exactly_a<numeric>(other))
 		return false;
 	const numeric &o = ex_to<numeric>(other);
 	if (this->is_equal(o) || this->is_equal(-o))

@@ -517,21 +517,6 @@ void classname::print(const print_context & c, unsigned level) const \
 		c.s << text; \
 }
 
-// Obsolete convenience macros.  TO BE PHASED OUT SOON!
-// Use the inlined template functions in basic.h instead.  (FIXME: remove them)
-
-#define is_of_type(OBJ,TYPE) \
-	(dynamic_cast<const TYPE *>(&OBJ)!=0)
-
-#define is_exactly_of_type(OBJ,TYPE) \
-	((OBJ).tinfo()==GiNaC::TINFO_##TYPE)
-
-#define is_ex_of_type(OBJ,TYPE) \
-	(dynamic_cast<const TYPE *>((OBJ).bp)!=0)
-
-#define is_ex_exactly_of_type(OBJ,TYPE) \
-	((*(OBJ).bp).tinfo()==GiNaC::TINFO_##TYPE)
-
 } // namespace GiNaC
 
 

@@ -458,7 +458,7 @@ ex dirac_trace(const ex & e, unsigned char rl, const ex & trONE)
 		else
 			return _ex0;
 
-	} else if (is_ex_exactly_of_type(e, mul)) {
+	} else if (is_exactly_a<mul>(e)) {
 
 		// Trace of product: pull out non-clifford factors
 		ex prod = _ex1;
@@ -471,7 +471,7 @@ ex dirac_trace(const ex & e, unsigned char rl, const ex & trONE)
 		}
 		return prod;
 
-	} else if (is_ex_exactly_of_type(e, ncmul)) {
+	} else if (is_exactly_a<ncmul>(e)) {
 
 		if (!is_clifford_tinfo(e.return_type_tinfo(), rl))
 			return _ex0;
@@ -578,7 +578,7 @@ ex canonicalize_clifford(const ex & e)
 		ex lhs = srl.op(i).lhs();
 		ex rhs = srl.op(i).rhs();
 
-		if (is_ex_exactly_of_type(rhs, ncmul)
+		if (is_exactly_a<ncmul>(rhs)
 		 && rhs.return_type() == return_types::noncommutative
 		 && is_clifford_tinfo(rhs.return_type_tinfo())) {
 

@@ -186,7 +186,7 @@ basic *expairseq::duplicate() const
 
 void expairseq::print(const print_context &c, unsigned level) const
 {
-	if (is_of_type(c, print_tree)) {
+	if (is_a<print_tree>(c)) {
 
 		unsigned delta_indent = static_cast<const print_tree &>(c).delta_indent;
 
@@ -336,7 +336,7 @@ bool expairseq::match(const ex & pattern, lst & repl_lst) const
 		bool has_global_wildcard = false;
 		ex global_wildcard;
 		for (unsigned int i=0; i<pattern.nops(); i++) {
-			if (is_ex_exactly_of_type(pattern.op(i), wildcard)) {
+			if (is_exactly_a<wildcard>(pattern.op(i))) {
 				has_global_wildcard = true;
 				global_wildcard = pattern.op(i);
 				break;
@@ -775,8 +775,8 @@ void expairseq::construct_from_2_ex(const ex &lh, const ex &rh)
 	hashtabsize = 0;
 #endif // EXPAIRSEQ_USE_HASHTAB
 	
-	if (is_ex_exactly_of_type(lh,numeric)) {
-		if (is_ex_exactly_of_type(rh,numeric)) {
+	if (is_exactly_a<numeric>(lh)) {
+		if (is_exactly_a<numeric>(rh)) {
 			combine_overall_coeff(lh);
 			combine_overall_coeff(rh);
 		} else {
@@ -784,7 +784,7 @@ void expairseq::construct_from_2_ex(const ex &lh, const ex &rh)
 			seq.push_back(split_ex_to_pair(rh));
 		}
 	} else {
-		if (is_ex_exactly_of_type(rh,numeric)) {
+		if (is_exactly_a<numeric>(rh)) {
 			combine_overall_coeff(rh);
 			seq.push_back(split_ex_to_pair(lh));
 		} else {
@@ -871,7 +871,7 @@ void expairseq::construct_from_expairseq_ex(const expairseq &s,
 											const ex &e)
 {
 	combine_overall_coeff(s.overall_coeff);
-	if (is_ex_exactly_of_type(e,numeric)) {
+	if (is_exactly_a<numeric>(e)) {
 		combine_overall_coeff(e);
 		seq = s.seq;
 		return;
@@ -996,7 +996,7 @@ void expairseq::make_flat(const exvector &v)
 				++cit_s;
 			}
 		} else {
-			if (is_ex_exactly_of_type(*cit,numeric))
+			if (is_exactly_a<numeric>(*cit))
 				combine_overall_coeff(*cit);
 			else
 				seq.push_back(split_ex_to_pair(*cit));
@@ -1247,7 +1247,7 @@ void expairseq::build_hashtab_and_combine(epvector::iterator &first_numeric,
 	epp current = seq.begin();
 
 	while (current!=first_numeric) {
-		if (is_ex_exactly_of_type(current->rest,numeric)) {
+		if (is_exactly_a<numeric>(current->rest)) {
 			--first_numeric;
 			iter_swap(current,first_numeric);
 		} else {
@@ -1435,11 +1435,11 @@ bool expairseq::is_canonical() const
 	epvector::const_iterator it_last = it;
 	for (++it; it!=itend; it_last=it, ++it) {
 		if (!(it_last->is_less(*it) || it_last->is_equal(*it))) {
-			if (!is_ex_exactly_of_type(it_last->rest,numeric) ||
-				!is_ex_exactly_of_type(it->rest,numeric)) {
+			if (!is_exactly_a<numeric>(it_last->rest) ||
+				!is_exactly_a<numeric>(it->rest)) {
 				// double test makes it easier to set a breakpoint...
-				if (!is_ex_exactly_of_type(it_last->rest,numeric) ||
-					!is_ex_exactly_of_type(it->rest,numeric)) {
+				if (!is_exactly_a<numeric>(it_last->rest) ||
+					!is_exactly_a<numeric>(it->rest)) {
 					printpair(std::clog, *it_last, 0);
 					std::clog << ">";
 					printpair(std::clog, *it, 0);
@@ -1568,7 +1568,7 @@ epvector * expairseq::subschildren(const lst &ls, const lst &lr, bool no_pattern
 	// because the numeric coefficients may be part of the search pattern.
 	bool complex_subs = false;
 	for (unsigned i=0; i<ls.nops(); ++i)
-		if (is_ex_exactly_of_type(ls.op(i), mul) || is_ex_exactly_of_type(ls.op(i), power)) {
+		if (is_exactly_a<mul>(ls.op(i)) || is_exactly_a<power>(ls.op(i))) {
 			complex_subs = true;
 			break;
 		}

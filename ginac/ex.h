@@ -196,9 +196,10 @@ protected:
 
 // member variables
 
-public:
-	basic *bp;      ///< pointer to basic object managed by this, direct manipulation deprecated
+private:
+	basic *bp;      ///< pointer to basic object managed by this
 #ifdef OBSCURE_CINT_HACK
+public:
 	static basic * last_created_or_assigned_bp;
 	static basic * dummy_bp;
 	static long last_created_or_assigned_exp;

@@ -643,7 +643,7 @@ ex add::series(const relational & r, int order, unsigned options) const
 	epvector::const_iterator itend = seq.end();
 	for (; it!=itend; ++it) {
 		ex op;
-		if (is_ex_exactly_of_type(it->rest, pseries))
+		if (is_exactly_a<pseries>(it->rest))
 			op = it->rest;
 		else
 			op = it->rest.series(r, order, options);
@@ -856,7 +856,7 @@ pseries pseries::shift_exponents(int deg) const
 ex power::series(const relational & r, int order, unsigned options) const
 {
 	// If basis is already a series, just power it
-	if (is_ex_exactly_of_type(basis, pseries))
+	if (is_exactly_a<pseries>(basis))
 		return ex_to<pseries>(basis).power_const(ex_to<numeric>(exponent), order);
 
 	// Basis is not a series, may there be a singularity?
@@ -935,9 +935,9 @@ ex ex::series(const ex & r, int order, unsigned options) const
 	ex e;
 	relational rel_;
 	
-	if (is_ex_exactly_of_type(r,relational))
+	if (is_exactly_a<relational>(r))
 		rel_ = ex_to<relational>(r);
-	else if (is_ex_exactly_of_type(r,symbol))
+	else if (is_exactly_a<symbol>(r))
 		rel_ = relational(r,_ex0);
 	else
 		throw (std::logic_error("ex::series(): expansion point has unknown type"));

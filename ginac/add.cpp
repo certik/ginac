@@ -328,7 +328,7 @@ ex add::eval(int level) const
 	epvector::const_iterator i = seq.begin(), end = seq.end();
 	while (i != end) {
 		GINAC_ASSERT(!is_exactly_a<add>(i->rest));
-		if (is_ex_exactly_of_type(i->rest,numeric))
+		if (is_exactly_a<numeric>(i->rest))
 			dbgprint();
 		GINAC_ASSERT(!is_exactly_a<numeric>(i->rest));
 		++i;
@@ -369,7 +369,7 @@ ex add::evalm(void) const
 	while (it != itend) {
 		const ex &m = recombine_pair_to_ex(*it).evalm();
 		s->push_back(split_ex_to_pair(m));
-		if (is_ex_of_type(m, matrix)) {
+		if (is_a<matrix>(m)) {
 			if (first_term) {
 				sum = ex_to<matrix>(m);
 				first_term = false;
@@ -453,7 +453,7 @@ ex add::thisexpairseq(epvector * vp, const ex & oc) const
 
 expair add::split_ex_to_pair(const ex & e) const
 {
-	if (is_ex_exactly_of_type(e,mul)) {
+	if (is_exactly_a<mul>(e)) {
 		const mul &mulref(ex_to<mul>(e));
 		const ex &numfactor = mulref.overall_coeff;
 		mul *mulcopyp = new mul(mulref);
@@ -470,7 +470,7 @@ expair add::combine_ex_with_coeff_to_pair(const ex & e,
 										  const ex & c) const
 {
 	GINAC_ASSERT(is_exactly_a<numeric>(c));
-	if (is_ex_exactly_of_type(e, mul)) {
+	if (is_exactly_a<mul>(e)) {
 		const mul &mulref(ex_to<mul>(e));
 		const ex &numfactor = mulref.overall_coeff;
 		mul *mulcopyp = new mul(mulref);
@@ -484,7 +484,7 @@ expair add::combine_ex_with_coeff_to_pair(const ex & e,
 			return expair(*mulcopyp, c);
 		else
 			return expair(*mulcopyp, ex_to<numeric>(numfactor).mul_dyn(ex_to<numeric>(c)));
-	} else if (is_ex_exactly_of_type(e, numeric)) {
+	} else if (is_exactly_a<numeric>(e)) {
 		if (are_ex_trivially_equal(c, _ex1))
 			return expair(e, _ex1);
 		return expair(ex_to<numeric>(e).mul_dyn(ex_to<numeric>(c)), _ex1);
@@ -498,7 +498,7 @@ expair add::combine_pair_with_coeff_to_pair(const expair & p,
 	GINAC_ASSERT(is_exactly_a<numeric>(p.coeff));
 	GINAC_ASSERT(is_exactly_a<numeric>(c));
 
-	if (is_ex_exactly_of_type(p.rest,numeric)) {
+	if (is_exactly_a<numeric>(p.rest)) {
 		GINAC_ASSERT(ex_to<numeric>(p.coeff).is_equal(_num1)); // should be normalized
 		return expair(ex_to<numeric>(p.rest).mul_dyn(ex_to<numeric>(c)),_ex1);
 	}

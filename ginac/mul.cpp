@@ -353,7 +353,7 @@ ex mul::eval(int level) const
 		GINAC_ASSERT((!is_exactly_a<mul>(i->rest)) ||
 		             (!(ex_to<numeric>(i->coeff).is_integer())));
 		GINAC_ASSERT(!(i->is_canonical_numeric()));
-		if (is_ex_exactly_of_type(recombine_pair_to_ex(*i), numeric))
+		if (is_exactly_a<numeric>(recombine_pair_to_ex(*i)))
 		    print(print_tree(std::cerr));
 		GINAC_ASSERT(!is_exactly_a<numeric>(recombine_pair_to_ex(*i)));
 		/* for paranoia */
@@ -382,7 +382,7 @@ ex mul::eval(int level) const
 		// *(x;1) -> x
 		return recombine_pair_to_ex(*(seq.begin()));
 	} else if ((seq_size==1) &&
-	           is_ex_exactly_of_type((*seq.begin()).rest,add) &&
+	           is_exactly_a<add>((*seq.begin()).rest) &&
 	           ex_to<numeric>((*seq.begin()).coeff).is_equal(_num1)) {
 		// *(+(x,y,...);c) -> +(*(x,c),*(y,c),...) (c numeric(), no powers of +())
 		const add & addref = ex_to<add>((*seq.begin()).rest);
@@ -426,7 +426,7 @@ ex mul::evalm(void) const
 {
 	// numeric*matrix
 	if (seq.size() == 1 && seq[0].coeff.is_equal(_ex1)
-	 && is_ex_of_type(seq[0].rest, matrix))
+	 && is_a<matrix>(seq[0].rest))
 		return ex_to<matrix>(seq[0].rest).mul(ex_to<numeric>(overall_coeff));
 
 	// Evaluate children first, look whether there are any matrices at all
@@ -442,7 +442,7 @@ ex mul::evalm(void) const
 	while (i != end) {
 		const ex &m = recombine_pair_to_ex(*i).evalm();
 		s->push_back(split_ex_to_pair(m));
-		if (is_ex_of_type(m, matrix)) {
+		if (is_a<matrix>(m)) {
 			have_matrix = true;
 			the_matrix = s->end() - 1;
 		}
@@ -573,9 +573,9 @@ ex mul::thisexpairseq(epvector * vp, const ex & oc) const
 
 expair mul::split_ex_to_pair(const ex & e) const
 {
-	if (is_ex_exactly_of_type(e,power)) {
+	if (is_exactly_a<power>(e)) {
 		const power & powerref = ex_to<power>(e);
-		if (is_ex_exactly_of_type(powerref.exponent,numeric))
+		if (is_exactly_a<numeric>(powerref.exponent))
 			return expair(powerref.basis,powerref.exponent);
 	}
 	return expair(e,_ex1);
@@ -617,13 +617,13 @@ ex mul::recombine_pair_to_ex(const expair & p) const
 
 bool mul::expair_needs_further_processing(epp it)
 {
-	if (is_ex_exactly_of_type((*it).rest,mul) &&
+	if (is_exactly_a<mul>((*it).rest) &&
 		ex_to<numeric>((*it).coeff).is_integer()) {
 		// combined pair is product with integer power -> expand it
 		*it = split_ex_to_pair(recombine_pair_to_ex(*it));
 		return true;
 	}
-	if (is_ex_exactly_of_type((*it).rest,numeric)) {
+	if (is_exactly_a<numeric>((*it).rest)) {
 		expair ep=split_ex_to_pair(recombine_pair_to_ex(*it));
 		if (!ep.is_equal(*it)) {
 			// combined pair is a numeric power which can be simplified
@@ -682,10 +682,10 @@ ex mul::expand(unsigned options) const
 	non_adds.reserve(expanded_seq.size());
 	epvector::const_iterator cit = expanded_seq.begin(), last = expanded_seq.end();
 	while (cit != last) {
-		if (is_ex_exactly_of_type(cit->rest, add) &&
+		if (is_exactly_a<add>(cit->rest) &&
 			(cit->coeff.is_equal(_ex1))) {
 			++number_of_adds;
-			if (is_ex_exactly_of_type(last_expanded, add)) {
+			if (is_exactly_a<add>(last_expanded)) {
 				const add & add1 = ex_to<add>(last_expanded);
 				const add & add2 = ex_to<add>(cit->rest);
 				int n1 = add1.nops();
@@ -714,7 +714,7 @@ ex mul::expand(unsigned options) const
 	
 	// Now the only remaining thing to do is to multiply the factors which
 	// were not sums into the "last_expanded" sum
-	if (is_ex_exactly_of_type(last_expanded, add)) {
+	if (is_exactly_a<add>(last_expanded)) {
 		const add & finaladd = ex_to<add>(last_expanded);
 		exvector distrseq;
 		int n = finaladd.nops();

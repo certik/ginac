@@ -365,7 +365,7 @@ ex matrix::add_indexed(const ex & self, const ex & other) const
 	GINAC_ASSERT(self.nops() == 2 || self.nops() == 3);
 
 	// Only add two matrices
-	if (is_ex_of_type(other.op(0), matrix)) {
+	if (is_a<matrix>(other.op(0))) {
 		GINAC_ASSERT(other.nops() == 2 || other.nops() == 3);
 
 		const matrix &self_matrix = ex_to<matrix>(self.op(0));
@@ -416,7 +416,7 @@ bool matrix::contract_with(exvector::iterator self, exvector::iterator other, ex
 	GINAC_ASSERT(is_a<matrix>(self->op(0)));
 
 	// Only contract with other matrices
-	if (!is_ex_of_type(other->op(0), matrix))
+	if (!is_a<matrix>(other->op(0)))
 		return false;
 
 	GINAC_ASSERT(other->nops() == 2 || other->nops() == 3);
@@ -605,7 +605,7 @@ matrix matrix::pow(const ex & expn) const
 	if (col!=row)
 		throw (std::logic_error("matrix::pow(): matrix not square"));
 	
-	if (is_ex_exactly_of_type(expn, numeric)) {
+	if (is_exactly_a<numeric>(expn)) {
 		// Integer cases are computed by successive multiplication, using the
 		// obvious shortcut of storing temporaries, like A^4 == (A*A)*(A*A).
 		if (expn.info(info_flags::integer)) {

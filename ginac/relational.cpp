@@ -318,7 +318,7 @@ relational::safe_bool relational::make_safe_bool(bool cond) const
 relational::operator relational::safe_bool() const
 {
 	const ex df = lh-rh;
-	if (!is_ex_exactly_of_type(df,numeric))
+	if (!is_exactly_a<numeric>(df))
 		// cannot decide on non-numerical results
 		return o==not_equal ? make_safe_bool(true) : make_safe_bool(false);
 

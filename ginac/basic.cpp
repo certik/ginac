@@ -109,7 +109,7 @@ void basic::archive(archive_node &n) const
  *               level for placing parentheses and formatting */
 void basic::print(const print_context & c, unsigned level) const
 {
-	if (is_of_type(c, print_tree)) {
+	if (is_a<print_tree>(c)) {
 
 		c.s << std::string(level, ' ') << class_name()
 		    << std::hex << ", hash=0x" << hashvalue << ", flags=0x" << flags << std::dec
@@ -189,7 +189,7 @@ ex & basic::let_op(int i)
 
 ex basic::operator[](const ex & index) const
 {
-	if (is_ex_exactly_of_type(index,numeric))
+	if (is_exactly_a<numeric>(index))
 		return op(ex_to<numeric>(index).to_int());
 
 	throw(std::invalid_argument("non-numeric indices not supported by this type"));
@@ -260,7 +260,7 @@ ex basic::coeff(const ex & s, int n) const
 ex basic::collect(const ex & s, bool distributed) const
 {
 	ex x;
-	if (is_ex_of_type(s, lst)) {
+	if (is_a<lst>(s)) {
 
 		// List of objects specified
 		if (s.nops() == 0)
@@ -459,7 +459,7 @@ bool basic::match(const ex & pattern, lst & repl_lst) const
 	Bog is the king of Pattern.
 */
 
-	if (is_ex_exactly_of_type(pattern, wildcard)) {
+	if (is_exactly_a<wildcard>(pattern)) {
 
 		// Wildcard matches anything, but check whether we already have found
 		// a match for that wildcard first (if so, it the earlier match must

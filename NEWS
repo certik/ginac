@@ -1,25 +1,22 @@
 This file records noteworthy changes.
 
 1.1.0 (<date>)
-* "(x+1).subs(x==x-1)" now returns the correct result "x" instead of "x-1".
-* Fixed LaTeX output of indexed objects.
+* Removed deprecated macros is_ex_a, is_ex_exactly_a and friends.
 
-1.0.5 (<date>)
+Backlog from 1.0.n:
+* Fixed LaTeX output of indexed and matrix objects.
+* Fixed matrix::pow(n) for n==0.
+* "(x+1).subs(x==x-1)" now returns the correct result "x" instead of "x-1".
 * (l)degree(s), coeff(s, n) and collect(s) were extended to accept expressions
   of any class (except add/mul/ncmul/numeric) for "s". They should even work
   if "s" is a "power" object, as long as the exponent is non-integer, but with
   some limitations. For example, you can "collect(a*2^x+b*2^x, 2^x)" to get
   "(a+b)*2^x", but "degree(2^(3*x), 2^x)" yields 0 instead of 3).
-
-1.0.4 (24 January 2001)
 * Speedup in expand().
 * Faster Bernoulli numbers (Markus Nullmeier).
-* Some minor bugfixes and documentation updates.
-
-1.0.3 (21 December 2001)
 * Fixed a bug where quo() would call vector::reserve() with a negative
   argument.
-* Fix several bugs in code generation.
+* Several small bugfices in code generation, output and documentation.
 
 1.0.2 (19 December 2001)
 * Input parser recognizes "sqrt()", which is also used in the output.

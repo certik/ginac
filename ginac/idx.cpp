@@ -145,7 +145,7 @@ DEFAULT_UNARCHIVE(spinidx)
 
 void idx::print(const print_context & c, unsigned level) const
 {
-	if (is_of_type(c, print_tree)) {
+	if (is_a<print_tree>(c)) {
 
 		c.s << std::string(level, ' ') << class_name()
 		    << std::hex << ", hash=0x" << hashvalue << ", flags=0x" << flags << std::dec
@@ -160,7 +160,7 @@ void idx::print(const print_context & c, unsigned level) const
 			c.s << "{";
 		else
 			c.s << ".";
-		bool need_parens = !(is_ex_exactly_of_type(value, numeric) || is_ex_of_type(value, symbol));
+		bool need_parens = !(is_exactly_a<numeric>(value) || is_a<symbol>(value));
 		if (need_parens)
 			c.s << "(";
 		value.print(c);
@@ -173,7 +173,7 @@ void idx::print(const print_context & c, unsigned level) const
 
 void varidx::print(const print_context & c, unsigned level) const
 {
-	if (is_of_type(c, print_tree)) {
+	if (is_a<print_tree>(c)) {
 
 		c.s << std::string(level, ' ') << class_name()
 		    << std::hex << ", hash=0x" << hashvalue << ", flags=0x" << flags << std::dec
@@ -192,7 +192,7 @@ void varidx::print(const print_context & c, unsigned level) const
 			else
 				c.s << "~";
 		}
-		bool need_parens = !(is_ex_exactly_of_type(value, numeric) || is_ex_of_type(value, symbol));
+		bool need_parens = !(is_exactly_a<numeric>(value) || is_a<symbol>(value));
 		if (need_parens)
 			c.s << "(";
 		value.print(c);
@@ -205,7 +205,7 @@ void varidx::print(const print_context & c, unsigned level) const
 
 void spinidx::print(const print_context & c, unsigned level) const
 {
-	if (is_of_type(c, print_tree)) {
+	if (is_a<print_tree>(c)) {
 
 		c.s << std::string(level, ' ') << class_name()
 		    << std::hex << ", hash=0x" << hashvalue << ", flags=0x" << flags << std::dec
@@ -218,7 +218,7 @@ void spinidx::print(const print_context & c, unsigned level) const
 
 	} else {
 
-		bool is_tex = is_of_type(c, print_latex);
+		bool is_tex = is_a<print_latex>(c);
 		if (is_tex) {
 			if (covariant)
 				c.s << "_{";
@@ -236,7 +236,7 @@ void spinidx::print(const print_context & c, unsigned level) const
 			else
 				c.s << "*";
 		}
-		bool need_parens = !(is_ex_exactly_of_type(value, numeric) || is_ex_of_type(value, symbol));
+		bool need_parens = !(is_exactly_a<numeric>(value) || is_a<symbol>(value));
 		if (need_parens)
 			c.s << "(";
 		value.print(c);
@@ -356,7 +356,7 @@ ex idx::subs(const lst & ls, const lst & lr, bool no_pattern) const
 		if (is_equal(ex_to<basic>(ls.op(i)))) {
 
 			// Substitution index->index
-			if (is_ex_of_type(lr.op(i), idx))
+			if (is_a<idx>(lr.op(i)))
 				return lr.op(i);
 
 			// Otherwise substitute value
@@ -395,7 +395,7 @@ bool idx::is_dummy_pair_same_type(const basic & other) const
 	const idx &o = static_cast<const idx &>(other);
 
 	// Only pure symbols form dummy pairs, "2n+1" doesn't
-	if (!is_ex_of_type(value, symbol))
+	if (!is_a<symbol>(value))
 		return false;
 
 	// Value must be equal, of course
@@ -475,7 +475,7 @@ bool is_dummy_pair(const idx & i1, const idx & i2)
 bool is_dummy_pair(const ex & e1, const ex & e2)
 {
 	// The expressions must be indices
-	if (!is_ex_of_type(e1, idx) || !is_ex_of_type(e2, idx))
+	if (!is_a<idx>(e1) || !is_a<idx>(e2))
 		return false;
 
 	return is_dummy_pair(ex_to<idx>(e1), ex_to<idx>(e2));
