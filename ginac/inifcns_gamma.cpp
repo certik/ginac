@@ -30,6 +30,7 @@
 #include "numeric.h"
 #include "power.h"
 #include "relational.h"
+#include "operators.h"
 #include "symbol.h"
 #include "symmetry.h"
 #include "utils.h"

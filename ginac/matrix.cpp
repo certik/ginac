@@ -32,6 +32,7 @@
 #include "indexed.h"
 #include "power.h"
 #include "symbol.h"
+#include "operators.h"
 #include "normal.h"
 #include "print.h"
 #include "archive.h"

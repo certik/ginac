@@ -27,6 +27,7 @@
 #include "symmetry.h"
 #include "lst.h"
 #include "numeric.h" // for factorial()
+#include "operators.h"
 #include "print.h"
 #include "archive.h"
 #include "utils.h"

@@ -29,6 +29,7 @@
 #include "indexed.h"
 #include "symmetry.h"
 #include "relational.h"
+#include "operators.h"
 #include "lst.h"
 #include "numeric.h"
 #include "matrix.h"

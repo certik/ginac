@@ -31,6 +31,7 @@
 #include "mul.h"
 #include "power.h"
 #include "relational.h"
+#include "operators.h"
 #include "symbol.h"
 #include "print.h"
 #include "archive.h"

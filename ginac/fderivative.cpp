@@ -23,6 +23,7 @@
 #include <iostream>
 
 #include "fderivative.h"
+#include "operators.h"
 #include "print.h"
 #include "archive.h"
 #include "utils.h"

@@ -24,6 +24,7 @@
 #include <stdexcept>
 
 #include "relational.h"
+#include "operators.h"
 #include "numeric.h"
 #include "print.h"
 #include "archive.h"

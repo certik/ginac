@@ -30,6 +30,7 @@
 #include "matrix.h"
 #include "mul.h"
 #include "power.h"
+#include "operators.h"
 #include "relational.h"
 #include "pseries.h"
 #include "symbol.h"

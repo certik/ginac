@@ -32,6 +32,7 @@
 #include "symmetry.h"
 #include "lst.h"
 #include "relational.h"
+#include "operators.h"
 #include "mul.h"
 #include "print.h"
 #include "archive.h"

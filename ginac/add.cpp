@@ -25,8 +25,9 @@
 
 #include "add.h"
 #include "mul.h"
-#include "matrix.h"
 #include "archive.h"
+#include "operators.h"
+#include "matrix.h"
 #include "utils.h"
 
 namespace GiNaC {
@@ -473,14 +474,14 @@ expair add::combine_ex_with_coeff_to_pair(const ex & e,
 		mulcopyp->clearflag(status_flags::evaluated);
 		mulcopyp->clearflag(status_flags::hash_calculated);
 		mulcopyp->setflag(status_flags::dynallocated);
-		if (are_ex_trivially_equal(c, _ex1))
+		if (c.is_equal(_ex1))
 			return expair(*mulcopyp, numfactor);
-		else if (are_ex_trivially_equal(numfactor, _ex1))
+		else if (numfactor.is_equal(_ex1))
 			return expair(*mulcopyp, c);
 		else
 			return expair(*mulcopyp, ex_to<numeric>(numfactor).mul_dyn(ex_to<numeric>(c)));
 	} else if (is_exactly_a<numeric>(e)) {
-		if (are_ex_trivially_equal(c, _ex1))
+		if (c.is_equal(_ex1))
 			return expair(e, _ex1);
 		return expair(ex_to<numeric>(e).mul_dyn(ex_to<numeric>(c)), _ex1);
 	}

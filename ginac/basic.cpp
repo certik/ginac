@@ -34,6 +34,7 @@
 #include "lst.h"
 #include "ncmul.h"
 #include "relational.h"
+#include "operators.h"
 #include "wildcard.h"
 #include "print.h"
 #include "archive.h"

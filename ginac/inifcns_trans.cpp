@@ -29,6 +29,7 @@
 #include "constant.h"
 #include "numeric.h"
 #include "power.h"
+#include "operators.h"
 #include "relational.h"
 #include "symbol.h"
 #include "pseries.h"

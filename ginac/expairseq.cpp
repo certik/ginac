@@ -33,6 +33,7 @@
 #include "wildcard.h"
 #include "print.h"
 #include "archive.h"
+#include "operators.h"
 #include "utils.h"
 
 #if EXPAIRSEQ_USE_HASHTAB

@@ -27,6 +27,7 @@
 #include "mul.h"
 #include "add.h"
 #include "power.h"
+#include "operators.h"
 #include "matrix.h"
 #include "archive.h"
 #include "utils.h"
@@ -119,7 +120,6 @@ DEFAULT_ARCHIVING(mul)
 //////////
 
 // public
-
 void mul::print(const print_context & c, unsigned level) const
 {
 	if (is_a<print_tree>(c)) {
@@ -189,7 +189,7 @@ void mul::print(const print_context & c, unsigned level) const
 		bool first = true;
 
 		// First print the overall numeric coefficient
-		numeric coeff = ex_to<numeric>(overall_coeff);
+		const numeric &coeff = ex_to<numeric>(overall_coeff);
 		if (coeff.csgn() == -1)
 			c.s << '-';
 		if (!coeff.is_equal(_num1) &&
@@ -581,9 +581,9 @@ expair mul::combine_ex_with_coeff_to_pair(const ex & e,
 {
 	// to avoid duplication of power simplification rules,
 	// we create a temporary power object
-	// otherwise it would be hard to correctly simplify
+	// otherwise it would be hard to correctly evaluate
 	// expression like (4^(1/3))^(3/2)
-	if (are_ex_trivially_equal(c,_ex1))
+	if (c.is_equal(_ex1))
 		return split_ex_to_pair(e);
 
 	return split_ex_to_pair(power(e,c));
@@ -594,9 +594,9 @@ expair mul::combine_pair_with_coeff_to_pair(const expair & p,
 {
 	// to avoid duplication of power simplification rules,
 	// we create a temporary power object
-	// otherwise it would be hard to correctly simplify
+	// otherwise it would be hard to correctly evaluate
 	// expression like (4^(1/3))^(3/2)
-	if (are_ex_trivially_equal(c,_ex1))
+	if (c.is_equal(_ex1))
 		return p;
 
 	return split_ex_to_pair(power(recombine_pair_to_ex(p),c));

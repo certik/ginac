@@ -27,7 +27,6 @@
 #include <functional>
 
 #include "basic.h"
-#include "operators.h"
 
 namespace GiNaC {
 

@@ -31,6 +31,7 @@
 #include "ncmul.h"
 #include "numeric.h"
 #include "constant.h"
+#include "operators.h"
 #include "inifcns.h" // for log() in power::derivative()
 #include "matrix.h"
 #include "indexed.h"
@@ -754,7 +755,7 @@ ex power::expand_add_2(const add & a) const
 		             !is_exactly_a<mul>(ex_to<power>(r).basis) ||
 		             !is_exactly_a<power>(ex_to<power>(r).basis));
 		
-		if (are_ex_trivially_equal(c,_ex1)) {
+		if (c.is_equal(_ex1)) {
 			if (is_exactly_a<mul>(r)) {
 				sum.push_back(expair(expand_mul(ex_to<mul>(r),_num2),
 				                     _ex1));
@@ -771,7 +772,7 @@ ex power::expand_add_2(const add & a) const
 				                     ex_to<numeric>(c).power_dyn(_num2)));
 			}
 		}
-			
+
 		for (epvector::const_iterator cit1=cit0+1; cit1!=last; ++cit1) {
 			const ex & r1 = cit1->rest;
 			const ex & c1 = cit1->coeff;

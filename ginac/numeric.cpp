@@ -34,6 +34,7 @@
 #include "numeric.h"
 #include "ex.h"
 #include "print.h"
+#include "operators.h"
 #include "archive.h"
 #include "tostring.h"
 #include "utils.h"

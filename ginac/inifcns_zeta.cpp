@@ -28,6 +28,7 @@
 #include "numeric.h"
 #include "power.h"
 #include "symbol.h"
+#include "operators.h"
 #include "utils.h"
 
 namespace GiNaC {

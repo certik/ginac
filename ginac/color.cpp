@@ -27,6 +27,7 @@
 #include "idx.h"
 #include "ncmul.h"
 #include "symmetry.h"
+#include "operators.h"
 #include "numeric.h"
 #include "mul.h"
 #include "power.h" // for sqrt()
