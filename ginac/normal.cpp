@@ -93,7 +93,7 @@ static struct _stat_print {
  *  @return "false" if no symbol was found, "true" otherwise */
 static bool get_first_symbol(const ex &e, const symbol *&x)
 {
-	if (is_exactly_a<symbol>(e)) {
+	if (is_a<symbol>(e)) {
 		x = &ex_to<symbol>(e);
 		return true;
 	} else if (is_exactly_a<add>(e) || is_exactly_a<mul>(e)) {
@@ -170,7 +170,7 @@ static void add_symbol(const symbol *s, sym_desc_vec &v)
 // Collect all symbols of an expression (used internally by get_symbol_stats())
 static void collect_symbols(const ex &e, sym_desc_vec &v)
 {
-	if (is_exactly_a<symbol>(e)) {
+	if (is_a<symbol>(e)) {
 		add_symbol(&ex_to<symbol>(e), v);
 	} else if (is_exactly_a<add>(e) || is_exactly_a<mul>(e)) {
 		for (unsigned i=0; i<e.nops(); i++)
@@ -242,7 +242,7 @@ static numeric lcmcoeff(const ex &e, const numeric &l)
 			c *= lcmcoeff(e.op(i), _num1);
 		return lcm(c, l);
 	} else if (is_exactly_a<power>(e)) {
-		if (is_exactly_a<symbol>(e.op(0)))
+		if (is_a<symbol>(e.op(0)))
 			return l;
 		else
 			return pow(lcmcoeff(e.op(0), l), ex_to<numeric>(e.op(1)));
@@ -287,7 +287,7 @@ static ex multiply_lcm(const ex &e, const numeric &lcm)
 			v.push_back(multiply_lcm(e.op(i), lcm));
 		return (new add(v))->setflag(status_flags::dynallocated);
 	} else if (is_exactly_a<power>(e)) {
-		if (is_exactly_a<symbol>(e.op(0)))
+		if (is_a<symbol>(e.op(0)))
 			return e * lcm;
 		else
 			return pow(multiply_lcm(e.op(0), lcm.power(ex_to<numeric>(e.op(1)).inverse())), e.op(1));
@@ -1780,7 +1780,7 @@ static exvector sqrfree_yun(const ex &a, const symbol &x)
  */
 ex sqrfree(const ex &a, const lst &l)
 {
-	if (is_a<numeric>(a) ||     // algorithm does not trap a==0
+	if (is_exactly_a<numeric>(a) ||     // algorithm does not trap a==0
 	    is_a<symbol>(a))        // shortcut
 		return a;
 
@@ -2421,7 +2421,7 @@ ex expairseq::to_rational(lst &repl_lst) const
  *  to 1, unless you're accumulating factors). */
 static ex find_common_factor(const ex & e, ex & factor, lst & repl)
 {
-	if (is_a<add>(e)) {
+	if (is_exactly_a<add>(e)) {
 
 		unsigned num = e.nops();
 		exvector terms; terms.reserve(num);
@@ -2431,7 +2431,7 @@ static ex find_common_factor(const ex & e, ex & factor, lst & repl)
 		for (unsigned i=0; i<num; i++) {
 			ex x = e.op(i).to_rational(repl);
 
-			if (is_a<add>(x) || is_a<mul>(x)) {
+			if (is_exactly_a<add>(x) || is_exactly_a<mul>(x)) {
 				ex f = 1;
 				x = find_common_factor(x, f, repl);
 				x *= f;
@@ -2457,7 +2457,7 @@ static ex find_common_factor(const ex & e, ex & factor, lst & repl)
 
 			// Try to avoid divide() because it expands the polynomial
 			ex &t = terms[i];
-			if (is_a<mul>(t)) {
+			if (is_exactly_a<mul>(t)) {
 				for (unsigned j=0; j<t.nops(); j++) {
 					if (t.op(j).is_equal(gc)) {
 						exvector v; v.reserve(t.nops());
@@ -2479,7 +2479,7 @@ term_done:	;
 		}
 		return (new add(terms))->setflag(status_flags::dynallocated);
 
-	} else if (is_a<mul>(e)) {
+	} else if (is_exactly_a<mul>(e)) {
 
 		unsigned num = e.nops();
 		exvector v; v.reserve(num);
@@ -2489,10 +2489,10 @@ term_done:	;
 
 		return (new mul(v))->setflag(status_flags::dynallocated);
 
-	} else if (is_a<power>(e)) {
+	} else if (is_exactly_a<power>(e)) {
 
 		ex x = e.to_rational(repl);
-		if (is_a<power>(x) && x.op(1).info(info_flags::negative))
+		if (is_exactly_a<power>(x) && x.op(1).info(info_flags::negative))
 			return replace_with_symbol(x, repl);
 		else
 			return x;
@@ -2506,7 +2506,7 @@ term_done:	;
  *  'a*(b*x+b*y)' to 'a*b*(x+y)'. */
 ex collect_common_factors(const ex & e)
 {
-	if (is_a<add>(e) || is_a<mul>(e)) {
+	if (is_exactly_a<add>(e) || is_exactly_a<mul>(e)) {
 
 		lst repl;
 		ex factor = 1;

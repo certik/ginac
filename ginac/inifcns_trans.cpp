@@ -155,7 +155,7 @@ static ex log_series(const ex &arg,
                      int order,
                      unsigned options)
 {
-	GINAC_ASSERT(is_exactly_a<symbol>(rel.lhs()));
+	GINAC_ASSERT(is_a<symbol>(rel.lhs()));
 	ex arg_pt;
 	bool must_expand_arg = false;
 	// maybe substitution of rel into arg fails because of a pole
@@ -469,7 +469,7 @@ static ex tan_series(const ex &x,
                      int order,
                      unsigned options)
 {
-	GINAC_ASSERT(is_exactly_a<symbol>(rel.lhs()));
+	GINAC_ASSERT(is_a<symbol>(rel.lhs()));
 	// method:
 	// Taylor series where there is no pole falls back to tan_deriv.
 	// On a pole simply expand sin(x)/cos(x).
@@ -635,7 +635,7 @@ static ex atan_series(const ex &arg,
                       int order,
                       unsigned options)
 {
-	GINAC_ASSERT(is_exactly_a<symbol>(rel.lhs()));
+	GINAC_ASSERT(is_a<symbol>(rel.lhs()));
 	// method:
 	// Taylor series where there is no pole or cut falls back to atan_deriv.
 	// There are two branch cuts, one runnig from I up the imaginary axis and
@@ -879,7 +879,7 @@ static ex tanh_series(const ex &x,
                       int order,
                       unsigned options)
 {
-	GINAC_ASSERT(is_exactly_a<symbol>(rel.lhs()));
+	GINAC_ASSERT(is_a<symbol>(rel.lhs()));
 	// method:
 	// Taylor series where there is no pole falls back to tanh_deriv.
 	// On a pole simply expand sinh(x)/cosh(x).
@@ -1020,7 +1020,7 @@ static ex atanh_series(const ex &arg,
                        int order,
                        unsigned options)
 {
-	GINAC_ASSERT(is_exactly_a<symbol>(rel.lhs()));
+	GINAC_ASSERT(is_a<symbol>(rel.lhs()));
 	// method:
 	// Taylor series where there is no pole or cut falls back to atanh_deriv.
 	// There are two branch cuts, one runnig from 1 up the real axis and one

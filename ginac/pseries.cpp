@@ -74,8 +74,8 @@ DEFAULT_DESTROY(pseries)
  *  @return newly constructed pseries */
 pseries::pseries(const ex &rel_, const epvector &ops_) : basic(TINFO_pseries), seq(ops_)
 {
-	GINAC_ASSERT(is_exactly_a<relational>(rel_));
-	GINAC_ASSERT(is_exactly_a<symbol>(rel_.lhs()));
+	GINAC_ASSERT(is_a<relational>(rel_));
+	GINAC_ASSERT(is_a<symbol>(rel_.lhs()));
 	point = rel_.rhs();
 	var = rel_.lhs();
 }
@@ -552,7 +552,7 @@ ex symbol::series(const relational & r, int order, unsigned options) const
 {
 	epvector seq;
 	const ex point = r.rhs();
-	GINAC_ASSERT(is_exactly_a<symbol>(r.lhs()));
+	GINAC_ASSERT(is_a<symbol>(r.lhs()));
 
 	if (this->is_equal_same_type(ex_to<symbol>(r.lhs()))) {
 		if (order > 0 && !point.is_zero())
@@ -908,7 +908,7 @@ ex power::series(const relational & r, int order, unsigned options) const
 ex pseries::series(const relational & r, int order, unsigned options) const
 {
 	const ex p = r.rhs();
-	GINAC_ASSERT(is_exactly_a<symbol>(r.lhs()));
+	GINAC_ASSERT(is_a<symbol>(r.lhs()));
 	const symbol &s = ex_to<symbol>(r.lhs());
 	
 	if (var.is_equal(s) && point.is_equal(p)) {
@@ -948,9 +948,9 @@ ex ex::series(const ex & r, int order, unsigned options) const
 	ex e;
 	relational rel_;
 	
-	if (is_exactly_a<relational>(r))
+	if (is_a<relational>(r))
 		rel_ = ex_to<relational>(r);
-	else if (is_exactly_a<symbol>(r))
+	else if (is_a<symbol>(r))
 		rel_ = relational(r,_ex0);
 	else
 		throw (std::logic_error("ex::series(): expansion point has unknown type"));
