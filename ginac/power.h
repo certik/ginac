@@ -78,9 +78,9 @@ protected:
 	
 	// non-virtual functions in this class
 protected:
-	ex expand_add(const add & a, int n) const;
-	ex expand_add_2(const add & a) const;
-	ex expand_mul(const mul & m, const numeric & n) const;
+	ex expand_add(const add & a, int n, unsigned options) const;
+	ex expand_add_2(const add & a, unsigned options) const;
+	ex expand_mul(const mul & m, const numeric & n, unsigned options) const;
 	
 // member variables
 	
