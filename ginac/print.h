@@ -33,9 +33,10 @@ class print_context
 {
 public:
 	print_context();
-	print_context(std::ostream &);
+	print_context(std::ostream &, unsigned options = 0);
 
 	std::ostream & s; /**< stream to output to */
+	unsigned options; /**< option flags */
 private:
 	// dummy virtual function to make the class polymorphic
 	virtual void dummy(void) {}
@@ -46,7 +47,7 @@ class print_latex : public print_context
 {
 public:
 	print_latex();
-	print_latex(std::ostream &);
+	print_latex(std::ostream &, unsigned options = 0);
 };
 
 /** Context for python pretty-print output. */
@@ -54,7 +55,7 @@ class print_python : public print_context
 {
 public:
 	print_python();
-	print_python(std::ostream &);
+	print_python(std::ostream &, unsigned options = 0);
 };
 
 /** Context for python-parsable output. */
@@ -62,7 +63,7 @@ class print_python_repr : public print_context
 {
 public:
 	print_python_repr();
-	print_python_repr(std::ostream &);
+	print_python_repr(std::ostream &, unsigned options = 0);
 };
 
 /** Context for tree-like output for debugging. */
@@ -70,7 +71,7 @@ class print_tree : public print_context
 {
 public:
 	print_tree(unsigned d = 4);
-	print_tree(std::ostream &, unsigned d = 4);
+	print_tree(std::ostream &, unsigned options = 0, unsigned d = 4);
 	const unsigned delta_indent; /**< size of indentation step */
 };
 
@@ -79,7 +80,7 @@ class print_csrc : public print_context
 {
 public:
 	print_csrc();
-	print_csrc(std::ostream &);
+	print_csrc(std::ostream &, unsigned options = 0);
 };
 
 /** Context for C source output using float numbers. */
@@ -87,7 +88,7 @@ class print_csrc_float : public print_csrc
 {
 public:
 	print_csrc_float();
-	print_csrc_float(std::ostream &);
+	print_csrc_float(std::ostream &, unsigned options = 0);
 };
 
 /** Context for C source output using double numbers. */
@@ -95,7 +96,7 @@ class print_csrc_double : public print_csrc
 {
 public:
 	print_csrc_double();
-	print_csrc_double(std::ostream &);
+	print_csrc_double(std::ostream &, unsigned options = 0);
 };
 
 /** Context for C source output using CLN numbers. */
@@ -103,7 +104,7 @@ class print_csrc_cl_N : public print_csrc
 {
 public:
 	print_csrc_cl_N();
-	print_csrc_cl_N(std::ostream &);
+	print_csrc_cl_N(std::ostream &, unsigned options = 0);
 };
 
 /** Check if obj is a T, including base classes. */

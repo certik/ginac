@@ -169,6 +169,11 @@ void idx::print(const print_context & c, unsigned level) const
 		value.print(c);
 		if (need_parens)
 			c.s << ")";
+		if (c.options & print_options::print_index_dimensions) {
+			c.s << "[";
+			dim.print(c);
+			c.s << "]";
+		}
 		if (is_a<print_latex>(c))
 			c.s << "}";
 	}
@@ -201,6 +206,11 @@ void varidx::print(const print_context & c, unsigned level) const
 		value.print(c);
 		if (need_parens)
 			c.s << ")";
+		if (c.options & print_options::print_index_dimensions) {
+			c.s << "[";
+			dim.print(c);
+			c.s << "]";
+		}
 		if (is_a<print_latex>(c))
 			c.s << "}";
 	}
