@@ -233,6 +233,8 @@ public:
 	function_options(std::string const & n, std::string const & tn=std::string());
 	~function_options();
 	void initialize(void);
+
+	function_options & dummy() { return *this; }
 	function_options & set_name(std::string const & n, std::string const & tn=std::string());
 	function_options & latex_name(std::string const & tn);
 // the following lines have been generated for max. ${maxargs} parameters
@@ -445,7 +447,7 @@ function_options::function_options()
 function_options::function_options(std::string const & n, std::string const & tn)
 {
 	initialize();
-	set_name(n,tn);
+	set_name(n, tn);
 }
 
 function_options::~function_options()
@@ -455,7 +457,7 @@ function_options::~function_options()
 
 void function_options::initialize(void)
 {
-	set_name("unnamed_function","\\\\mbox{unnamed}");
+	set_name("unnamed_function", "\\\\mbox{unnamed}");
 	nparams = 0;
 	eval_f = evalf_f = derivative_f = series_f = 0;
 	evalf_params_first = true;
