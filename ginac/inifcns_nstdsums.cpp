@@ -3,7 +3,7 @@
  *  Implementation of some special functions that have a representation as nested sums.
  *  The functions are: 
  *    classical polylogarithm              Li(n,x)
- *    multiple polylogarithm               Li(lst(n_1,...,n_k),lst(x_1,...,x_k)
+ *    multiple polylogarithm               Li(lst(n_1,...,n_k),lst(x_1,...,x_k))
  *    nielsen's generalized polylogarithm  S(n,p,x)
  *    harmonic polylogarithm               H(lst(m_1,...,m_k),x)
  *    multiple zeta value                  mZeta(lst(m_1,...,m_k))
@@ -458,7 +458,26 @@ static ex Li_series(const ex& x1, const ex& x2, const relational& rel, int order
 }
 
 
-REGISTER_FUNCTION(Li, eval_func(Li_eval).evalf_func(Li_evalf).do_not_evalf_params().series_func(Li_series));
+static ex Li_deriv(const ex& x1, const ex& x2, unsigned deriv_param)
+{
+	GINAC_ASSERT(deriv_param < 2);
+	if (deriv_param == 0) {
+		return 0;
+	}
+	if (x1 > 0) {
+		return Li(x1-1, x2) / x2;
+	} else {
+		return 1/(1-x2);
+	}
+}
+
+
+REGISTER_FUNCTION(Li,
+		eval_func(Li_eval).
+		evalf_func(Li_evalf).
+		do_not_evalf_params().
+		series_func(Li_series).
+		derivative_func(Li_deriv));
 
 
 //////////////////////////////////////////////////////////////////////
@@ -845,7 +864,26 @@ static ex S_series(const ex& x1, const ex& x2, const ex& x3, const relational& r
 }
 
 
-REGISTER_FUNCTION(S, eval_func(S_eval).evalf_func(S_evalf).do_not_evalf_params().series_func(S_series));
+static ex S_deriv(const ex& x1, const ex& x2, const ex& x3, unsigned deriv_param)
+{
+	GINAC_ASSERT(deriv_param < 3);
+	if (deriv_param < 2) {
+		return 0;
+	}
+	if (x1 > 0) {
+		return S(x1-1, x2, x3) / x3;
+	} else {
+		return S(x1, x2-1, x3) / (1-x3);
+	}
+}
+
+
+REGISTER_FUNCTION(S,
+		eval_func(S_eval).
+		evalf_func(S_evalf).
+		do_not_evalf_params().
+		series_func(S_series).
+		derivative_func(S_deriv));
 
 
 //////////////////////////////////////////////////////////////////////
@@ -908,6 +946,9 @@ static ex H_evalf(const ex& x1, const ex& x2)
 				return H(x1,x2).hold();
 			}
 		}
+		if (x1.nops() < 1) {
+			return 1;
+		}
 		cln::cl_N x = ex_to<numeric>(x2).to_cl_N();
 		if (x == 1) {
 			lst x1rev;
@@ -941,7 +982,37 @@ static ex H_series(const ex& x1, const ex& x2, const relational& rel, int order,
 }
 
 
-REGISTER_FUNCTION(H, eval_func(H_eval).evalf_func(H_evalf).do_not_evalf_params().series_func(H_series));
+static ex H_deriv(const ex& x1, const ex& x2, unsigned deriv_param)
+{
+	GINAC_ASSERT(deriv_param < 2);
+	if (deriv_param == 0) {
+		return 0;
+	}
+	if (is_a<lst>(x1)) {
+		lst newparameter = ex_to<lst>(x1);
+		if (x1.op(0) == 1) {
+			newparameter.remove_first();
+			return 1/(1-x2) * H(newparameter, x2);
+		} else {
+			newparameter[0]--;
+			return H(newparameter, x2).hold() / x2;
+		}
+	} else {
+		if (x1 == 1) {
+			return 1/(1-x2);
+		} else {
+			return H(x1-1, x2).hold() / x2;
+		}
+	}
+}
+
+
+REGISTER_FUNCTION(H,
+		eval_func(H_eval).
+		evalf_func(H_evalf).
+		do_not_evalf_params().
+		series_func(H_series).
+		derivative_func(H_deriv));
 
 
 //////////////////////////////////////////////////////////////////////
@@ -1264,7 +1335,17 @@ static ex mZeta_series(const ex& x1, const relational& rel, int order, unsigned 
 }
 
 
-REGISTER_FUNCTION(mZeta, eval_func(mZeta_eval).evalf_func(mZeta_evalf).do_not_evalf_params().series_func(mZeta_series));
+static ex mZeta_deriv(const ex& x, unsigned deriv_param)
+{
+	return 0;
+}
+
+
+REGISTER_FUNCTION(mZeta, 
+		eval_func(mZeta_eval).
+		evalf_func(mZeta_evalf).
+		do_not_evalf_params().series_func(mZeta_series).
+		derivative_func(mZeta_deriv));
 
 
 } // namespace GiNaC
