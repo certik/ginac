@@ -669,6 +669,10 @@ const numeric numeric::power(const numeric &other) const
 }
 
 
+
+/** Numerical addition method.  Adds argument to *this and returns result as
+ *  a numeric object on the heap.  Use internally only for direct wrapping into
+ *  an ex object, where the result would end up on the heap anyways. */
 const numeric &numeric::add_dyn(const numeric &other) const
 {
 	// Efficiency shortcut: trap the neutral element by pointer.
@@ -678,17 +682,25 @@ const numeric &numeric::add_dyn(const numeric &other) const
 		return *this;
 	
 	return static_cast<const numeric &>((new numeric(cln::the<cln::cl_N>(value)+cln::the<cln::cl_N>(other.value)))->
-										setflag(status_flags::dynallocated));
+	                                    setflag(status_flags::dynallocated));
 }
 
 
+/** Numerical subtraction method.  Subtracts argument from *this and returns
+ *  result as a numeric object on the heap.  Use internally only for direct
+ *  wrapping into an ex object, where the result would end up on the heap
+ *  anyways. */
 const numeric &numeric::sub_dyn(const numeric &other) const
 {
 	return static_cast<const numeric &>((new numeric(cln::the<cln::cl_N>(value)-cln::the<cln::cl_N>(other.value)))->
-										setflag(status_flags::dynallocated));
+	                                    setflag(status_flags::dynallocated));
 }
 
 
+/** Numerical multiplication method.  Multiplies *this and argument and returns
+ *  result as a numeric object on the heap.  Use internally only for direct
+ *  wrapping into an ex object, where the result would end up on the heap
+ *  anyways. */
 const numeric &numeric::mul_dyn(const numeric &other) const
 {
 	// Efficiency shortcut: trap the neutral element by pointer.
@@ -698,19 +710,29 @@ const numeric &numeric::mul_dyn(const numeric &other) const
 		return *this;
 	
 	return static_cast<const numeric &>((new numeric(cln::the<cln::cl_N>(value)*cln::the<cln::cl_N>(other.value)))->
-										setflag(status_flags::dynallocated));
+	                                    setflag(status_flags::dynallocated));
 }
 
 
+/** Numerical division method.  Divides *this by argument and returns result as
+ *  a numeric object on the heap.  Use internally only for direct wrapping
+ *  into an ex object, where the result would end up on the heap
+ *  anyways.
+ *
+ *  @exception overflow_error (division by zero) */
 const numeric &numeric::div_dyn(const numeric &other) const
 {
 	if (cln::zerop(cln::the<cln::cl_N>(other.value)))
 		throw std::overflow_error("division by zero");
 	return static_cast<const numeric &>((new numeric(cln::the<cln::cl_N>(value)/cln::the<cln::cl_N>(other.value)))->
-										setflag(status_flags::dynallocated));
+	                                    setflag(status_flags::dynallocated));
 }
 
 
+/** Numerical exponentiation.  Raises *this to the power given as argument and
+ *  returns result as a numeric object on the heap.  Use internally only for
+ *  direct wrapping into an ex object, where the result would end up on the
+ *  heap anyways. */
 const numeric &numeric::power_dyn(const numeric &other) const
 {
 	// Efficiency shortcut: trap the neutral exponent by pointer.
