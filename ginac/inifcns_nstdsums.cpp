@@ -1,6 +1,7 @@
 /** @file inifcns_nstdsums.cpp
  *
  *  Implementation of some special functions that have a representation as nested sums.
+ *  
  *  The functions are: 
  *    classical polylogarithm              Li(n,x)
  *    multiple polylogarithm               Li(lst(n_1,...,n_k),lst(x_1,...,x_k))
@@ -9,19 +10,32 @@
  *    multiple zeta value                  zeta(n) or zeta(lst(n_1,...,n_k))
  *
  *  Some remarks:
+ *    
  *    - All formulae used can be looked up in the following publications:
  *      [Kol] Nielsen's Generalized Polylogarithms, K.S.Kolbig, SIAM J.Math.Anal. 17 (1986), pp. 1232-1258.
  *    	[Cra] Fast Evaluation of Multiple Zeta Sums, R.E.Crandall, Math.Comp. 67 (1998), pp. 1163-1172.
- *    - Classical polylogarithms (Li) and nielsen's generalized polylogarithms (S) can be numerically
- *    	evaluated in the whole complex plane.
- *    - The calculation of classical polylogarithms is speed up by using Euler-Maclaurin summation (EuMac).
- *    - The remaining functions can only be numerically evaluated with arguments lying in the unit sphere
- *      at the moment.
- *    - The functions have no series expansion. To do it, you have to convert these functions
+ *    	[ReV] Harmonic Polylogarithms, E.Remiddi, J.A.M.Vermaseren, Int.J.Mod.Phys. A15 (2000), pp. 725-754
+ *
+ *    - The order of parameters and arguments of H, Li and zeta is defined according to their order in the
+ *      nested sums representation.
+ *    	
+ *    - Except for the multiple polylogarithm all functions can be nummerically evaluated with arguments in
+ *      the whole complex plane. Multiple polylogarithms evaluate only if each argument x_i is smaller than
+ *      one. The parameters for every function (n, p or n_i) must be positive integers.
+ *      
+ *    - The calculation of classical polylogarithms is speed up by using Bernoulli numbers and 
+ *      look-up tables. S uses look-up tables as well. The zeta function applies the algorithm in
+ *      [Cra] for speed up.
+ *      
+ *    - The functions have no series expansion as nested sums. To do it, you have to convert these functions
  *      into the appropriate objects from the nestedsums library, do the expansion and convert the
  *      result back. 
+ *      
  *    - Numerical testing of this implementation has been performed by doing a comparison of results
- *      between this software and the commercial M.......... 4.1.
+ *      between this software and the commercial M.......... 4.1. Multiple zeta values have been checked
+ *      by means of evaluations into simple zeta values. Harmonic polylogarithms have been checked by
+ *      comparison to S(n,p,x) for corresponding parameter combinations and by continuity checks
+ *      around |x|=1 along with comparisons to corresponding zeta functions.
  *
  */
 
@@ -62,9 +76,6 @@
 #include "utils.h"
 #include "wildcard.h"
 
-//DEBUG
-#include <iostream>
-using namespace std;
 
 namespace GiNaC {
 
@@ -78,17 +89,18 @@ namespace GiNaC {
 //////////////////////////////////////////////////////////////////////
 
 
+// anonymous namespace for helper functions
 namespace {
-// lookup table for Euler-Maclaurin optimization
+
+
+// lookup table for factors built from Bernoulli numbers
 // see fill_Xn()
 std::vector<std::vector<cln::cl_N> > Xn;
 int xnsize = 0;
-}
 
 
-// This function calculates the X_n. The X_n are needed for the Euler-Maclaurin summation (EMS) of
-// classical polylogarithms.
-// With EMS the polylogs can be calculated as follows:
+// This function calculates the X_n. The X_n are needed for speed up of classical polylogarithms.
+// With these numbers the polylogs can be calculated as follows:
 //   Li_p (x)  =  \sum_{n=0}^\infty X_{p-2}(n) u^{n+1}/(n+1)! with  u = -log(1-x)
 //   X_0(n) = B_n (Bernoulli numbers)
 //   X_p(n) = \sum_{k=0}^n binomial(n,k) B_{n-k} / (k+1) * X_{p-1}(k)
@@ -96,8 +108,8 @@ int xnsize = 0;
 // X_0 is special, it holds only the non-zero Bernoulli numbers with index 2 or greater.
 // This results in a slightly more complicated algorithm for the X_n.
 // The first index in Xn corresponds to the index of the polylog minus 2.
-// The second index in Xn corresponds to the index from the EMS.
-static void fill_Xn(int n)
+// The second index in Xn corresponds to the index from the actual sum.
+void fill_Xn(int n)
 {
 	// rule of thumb. needs to be improved. TODO
 	const int initsize = Digits * 3 / 2;
@@ -166,8 +178,8 @@ static void fill_Xn(int n)
 }
 
 
-// calculates Li(2,x) without EuMac
-static cln::cl_N Li2_do_sum(const cln::cl_N& x)
+// calculates Li(2,x) without Xn
+cln::cl_N Li2_do_sum(const cln::cl_N& x)
 {
 	cln::cl_N res = x;
 	cln::cl_N resbuf;
@@ -185,8 +197,8 @@ static cln::cl_N Li2_do_sum(const cln::cl_N& x)
 }
 
 
-// calculates Li(2,x) with EuMac
-static cln::cl_N Li2_do_sum_EuMac(const cln::cl_N& x)
+// calculates Li(2,x) with Xn
+cln::cl_N Li2_do_sum_Xn(const cln::cl_N& x)
 {
 	std::vector<cln::cl_N>::const_iterator it = Xn[0].begin();
 	cln::cl_N u = -cln::log(1-x);
@@ -205,8 +217,8 @@ static cln::cl_N Li2_do_sum_EuMac(const cln::cl_N& x)
 }
 
 
-// calculates Li(n,x), n>2 without EuMac
-static cln::cl_N Lin_do_sum(int n, const cln::cl_N& x)
+// calculates Li(n,x), n>2 without Xn
+cln::cl_N Lin_do_sum(int n, const cln::cl_N& x)
 {
 	cln::cl_N factor = x;
 	cln::cl_N res = x;
@@ -222,8 +234,8 @@ static cln::cl_N Lin_do_sum(int n, const cln::cl_N& x)
 }
 
 
-// calculates Li(n,x), n>2 with EuMac
-static cln::cl_N Lin_do_sum_EuMac(int n, const cln::cl_N& x)
+// calculates Li(n,x), n>2 with Xn
+cln::cl_N Lin_do_sum_Xn(int n, const cln::cl_N& x)
 {
 	std::vector<cln::cl_N>::const_iterator it = Xn[n-2].begin();
 	cln::cl_N u = -cln::log(1-x);
@@ -243,11 +255,11 @@ static cln::cl_N Lin_do_sum_EuMac(int n, const cln::cl_N& x)
 
 
 // forward declaration needed by function Li_projection and C below
-static numeric S_num(int n, int p, const numeric& x);
+numeric S_num(int n, int p, const numeric& x);
 
 
 // helper function for classical polylog Li
-static cln::cl_N Li_projection(int n, const cln::cl_N& x, const cln::float_format_t& prec)
+cln::cl_N Li_projection(int n, const cln::cl_N& x, const cln::float_format_t& prec)
 {
 	// treat n=2 as special case
 	if (n == 2) {
@@ -265,14 +277,14 @@ static cln::cl_N Li_projection(int n, const cln::cl_N& x, const cln::float_forma
 				
 				return Li2_do_sum(x);
 			} else {
-				return Li2_do_sum_EuMac(x);
+				return Li2_do_sum_Xn(x);
 			}
 		} else {
 			// choose the faster algorithm
 			if (cln::abs(cln::realpart(x)) > 0.75) {
 				return -Li2_do_sum(1-x) - cln::log(x) * cln::log(1-x) + cln::zeta(2);
 			} else {
-				return -Li2_do_sum_EuMac(1-x) - cln::log(x) * cln::log(1-x) + cln::zeta(2);
+				return -Li2_do_sum_Xn(1-x) - cln::log(x) * cln::log(1-x) + cln::zeta(2);
 			}
 		}
 	} else {
@@ -285,11 +297,11 @@ static cln::cl_N Li_projection(int n, const cln::cl_N& x, const cln::float_forma
 
 		if (cln::realpart(x) < 0.5) {
 			// choose the faster algorithm
-			// with n>=12 the "normal" summation always wins against EuMac
+			// with n>=12 the "normal" summation always wins against the method with Xn
 			if ((cln::abs(cln::realpart(x)) < 0.3) || (n >= 12)) {
 				return Lin_do_sum(n, x);
 			} else {
-				return Lin_do_sum_EuMac(n, x);
+				return Lin_do_sum_Xn(n, x);
 			}
 		} else {
 			cln::cl_N result = -cln::expt(cln::log(x), n-1) * cln::log(1-x) / cln::factorial(n-1);
@@ -304,7 +316,7 @@ static cln::cl_N Li_projection(int n, const cln::cl_N& x, const cln::float_forma
 
 
 // helper function for classical polylog Li
-static numeric Li_num(int n, const numeric& x)
+numeric Li_num(int n, const numeric& x)
 {
 	if (n == 1) {
 		// just a log
@@ -366,6 +378,9 @@ static numeric Li_num(int n, const numeric& x)
 }
 
 
+} // end of anonymous namespace
+
+
 //////////////////////////////////////////////////////////////////////
 //
 // Multiple polylogarithm  Li
@@ -375,7 +390,11 @@ static numeric Li_num(int n, const numeric& x)
 //////////////////////////////////////////////////////////////////////
 
 
-static cln::cl_N multipleLi_do_sum(const std::vector<int>& s, const std::vector<cln::cl_N>& x)
+// anonymous namespace for helper function
+namespace {
+
+
+cln::cl_N multipleLi_do_sum(const std::vector<int>& s, const std::vector<cln::cl_N>& x)
 {
 	const int j = s.size();
 
@@ -395,6 +414,9 @@ static cln::cl_N multipleLi_do_sum(const std::vector<int>& s, const std::vector<
 	
 	return t[0];
 }
+
+
+} // end of anonymous namespace
 
 
 //////////////////////////////////////////////////////////////////////
@@ -449,7 +471,7 @@ static ex Li_evalf(const ex& x1, const ex& x2)
 
 		std::vector<int> m;
 		std::vector<cln::cl_N> x;
-		for (int i=ex_to<numeric>(x1.nops()).to_int()-1; i>=0; i--) {
+		for (int i=0; i<ex_to<numeric>(x1.nops()).to_int(); i++) {
 			m.push_back(ex_to<numeric>(x1.op(i)).to_int());
 			x.push_back(ex_to<numeric>(x2.op(i)).to_cl_N());
 		}
@@ -500,13 +522,15 @@ REGISTER_FUNCTION(Li,
 //////////////////////////////////////////////////////////////////////
 
 
+// anonymous namespace for helper functions
 namespace {
+
+
 // lookup table for special Euler-Zagier-Sums (used for S_n,p(x))
 // see fill_Yn()
 std::vector<std::vector<cln::cl_N> > Yn;
 int ynsize = 0; // number of Yn[]
 int ynlength = 100; // initial length of all Yn[i]
-}
 
 
 // This function calculates the Y_n. The Y_n are needed for the evaluation of S_{n,p}(x).
@@ -517,7 +541,7 @@ int ynlength = 100; // initial length of all Yn[i]
 // The second index in Y_n corresponds to the running index of the outermost sum in the full Z-sum
 // representing S_{n,p}(x).
 // The calculation of Y_n uses the values from Y_{n-1}.
-static void fill_Yn(int n, const cln::float_format_t& prec)
+void fill_Yn(int n, const cln::float_format_t& prec)
 {
 	const int initsize = ynlength;
 	//const int initsize = initsize_Yn;
@@ -554,7 +578,7 @@ static void fill_Yn(int n, const cln::float_format_t& prec)
 
 
 // make Yn longer ... 
-static void make_Yn_longer(int newsize, const cln::float_format_t& prec)
+void make_Yn_longer(int newsize, const cln::float_format_t& prec)
 {
 
 	cln::cl_N one = cln::cl_float(1, prec);
@@ -586,7 +610,7 @@ static void make_Yn_longer(int newsize, const cln::float_format_t& prec)
 
 // helper function for S(n,p,x)
 // [Kol] (7.2)
-static cln::cl_N C(int n, int p)
+cln::cl_N C(int n, int p)
 {
 	cln::cl_N result;
 
@@ -645,7 +669,7 @@ static cln::cl_N C(int n, int p)
 
 // helper function for S(n,p,x)
 // [Kol] remark to (9.1)
-static cln::cl_N a_k(int k)
+cln::cl_N a_k(int k)
 {
 	cln::cl_N result;
 
@@ -664,7 +688,7 @@ static cln::cl_N a_k(int k)
 
 // helper function for S(n,p,x)
 // [Kol] remark to (9.1)
-static cln::cl_N b_k(int k)
+cln::cl_N b_k(int k)
 {
 	cln::cl_N result;
 
@@ -682,7 +706,7 @@ static cln::cl_N b_k(int k)
 
 
 // helper function for S(n,p,x)
-static cln::cl_N S_do_sum(int n, int p, const cln::cl_N& x, const cln::float_format_t& prec)
+cln::cl_N S_do_sum(int n, int p, const cln::cl_N& x, const cln::float_format_t& prec)
 {
 	if (p==1) {
 		return Li_projection(n+1, x, prec);
@@ -719,7 +743,7 @@ static cln::cl_N S_do_sum(int n, int p, const cln::cl_N& x, const cln::float_for
 
 
 // helper function for S(n,p,x)
-static cln::cl_N S_projection(int n, int p, const cln::cl_N& x, const cln::float_format_t& prec)
+cln::cl_N S_projection(int n, int p, const cln::cl_N& x, const cln::float_format_t& prec)
 {
 	// [Kol] (5.3)
 	if (cln::abs(cln::realpart(x)) > cln::cl_F("0.5")) {
@@ -744,7 +768,7 @@ static cln::cl_N S_projection(int n, int p, const cln::cl_N& x, const cln::float
 
 
 // helper function for S(n,p,x)
-static numeric S_num(int n, int p, const numeric& x)
+numeric S_num(int n, int p, const numeric& x)
 {
 	if (x == 1) {
 		if (n == 1) {
@@ -836,6 +860,9 @@ static numeric S_num(int n, int p, const numeric& x)
 }
 
 
+} // end of anonymous namespace
+
+
 //////////////////////////////////////////////////////////////////////
 //
 // Nielsen's generalized polylogarithm  S
@@ -906,10 +933,17 @@ REGISTER_FUNCTION(S,
 //////////////////////////////////////////////////////////////////////
 
 
-static ex convert_from_RV(const lst& parameterlst, const ex& arg);
+// anonymous namespace for helper functions
+namespace {
 
 
-static ex trafo_H_mult(const ex& h1, const ex& h2)
+// forward declaration
+ex convert_from_RV(const lst& parameterlst, const ex& arg);
+
+
+// multiplies an one-dimensional H with another H
+// [ReV] (18)
+ex trafo_H_mult(const ex& h1, const ex& h2)
 {
 	ex res;
 	ex hshort;
@@ -943,7 +977,7 @@ static ex trafo_H_mult(const ex& h1, const ex& h2)
 }
 
 
-namespace {
+// applies trafo_H_mult recursively on expressions
 struct map_trafo_H_mult : public map_function
 {
 	ex operator()(const ex& e)
@@ -1005,10 +1039,11 @@ struct map_trafo_H_mult : public map_function
 		return e;
 	}
 };
-} // anonymous namespace
 
 
-static ex trafo_H_prepend_one(const ex& e, const ex& arg)
+// do integration [ReV] (49)
+// put parameter 1 in front of existing parameters
+ex trafo_H_prepend_one(const ex& e, const ex& arg)
 {
 	ex h;
 	std::string name;
@@ -1037,7 +1072,9 @@ static ex trafo_H_prepend_one(const ex& e, const ex& arg)
 }
 
 
-static ex trafo_H_prepend_zero(const ex& e, const ex& arg)
+// do integration [ReV] (55)
+// put parameter 0 in front of existing parameters
+ex trafo_H_prepend_zero(const ex& e, const ex& arg)
 {
 	ex h;
 	std::string name;
@@ -1067,7 +1104,7 @@ static ex trafo_H_prepend_zero(const ex& e, const ex& arg)
 }
 
 
-namespace {
+// do x -> 1-x transformation
 struct map_trafo_H_1mx : public map_function
 {
 	ex operator()(const ex& e)
@@ -1150,6 +1187,7 @@ struct map_trafo_H_1mx : public map_function
 };
 
 
+// do x -> 1/x transformation
 struct map_trafo_H_1overx : public map_function
 {
 	ex operator()(const ex& e)
@@ -1226,6 +1264,7 @@ struct map_trafo_H_1overx : public map_function
 };
 
 
+// remove trailing zeros from H-parameters
 struct map_trafo_H_reduce_trailing_zeros : public map_function
 {
 	ex operator()(const ex& e)
@@ -1288,6 +1327,7 @@ struct map_trafo_H_reduce_trailing_zeros : public map_function
 };
 
 
+// recursively call convert_from_RV on expression
 struct map_trafo_H_convert : public map_function
 {
 	ex operator()(const ex& e)
@@ -1306,10 +1346,10 @@ struct map_trafo_H_convert : public map_function
 		return e;
 	}
 };
-} // anonymous namespace
 
 
-static lst convert_to_RV(const lst& o)
+// translate notation from nested sums to Remiddi/Vermaseren
+lst convert_to_RV(const lst& o)
 {
 	lst res;
 	for (lst::const_iterator it = o.begin(); it != o.end(); it++) {
@@ -1322,7 +1362,8 @@ static lst convert_to_RV(const lst& o)
 }
 
 
-static ex convert_from_RV(const lst& parameterlst, const ex& arg)
+// translate notation from Remiddi/Vermaseren to nested sums
+ex convert_from_RV(const lst& parameterlst, const ex& arg)
 {
 	lst newparameterlst;
 
@@ -1346,7 +1387,8 @@ static ex convert_from_RV(const lst& parameterlst, const ex& arg)
 }
 
 
-static cln::cl_N H_do_sum(const std::vector<int>& s, const cln::cl_N& x)
+// do the actual summation.
+cln::cl_N H_do_sum(const std::vector<int>& s, const cln::cl_N& x)
 {
 	const int j = s.size();
 
@@ -1369,6 +1411,9 @@ static cln::cl_N H_do_sum(const std::vector<int>& s, const cln::cl_N& x)
 	
 	return t[0];
 }
+
+
+} // end of anonymous namespace
 
 
 //////////////////////////////////////////////////////////////////////
@@ -1427,6 +1472,8 @@ static ex H_evalf(const ex& x1, const ex& x2)
 			return res.subs(xtemp==x2).evalf();
 		}
 
+		// since the x->1-x transformation produces a lot of terms, it is only
+		// efficient for argument near one.
 		if (cln::realpart(x) > 0.95) {
 			symbol xtemp("xtemp");
 			map_trafo_H_1mx trafo;
@@ -1436,7 +1483,7 @@ static ex H_evalf(const ex& x1, const ex& x2)
 			return res.subs(xtemp==x2).evalf();
 		}
 
-		// no trafo
+		// no trafo -> do summation
 		int count = x1.nops();
 		std::vector<int> r(count);
 		for (int i=0; i<count; i++) {
@@ -1500,7 +1547,11 @@ REGISTER_FUNCTION(H,
 //////////////////////////////////////////////////////////////////////
 
 
+// anonymous namespace for helper functions
 namespace {
+
+
+// parameters and data for [Cra] algorithm
 const cln::cl_N lambda = cln::cl_N("319/320");
 int L1;
 int L2;
@@ -1508,10 +1559,9 @@ std::vector<std::vector<cln::cl_N> > f_kj;
 std::vector<cln::cl_N> crB;
 std::vector<std::vector<cln::cl_N> > crG;
 std::vector<cln::cl_N> crX;
-}
 
 
-static void halfcyclic_convolute(const std::vector<cln::cl_N>& a, const std::vector<cln::cl_N>& b, std::vector<cln::cl_N>& c)
+void halfcyclic_convolute(const std::vector<cln::cl_N>& a, const std::vector<cln::cl_N>& b, std::vector<cln::cl_N>& c)
 {
 	const int size = a.size();
 	for (int n=0; n<size; n++) {
@@ -1524,7 +1574,7 @@ static void halfcyclic_convolute(const std::vector<cln::cl_N>& a, const std::vec
 
 
 // [Cra] section 4
-static void initcX(const std::vector<int>& s)
+void initcX(const std::vector<int>& s)
 {
 	const int k = s.size();
 
@@ -1561,7 +1611,7 @@ static void initcX(const std::vector<int>& s)
 
 
 // [Cra] section 4
-static cln::cl_N crandall_Y_loop(const cln::cl_N& Sqk)
+cln::cl_N crandall_Y_loop(const cln::cl_N& Sqk)
 {
 	cln::cl_F one = cln::cl_float(1, cln::float_format(Digits));
 	cln::cl_N factor = cln::expt(lambda, Sqk);
@@ -1579,7 +1629,7 @@ static cln::cl_N crandall_Y_loop(const cln::cl_N& Sqk)
 
 
 // [Cra] section 4
-static void calc_f(int maxr)
+void calc_f(int maxr)
 {
 	f_kj.clear();
 	f_kj.resize(L1);
@@ -1609,7 +1659,7 @@ static void calc_f(int maxr)
 
 
 // [Cra] (3.1)
-static cln::cl_N crandall_Z(const std::vector<int>& s)
+cln::cl_N crandall_Z(const std::vector<int>& s)
 {
 	const int j = s.size();
 
@@ -1645,7 +1695,7 @@ static cln::cl_N crandall_Z(const std::vector<int>& s)
 
 
 // [Cra] (2.4)
-static cln::cl_N zeta_do_sum_Crandall(const std::vector<int>& s)
+cln::cl_N zeta_do_sum_Crandall(const std::vector<int>& s)
 {
 	std::vector<int> r = s;
 	const int j = r.size();
@@ -1724,7 +1774,7 @@ static cln::cl_N zeta_do_sum_Crandall(const std::vector<int>& s)
 }
 
 
-static cln::cl_N zeta_do_sum_simple(const std::vector<int>& r)
+cln::cl_N zeta_do_sum_simple(const std::vector<int>& r)
 {
 	const int j = r.size();
 
@@ -1745,6 +1795,9 @@ static cln::cl_N zeta_do_sum_simple(const std::vector<int>& r)
 
 	return t[0];
 }
+
+
+} // end of anonymous namespace
 
 
 //////////////////////////////////////////////////////////////////////
