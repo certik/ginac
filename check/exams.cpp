@@ -51,7 +51,7 @@ try { \
 	EXAM(clifford)
 	EXAM(archive)
 	EXAM(misc)
-//  EXAM(inifcns_nstdsums)
+    EXAM(inifcns_nstdsums)
 	
 	if (result) {
 		cout << "Error: something went wrong. ";
