@@ -406,6 +406,7 @@ $implementation=<<END_OF_IMPLEMENTATION;
 #include <list>
 
 #include "function.h"
+#include "operators.h"
 #include "fderivative.h"
 #include "ex.h"
 #include "lst.h"
