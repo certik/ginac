@@ -13,8 +13,7 @@
  *      Nielsen's Generalized Polylogarithms, K.S.Kolbig, SIAM J.Math.Anal. 17 (1986), pp. 1232-1258.
  *      This document will be referenced as [Kol] throughout this source code.
  *    - Classical polylogarithms (Li) and nielsen's generalized polylogarithms (S) can be numerically
- *    	evaluated in the whole complex plane except for S(n,p,-1) when p is not unit (no formula yet
- *    	to tackle these points). And of course, there is still room for speed optimizations ;-).
+ *    	evaluated in the whole complex plane. And of course, there is still room for speed optimizations ;-).
  *    - The calculation of classical polylogarithms is speed up by using Euler-MacLaurin summation.
  *    - The remaining functions can only be numerically evaluated with arguments lying in the unit sphere
  *      at the moment. Sorry. The evaluation especially for mZeta is very slow ... better not use it
@@ -69,9 +68,8 @@ int xnsize = 0;
 // lookup table for Euler-Zagier-Sums (used for S_n,p(x))
 // see fill_Yn()
 std::vector<std::vector<cln::cl_N> > Yn;
-int ynsize = 0;
-//TODO EVIL MAGIC NUMBER !!! but first the transformations for S have to improve ...
-const int initsize_Yn = 2000;
+int ynsize = 0; // number of Yn[]
+int ynlength = 100; // initial length of all Yn[i]
 
 
 //////////////////////
@@ -166,22 +164,24 @@ static void fill_Xn(int n)
 // The second index in Y_n corresponds to the running index of the outermost sum in the full Z-sum
 // representing S_{n,p}(x).
 // The calculation of Y_n uses the values from Y_{n-1}.
-static void fill_Yn(int n)
+static void fill_Yn(int n, const cln::float_format_t& prec)
 {
 	// TODO -> get rid of the magic number
-	const int initsize = initsize_Yn;
+	const int initsize = ynlength;
+	//const int initsize = initsize_Yn;
+	cln::cl_N one = cln::cl_float(1, prec);
 
 	if (n) {
 		std::vector<cln::cl_N> buf(initsize);
 		std::vector<cln::cl_N>::iterator it = buf.begin();
 		std::vector<cln::cl_N>::iterator itprev = Yn[n-1].begin();
-		*it = (*itprev) / cln::cl_N(n+1);
+		*it = (*itprev) / cln::cl_N(n+1) * one;
 		it++;
 		itprev++;
 		// sums with an index smaller than the depth are zero and need not to be calculated.
 		// calculation starts with depth, which is n+2)
 		for (int i=n+2; i<=initsize+n; i++) {
-			*it = *(it-1) + (*itprev) / cln::cl_N(i);
+			*it = *(it-1) + (*itprev) / cln::cl_N(i) * one;
 			it++;
 			itprev++;
 		}
@@ -189,15 +189,45 @@ static void fill_Yn(int n)
 	} else {
 		std::vector<cln::cl_N> buf(initsize);
 		std::vector<cln::cl_N>::iterator it = buf.begin();
-		*it = 1;
+		*it = 1 * one;
 		it++;
 		for (int i=2; i<=initsize; i++) {
-			*it = *(it-1) + 1 / cln::cl_N(i);
+			*it = *(it-1) + 1 / cln::cl_N(i) * one;
 			it++;
 		}
 		Yn.push_back(buf);
 	}
 	ynsize++;
+}
+
+// make Yn longer ... 
+static void make_Yn_longer(int newsize, const cln::float_format_t& prec)
+{
+
+	cln::cl_N one = cln::cl_float(1, prec);
+
+	Yn[0].resize(newsize);
+	std::vector<cln::cl_N>::iterator it = Yn[0].begin();
+	it += ynlength;
+	for (int i=ynlength+1; i<=newsize; i++) {
+		*it = *(it-1) + 1 / cln::cl_N(i) * one;
+		it++;
+	}
+
+	for (int n=1; n<ynsize; n++) {
+		Yn[n].resize(newsize);
+		std::vector<cln::cl_N>::iterator it = Yn[n].begin();
+		std::vector<cln::cl_N>::iterator itprev = Yn[n-1].begin();
+		it += ynlength;
+		itprev += ynlength;
+		for (int i=ynlength+n+1; i<=newsize+n; i++) {
+			*it = *(it-1) + (*itprev) / cln::cl_N(i) * one;
+			it++;
+			itprev++;
+		}
+	}
+	
+	ynlength = newsize;
 }
 
 
@@ -466,15 +496,23 @@ static cln::cl_N S_series(int n, int p, const cln::cl_N& x, const cln::float_for
 	// check if precalculated values are sufficient
 	if (p > ynsize+1) {
 		for (int i=ynsize; i<p-1; i++) {
-			fill_Yn(i);
+			fill_Yn(i, prec);
 		}
 	}
 
+	// should be done otherwise
+	cln::cl_N xf = x * cln::cl_float(1, prec);
+
 	cln::cl_N result;
 	cln::cl_N resultbuffer;
-	for (int i=p; true; i++) {
+	int i;
+	for (i=p; true; i++) {
 		resultbuffer = result;
-		result = result + cln::expt(x,i) / cln::expt(cln::cl_I(i),n+1) * Yn[p-2][i-p]; // should we check it? or rely on magic number? ...
+		if (i-p >= ynlength) {
+			// make Yn longer
+			make_Yn_longer(ynlength*2, prec);
+		}
+		result = result + cln::expt(xf,i) / cln::expt(cln::cl_I(i),n+1) * Yn[p-2][i-p]; // should we check it? or rely on magic number? ...
 		if (cln::zerop(result-resultbuffer)) {
 			break;
 		}
@@ -540,7 +578,7 @@ static numeric S_num(int n, int p, const numeric& x)
 		if (p == 1) {
 			return -(1-cln::expt(cln::cl_I(2),-n)) * cln::zeta(n+1);
 		}
-		throw std::runtime_error("don't know how to evaluate this function!");
+//		throw std::runtime_error("don't know how to evaluate this function!");
 	}
 
 	// what is the desired float format?
@@ -573,7 +611,7 @@ static numeric S_num(int n, int p, const numeric& x)
 		
 	}
 	// [Kol] (5.12)
-	else if (cln::abs(value) > 1) {
+	if (cln::abs(value) > 1) {
 		
 		cln::cl_N result;
 
@@ -731,7 +769,7 @@ static ex S_evalf(const ex& x1, const ex& x2, const ex& x3)
 	if (is_a<numeric>(x1) && is_a<numeric>(x2) && is_a<numeric>(x3)) {
 		if ((x3 == -1) && (x2 != 1)) {
 			// no formula to evaluate this ... sorry
-			return S(x1,x2,x3).hold();
+//			return S(x1,x2,x3).hold();
 		}
 		return S_num(ex_to<numeric>(x1).to_int(), ex_to<numeric>(x2).to_int(), ex_to<numeric>(x3));
 	}
