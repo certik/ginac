@@ -234,6 +234,7 @@ $interface=<<END_OF_INTERFACE;
 
 #include "basic.h"
 #include "ex.h"
+#include "container_suppl.h"
 
 namespace GiNaC {
 
@@ -253,6 +254,15 @@ public:
 	${CONTAINER}(${STLT} * vp); // vp will be deleted
 	${CONTAINER}(exvector::const_iterator b, exvector::const_iterator e);
 ${constructors_interface}
+
+	// First step of initialization of container with a comma-separated
+	// sequence of expressions. Subsequent steps are handled by
+	// container_init<>::operator,().
+	container_init<ex, ${STLT}> operator=(const ex & x)
+	{
+		this->seq.push_back(x);
+		return container_init<ex, ${STLT}>(seq);
+	}
 
 public:
 	void print(const print_context & c, unsigned level = 0) const;
