@@ -208,8 +208,9 @@ public:
 			return lhs.i - rhs.i;
 		}
 
-		reference operator[](difference_type n) const
+		ex operator[](difference_type n) const
 		{
+			return bp->op(i + n);
 		}
 
 	protected:
