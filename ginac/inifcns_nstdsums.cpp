@@ -192,7 +192,7 @@ void double_Xn()
 	for (int i=1; i<=xninitsizestep/2; ++i) {
 		Xn[0].push_back(bernoulli((i+pos0)*2).to_cl_N());
 	}
-	if (Xn.size() > 0) {
+	if (Xn.size() > 1) {
 		int xend = xninitsize + xninitsizestep;
 		cln::cl_N result;
 		// X_1
@@ -397,7 +397,16 @@ numeric Li_num(int n, const numeric& x)
 		// [Kol] (2.22)
 		return -(1-cln::expt(cln::cl_I(2),1-n)) * cln::zeta(n);
 	}
-	
+	if (abs(x.real()) < 0.4 && abs(abs(x)-1) < 0.01) {
+		cln::cl_N x_ = ex_to<numeric>(x).to_cl_N();
+		cln::cl_N result = -cln::expt(cln::log(x_), n-1) * cln::log(1-x_) / cln::factorial(n-1);
+		for (int j=0; j<n-1; j++) {
+			result = result + (S_num(n-j-1, 1, 1).to_cl_N() - S_num(1, n-j-1, 1-x_).to_cl_N())
+				* cln::expt(cln::log(x_), j) / cln::factorial(j);
+		}
+		return result;
+	}
+
 	// what is the desired float format?
 	// first guess: default format
 	cln::float_format_t prec = cln::default_float_format;
@@ -573,6 +582,14 @@ static ex Li_eval(const ex& m_, const ex& x_)
 		}
 		if (m == _ex1) {
 			return -log(1-x);
+		}
+		if (m_ == _ex2) {
+			if (x_.is_equal(I)) {
+				return power(Pi,_ex2)/_ex_48 + Catalan*I;
+			}
+			if (x_.is_equal(-I)) {
+				return power(Pi,_ex2)/_ex_48 - Catalan*I;
+			}
 		}
 		if (m.info(info_flags::posint) && x.info(info_flags::numeric) && (!x.info(info_flags::crational))) {
 			return Li_num(ex_to<numeric>(m).to_int(), ex_to<numeric>(x));
