@@ -157,7 +157,7 @@ public:
 	ex antisymmetrize(const lst & l) const;
 	ex symmetrize_cyclic(void) const;
 	ex symmetrize_cyclic(const lst & l) const;
-	ex simplify_ncmul(const exvector & v) const { return bp->simplify_ncmul(v); }
+	ex eval_ncmul(const exvector & v) const { return bp->eval_ncmul(v); }
 	ex operator[](const ex & index) const;
 	ex operator[](int i) const;
 	ex op(int i) const { return bp->op(i); }

@@ -59,7 +59,7 @@ public:
 	ex smod(const numeric &xi) const;
 	numeric max_coefficient(void) const;
 	exvector get_free_indices(void) const;
-	ex simplify_ncmul(const exvector & v) const;
+	ex eval_ncmul(const exvector & v) const;
 protected:
 	ex derivative(const symbol & s) const;
 	unsigned return_type(void) const;

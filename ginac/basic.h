@@ -131,7 +131,7 @@ protected: // functions that should be called from class ex only
 	virtual bool is_equal_same_type(const basic & other) const;
 	virtual bool match_same_type(const basic & other) const;
 	virtual unsigned calchash(void) const;
-	virtual ex simplify_ncmul(const exvector & v) const;
+	virtual ex eval_ncmul(const exvector & v) const;
 	
 	// non-virtual functions in this class
 public:

@@ -523,9 +523,9 @@ ex power::subs(const lst & ls, const lst & lr, bool no_pattern) const
 		return power(subsed_basis, subsed_exponent).basic::subs(ls, lr, no_pattern);
 }
 
-ex power::simplify_ncmul(const exvector & v) const
+ex power::eval_ncmul(const exvector & v) const
 {
-	return inherited::simplify_ncmul(v);
+	return inherited::eval_ncmul(v);
 }
 
 // protected

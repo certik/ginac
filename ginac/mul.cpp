@@ -469,19 +469,19 @@ ex mul::evalm(void) const
 		return (new mul(s, overall_coeff))->setflag(status_flags::dynallocated);
 }
 
-ex mul::simplify_ncmul(const exvector & v) const
+ex mul::eval_ncmul(const exvector & v) const
 {
 	if (seq.empty())
-		return inherited::simplify_ncmul(v);
+		return inherited::eval_ncmul(v);
 
-	// Find first noncommutative element and call its simplify_ncmul()
+	// Find first noncommutative element and call its eval_ncmul()
 	epvector::const_iterator i = seq.begin(), end = seq.end();
 	while (i != end) {
 		if (i->rest.return_type() == return_types::noncommutative)
-			return i->rest.simplify_ncmul(v);
+			return i->rest.eval_ncmul(v);
 		++i;
 	}
-	return inherited::simplify_ncmul(v);
+	return inherited::eval_ncmul(v);
 }
 
 // protected

@@ -743,7 +743,7 @@ contraction_done:
 					// One of the factors became a sum or product:
 					// re-expand expression and run again
 					// Non-commutative products are always re-expanded to give
-					// simplify_ncmul() the chance to re-order and canonicalize
+					// eval_ncmul() the chance to re-order and canonicalize
 					// the product
 					ex r = (non_commutative ? ex(ncmul(v, true)) : ex(mul(v)));
 					return simplify_indexed(r, free_indices, dummy_indices, sp);

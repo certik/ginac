@@ -57,9 +57,9 @@ public:
 	unsigned nops() const;
 	ex & let_op(int i);
 	ex eval(int level=0) const;
-	ex simplify_ncmul(const exvector & v) const;
 
 protected:
+	ex eval_ncmul(const exvector & v) const;
 	bool match_same_type(const basic & other) const;
 	unsigned return_type(void) const;
 	unsigned return_type_tinfo(void) const;

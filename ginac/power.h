@@ -65,9 +65,9 @@ public:
 	ex normal(lst &sym_lst, lst &repl_lst, int level = 0) const;
 	ex to_rational(lst &repl_lst) const;
 	exvector get_free_indices(void) const;
-	ex simplify_ncmul(const exvector & v) const;
 protected:
 	ex derivative(const symbol & s) const;
+	ex eval_ncmul(const exvector & v) const;
 	unsigned return_type(void) const;
 	unsigned return_type_tinfo(void) const;
 	ex expand(unsigned options = 0) const;

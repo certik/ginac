@@ -285,7 +285,7 @@ typedef std::vector<exvector> exvectorvector;
  *  - ncmul() -> 1
  *  - ncmul(...,c1,...,c2,...) -> *(c1,c2,ncmul(...))  (pull out commutative elements)
  *  - ncmul(x1,y1,x2,y2) -> *(ncmul(x1,x2),ncmul(y1,y2))  (collect elements of same type)
- *  - ncmul(x1,x2,x3,...) -> x::simplify_ncmul(x1,x2,x3,...)
+ *  - ncmul(x1,x2,x3,...) -> x::eval_ncmul(x1,x2,x3,...)
  *
  *  @param level cut-off in recursive evaluation */
 ex ncmul::eval(int level) const
@@ -413,7 +413,7 @@ ex ncmul::eval(int level) const
 		
 		// if all elements are of same type, simplify the string
 		if (evv_num == 1)
-			return evv[0][0].simplify_ncmul(evv[0]);
+			return evv[0][0].eval_ncmul(evv[0]);
 		
 		exvector splitseq;
 		splitseq.reserve(evv_num);

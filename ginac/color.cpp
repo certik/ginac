@@ -155,7 +155,7 @@ DEFAULT_PRINT(su3d, "d")
 
 /** Perform automatic simplification on noncommutative product of color
  *  objects. This removes superfluous ONEs. */
-ex color::simplify_ncmul(const exvector & v) const
+ex color::eval_ncmul(const exvector & v) const
 {
 	exvector s;
 	s.reserve(v.size());

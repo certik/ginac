@@ -184,9 +184,9 @@ ex relational::eval(int level) const
 	return (new relational(lh.eval(level-1),rh.eval(level-1),o))->setflag(status_flags::dynallocated | status_flags::evaluated);
 }
 
-ex relational::simplify_ncmul(const exvector & v) const
+ex relational::eval_ncmul(const exvector & v) const
 {
-	return lh.simplify_ncmul(v);
+	return lh.eval_ncmul(v);
 }
 
 // protected

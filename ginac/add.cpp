@@ -316,7 +316,7 @@ ex add::coeff(const ex & s, int n) const
  *  x stands for a symbolic variables of type ex and c stands for such
  *  an expression that contain a plain number.
  *  - +(;c) -> c
- *  - +(x;1) -> x
+ *  - +(x;0) -> x
  *
  *  @param level cut-off in recursive evaluation */
 ex add::eval(int level) const
@@ -391,12 +391,12 @@ ex add::evalm(void) const
 		return (new add(s, overall_coeff))->setflag(status_flags::dynallocated);
 }
 
-ex add::simplify_ncmul(const exvector & v) const
+ex add::eval_ncmul(const exvector & v) const
 {
 	if (seq.empty())
-		return inherited::simplify_ncmul(v);
+		return inherited::eval_ncmul(v);
 	else
-		return seq.begin()->rest.simplify_ncmul(v);
+		return seq.begin()->rest.eval_ncmul(v);
 }    
 
 // protected

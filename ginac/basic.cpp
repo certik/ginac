@@ -555,7 +555,7 @@ exvector basic::get_free_indices(void) const
 	return exvector(); // return an empty exvector
 }
 
-ex basic::simplify_ncmul(const exvector & v) const
+ex basic::eval_ncmul(const exvector & v) const
 {
 	return simplified_ncmul(v);
 }
