@@ -762,21 +762,37 @@ ex mul::series(const relational & r, int order, unsigned options) const
 		
 	// holds ldegrees of the series of individual factors
 	std::vector<int> ldegrees;
-	// flag if series have to be re-calculated
-	bool negldegree = false;
 
-	// Multiply with remaining terms
+	// find minimal degrees
 	const epvector::const_iterator itbeg = seq.begin();
 	const epvector::const_iterator itend = seq.end();
 	for (epvector::const_iterator it=itbeg; it!=itend; ++it) {
-		ex op = recombine_pair_to_ex(*it).series(r, order, options);
-
-		int ldeg = op.ldegree(sym);
-		ldegrees.push_back(ldeg);
-	
-		if (ldeg < 0) {
-			negldegree = true;
+		
+		ex buf = recombine_pair_to_ex(*it);
+		
+		int real_ldegree = buf.expand().ldegree(sym);
+		if (real_ldegree == 0) {
+			int orderloop = 0;
+			do {
+				orderloop++;
+				real_ldegree = buf.series(r, orderloop, options).ldegree(sym);
+			} while (real_ldegree == orderloop);
 		}
+
+		ldegrees.push_back(real_ldegree);
+	}
+
+	int degsum = std::accumulate(ldegrees.begin(), ldegrees.end(), 0);
+		
+	// Multiply with remaining terms
+	std::vector<int>::const_iterator itd = ldegrees.begin();
+	for (epvector::const_iterator it=itbeg; it!=itend; ++it, ++itd) {
+
+		// do series expansion with adjusted order
+		degsum -= *itd;
+		ex op = recombine_pair_to_ex(*it).series(r, order-degsum, options);
+		// ldegree might have changed ...
+		degsum += op.ldegree(sym);
 
 		// Series multiplication
 		if (it==itbeg)
@@ -784,36 +800,8 @@ ex mul::series(const relational & r, int order, unsigned options) const
 		else
 			acc = ex_to<pseries>(acc.mul_series(ex_to<pseries>(op)));
 	}
-
-	if (negldegree && (seq.size() > 1)) {
-
-		// re-calculation of series
-
-		pseries newacc;
-		int degsum = std::accumulate(ldegrees.begin(), ldegrees.end(), 0);
-
-		// Multiply with remaining terms
-		const epvector::const_reverse_iterator itbeg = seq.rbegin();
-		const epvector::const_reverse_iterator itend = seq.rend();
-		std::vector<int>::const_reverse_iterator itd = ldegrees.rbegin();
-		for (epvector::const_reverse_iterator it=itbeg; it!=itend; ++it, ++itd) {
-
-			// re-do series expansion with adjusted order
-			degsum -= *itd;
-			ex op = recombine_pair_to_ex(*it).series(r, order-degsum, options);
-			// ldegree might have changed ...
-			degsum += op.ldegree(sym);
-
-			// Series multiplication
-			if (it==itbeg)
-				newacc = ex_to<pseries>(op);
-			else
-				newacc = ex_to<pseries>(newacc.mul_series(ex_to<pseries>(op)));
-		}
-		return newacc.mul_const(ex_to<numeric>(overall_coeff));
-	} else {
-		return acc.mul_const(ex_to<numeric>(overall_coeff));
-	}
+	
+	return acc.mul_const(ex_to<numeric>(overall_coeff));
 }
 
 
@@ -930,7 +918,7 @@ ex power::series(const relational & r, int order, unsigned options) const
 	} catch (pole_error) {
 		must_expand_basis = true;
 	}
-		
+
 	// Is the expression of type something^(-int)?
 	if (!must_expand_basis && !exponent.info(info_flags::negint))
 		return basic::series(r, order, options);
@@ -950,7 +938,7 @@ ex power::series(const relational & r, int order, unsigned options) const
 	}
 
 	// No, expand basis into series
-
+	
 	int intexp = ex_to<numeric>(exponent).to_int();
 	const ex& sym = r.lhs();
 	// find existing minimal degree
