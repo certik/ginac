@@ -50,7 +50,7 @@ static char *orig_basic_word_break_characters;
 static const char *orig_basic_word_break_characters;
 #endif
 
-// Expression stack for ", "" and """
+// Expression stack for %, %% and %%%
 static void push(const ex &e);
 static ex exstack[3];
 
