@@ -58,23 +58,20 @@
 
 namespace GiNaC {
 
-	
+
+//////////////////////////////////////////////////////////////////////
+//
+// Classical polylogarithm  Li
+//
+// helper functions
+//
+//////////////////////////////////////////////////////////////////////
+
+
 // lookup table for Euler-Maclaurin optimization
 // see fill_Xn()
 std::vector<std::vector<cln::cl_N> > Xn;
 int xnsize = 0;
-
-
-// lookup table for special Euler-Zagier-Sums (used for S_n,p(x))
-// see fill_Yn()
-std::vector<std::vector<cln::cl_N> > Yn;
-int ynsize = 0; // number of Yn[]
-int ynlength = 100; // initial length of all Yn[i]
-
-
-//////////////////////
-// helper functions //
-//////////////////////
 
 
 // This function calculates the X_n. The X_n are needed for the Euler-Maclaurin summation (EMS) of
@@ -154,81 +151,6 @@ static void fill_Xn(int n)
 	}
 
 	xnsize++;
-}
-
-
-// This function calculates the Y_n. The Y_n are needed for the evaluation of S_{n,p}(x).
-// The Y_n are basically Euler-Zagier sums with all m_i=1. They are subsums in the Z-sum
-// representing S_{n,p}(x).
-// The first index in Y_n corresponds to the parameter p minus one, i.e. the depth of the
-// equivalent Z-sum.
-// The second index in Y_n corresponds to the running index of the outermost sum in the full Z-sum
-// representing S_{n,p}(x).
-// The calculation of Y_n uses the values from Y_{n-1}.
-static void fill_Yn(int n, const cln::float_format_t& prec)
-{
-	const int initsize = ynlength;
-	//const int initsize = initsize_Yn;
-	cln::cl_N one = cln::cl_float(1, prec);
-
-	if (n) {
-		std::vector<cln::cl_N> buf(initsize);
-		std::vector<cln::cl_N>::iterator it = buf.begin();
-		std::vector<cln::cl_N>::iterator itprev = Yn[n-1].begin();
-		*it = (*itprev) / cln::cl_N(n+1) * one;
-		it++;
-		itprev++;
-		// sums with an index smaller than the depth are zero and need not to be calculated.
-		// calculation starts with depth, which is n+2)
-		for (int i=n+2; i<=initsize+n; i++) {
-			*it = *(it-1) + (*itprev) / cln::cl_N(i) * one;
-			it++;
-			itprev++;
-		}
-		Yn.push_back(buf);
-	} else {
-		std::vector<cln::cl_N> buf(initsize);
-		std::vector<cln::cl_N>::iterator it = buf.begin();
-		*it = 1 * one;
-		it++;
-		for (int i=2; i<=initsize; i++) {
-			*it = *(it-1) + 1 / cln::cl_N(i) * one;
-			it++;
-		}
-		Yn.push_back(buf);
-	}
-	ynsize++;
-}
-
-
-// make Yn longer ... 
-static void make_Yn_longer(int newsize, const cln::float_format_t& prec)
-{
-
-	cln::cl_N one = cln::cl_float(1, prec);
-
-	Yn[0].resize(newsize);
-	std::vector<cln::cl_N>::iterator it = Yn[0].begin();
-	it += ynlength;
-	for (int i=ynlength+1; i<=newsize; i++) {
-		*it = *(it-1) + 1 / cln::cl_N(i) * one;
-		it++;
-	}
-
-	for (int n=1; n<ynsize; n++) {
-		Yn[n].resize(newsize);
-		std::vector<cln::cl_N>::iterator it = Yn[n].begin();
-		std::vector<cln::cl_N>::iterator itprev = Yn[n-1].begin();
-		it += ynlength;
-		itprev += ynlength;
-		for (int i=ynlength+n+1; i<=newsize+n; i++) {
-			*it = *(it-1) + (*itprev) / cln::cl_N(i) * one;
-			it++;
-			itprev++;
-		}
-	}
-	
-	ynlength = newsize;
 }
 
 
@@ -432,19 +354,203 @@ static numeric Li_num(int n, const numeric& x)
 }
 
 
-// helper function for S(n,p,x)
-static cln::cl_N numeric_nielsen(int n, int step)
+//////////////////////////////////////////////////////////////////////
+//
+// Multiple polylogarithm  Li
+//
+// helper function
+//
+//////////////////////////////////////////////////////////////////////
+
+
+static cln::cl_N numeric_zsum(int n, std::vector<cln::cl_N>& x, std::vector<cln::cl_N>& m)
 {
-	if (step) {
-		cln::cl_N res;
-		for (int i=1; i<n; i++) {
-			res = res + numeric_nielsen(i, step-1) / cln::cl_I(i);
-		}
-		return res;
-	}
-	else {
+	cln::cl_N res;
+	if (x.empty()) {
 		return 1;
 	}
+	for (int i=1; i<n; i++) {
+		std::vector<cln::cl_N>::iterator be;
+		std::vector<cln::cl_N>::iterator en;
+		be = x.begin();
+		be++;
+		en = x.end();
+		std::vector<cln::cl_N> xbuf(be, en);
+		be = m.begin();
+		be++;
+		en = m.end();
+		std::vector<cln::cl_N> mbuf(be, en);
+		res = res + cln::expt(x[0],i) / cln::expt(i,m[0]) * numeric_zsum(i, xbuf, mbuf);
+	}
+	return res;
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//
+// Classical polylogarithm and multiple polylogarithm  Li
+//
+// GiNaC function
+//
+//////////////////////////////////////////////////////////////////////
+
+
+static ex Li_eval(const ex& x1, const ex& x2)
+{
+	if (x2.is_zero()) {
+		return 0;
+	}
+	else {
+		if (x2.info(info_flags::numeric) && (!x2.info(info_flags::crational)))
+			return Li_num(ex_to<numeric>(x1).to_int(), ex_to<numeric>(x2));
+		return Li(x1,x2).hold();
+	}
+}
+
+
+static ex Li_evalf(const ex& x1, const ex& x2)
+{
+	// classical polylogs
+	if (is_a<numeric>(x1) && is_a<numeric>(x2)) {
+		return Li_num(ex_to<numeric>(x1).to_int(), ex_to<numeric>(x2));
+	}
+	// multiple polylogs
+	else if (is_a<lst>(x1) && is_a<lst>(x2)) {
+		for (int i=0; i<x1.nops(); i++) {
+			if (!is_a<numeric>(x1.op(i)))
+				return Li(x1,x2).hold();
+			if (!is_a<numeric>(x2.op(i)))
+				return Li(x1,x2).hold();
+			if (x2.op(i) >= 1)
+				return Li(x1,x2).hold();
+		}
+
+		cln::cl_N m_1 = ex_to<numeric>(x1.op(x1.nops()-1)).to_cl_N();
+		cln::cl_N x_1 = ex_to<numeric>(x2.op(x2.nops()-1)).to_cl_N();
+		std::vector<cln::cl_N> x;
+		std::vector<cln::cl_N> m;
+		const int nops = ex_to<numeric>(x1.nops()).to_int();
+		for (int i=nops-2; i>=0; i--) {
+			m.push_back(ex_to<numeric>(x1.op(i)).to_cl_N());
+			x.push_back(ex_to<numeric>(x2.op(i)).to_cl_N());
+		}
+
+		cln::cl_N res;
+		cln::cl_N resbuf;
+		for (int i=nops; true; i++) {
+			resbuf = res;
+			res = res + cln::expt(x_1,i) / cln::expt(i,m_1) * numeric_zsum(i, x, m);
+			if (cln::zerop(res-resbuf))
+				break;
+		}
+
+		return numeric(res);
+
+	}
+
+	return Li(x1,x2).hold();
+}
+
+
+static ex Li_series(const ex& x1, const ex& x2, const relational& rel, int order, unsigned options)
+{
+	epvector seq;
+	seq.push_back(expair(Li(x1,x2), 0));
+	return pseries(rel,seq);
+}
+
+
+REGISTER_FUNCTION(Li, eval_func(Li_eval).evalf_func(Li_evalf).do_not_evalf_params().series_func(Li_series));
+
+
+//////////////////////////////////////////////////////////////////////
+//
+// Nielsen's generalized polylogarithm  S
+//
+// helper functions
+//
+//////////////////////////////////////////////////////////////////////
+
+
+// lookup table for special Euler-Zagier-Sums (used for S_n,p(x))
+// see fill_Yn()
+std::vector<std::vector<cln::cl_N> > Yn;
+int ynsize = 0; // number of Yn[]
+int ynlength = 100; // initial length of all Yn[i]
+
+
+// This function calculates the Y_n. The Y_n are needed for the evaluation of S_{n,p}(x).
+// The Y_n are basically Euler-Zagier sums with all m_i=1. They are subsums in the Z-sum
+// representing S_{n,p}(x).
+// The first index in Y_n corresponds to the parameter p minus one, i.e. the depth of the
+// equivalent Z-sum.
+// The second index in Y_n corresponds to the running index of the outermost sum in the full Z-sum
+// representing S_{n,p}(x).
+// The calculation of Y_n uses the values from Y_{n-1}.
+static void fill_Yn(int n, const cln::float_format_t& prec)
+{
+	const int initsize = ynlength;
+	//const int initsize = initsize_Yn;
+	cln::cl_N one = cln::cl_float(1, prec);
+
+	if (n) {
+		std::vector<cln::cl_N> buf(initsize);
+		std::vector<cln::cl_N>::iterator it = buf.begin();
+		std::vector<cln::cl_N>::iterator itprev = Yn[n-1].begin();
+		*it = (*itprev) / cln::cl_N(n+1) * one;
+		it++;
+		itprev++;
+		// sums with an index smaller than the depth are zero and need not to be calculated.
+		// calculation starts with depth, which is n+2)
+		for (int i=n+2; i<=initsize+n; i++) {
+			*it = *(it-1) + (*itprev) / cln::cl_N(i) * one;
+			it++;
+			itprev++;
+		}
+		Yn.push_back(buf);
+	} else {
+		std::vector<cln::cl_N> buf(initsize);
+		std::vector<cln::cl_N>::iterator it = buf.begin();
+		*it = 1 * one;
+		it++;
+		for (int i=2; i<=initsize; i++) {
+			*it = *(it-1) + 1 / cln::cl_N(i) * one;
+			it++;
+		}
+		Yn.push_back(buf);
+	}
+	ynsize++;
+}
+
+
+// make Yn longer ... 
+static void make_Yn_longer(int newsize, const cln::float_format_t& prec)
+{
+
+	cln::cl_N one = cln::cl_float(1, prec);
+
+	Yn[0].resize(newsize);
+	std::vector<cln::cl_N>::iterator it = Yn[0].begin();
+	it += ynlength;
+	for (int i=ynlength+1; i<=newsize; i++) {
+		*it = *(it-1) + 1 / cln::cl_N(i) * one;
+		it++;
+	}
+
+	for (int n=1; n<ynsize; n++) {
+		Yn[n].resize(newsize);
+		std::vector<cln::cl_N>::iterator it = Yn[n].begin();
+		std::vector<cln::cl_N>::iterator itprev = Yn[n-1].begin();
+		it += ynlength;
+		itprev += ynlength;
+		for (int i=ynlength+n+1; i<=newsize+n; i++) {
+			*it = *(it-1) + (*itprev) / cln::cl_N(i) * one;
+			it++;
+			itprev++;
+		}
+	}
+	
+	ynlength = newsize;
 }
 
 
@@ -700,31 +806,61 @@ static numeric S_num(int n, int p, const numeric& x)
 }
 
 
-// helper function for multiple polylogarithm
-static cln::cl_N numeric_zsum(int n, std::vector<cln::cl_N>& x, std::vector<cln::cl_N>& m)
+//////////////////////////////////////////////////////////////////////
+//
+// Nielsen's generalized polylogarithm  S
+//
+// GiNaC function
+//
+//////////////////////////////////////////////////////////////////////
+
+
+static ex S_eval(const ex& x1, const ex& x2, const ex& x3)
 {
-	cln::cl_N res;
-	if (x.empty()) {
-		return 1;
+	if (x2 == 1) {
+		return Li(x1+1,x3);
 	}
-	for (int i=1; i<n; i++) {
-		std::vector<cln::cl_N>::iterator be;
-		std::vector<cln::cl_N>::iterator en;
-		be = x.begin();
-		be++;
-		en = x.end();
-		std::vector<cln::cl_N> xbuf(be, en);
-		be = m.begin();
-		be++;
-		en = m.end();
-		std::vector<cln::cl_N> mbuf(be, en);
-		res = res + cln::expt(x[0],i) / cln::expt(i,m[0]) * numeric_zsum(i, xbuf, mbuf);
+	if (x3.info(info_flags::numeric) && (!x3.info(info_flags::crational)) && 
+			x1.info(info_flags::posint) && x2.info(info_flags::posint)) {
+		return S_num(ex_to<numeric>(x1).to_int(), ex_to<numeric>(x2).to_int(), ex_to<numeric>(x3));
 	}
-	return res;
+	return S(x1,x2,x3).hold();
 }
 
 
-// helper function for harmonic polylogarithm
+static ex S_evalf(const ex& x1, const ex& x2, const ex& x3)
+{
+	if (is_a<numeric>(x1) && is_a<numeric>(x2) && is_a<numeric>(x3)) {
+		if ((x3 == -1) && (x2 != 1)) {
+			// no formula to evaluate this ... sorry
+//			return S(x1,x2,x3).hold();
+		}
+		return S_num(ex_to<numeric>(x1).to_int(), ex_to<numeric>(x2).to_int(), ex_to<numeric>(x3));
+	}
+	return S(x1,x2,x3).hold();
+}
+
+
+static ex S_series(const ex& x1, const ex& x2, const ex& x3, const relational& rel, int order, unsigned options)
+{
+	epvector seq;
+	seq.push_back(expair(S(x1,x2,x3), 0));
+	return pseries(rel,seq);
+}
+
+
+REGISTER_FUNCTION(S, eval_func(S_eval).evalf_func(S_evalf).do_not_evalf_params().series_func(S_series));
+
+
+//////////////////////////////////////////////////////////////////////
+//
+// Harmonic polylogarithm  H
+//
+// helper function
+//
+//////////////////////////////////////////////////////////////////////
+
+
 static cln::cl_N numeric_harmonic(int n, std::vector<cln::cl_N>& m)
 {
 	cln::cl_N res;
@@ -744,115 +880,14 @@ static cln::cl_N numeric_harmonic(int n, std::vector<cln::cl_N>& m)
 }
 
 
-/////////////////////////////
-// end of helper functions //
-/////////////////////////////
+//////////////////////////////////////////////////////////////////////
+//
+// Harmonic polylogarithm  H
+//
+// GiNaC function
+//
+//////////////////////////////////////////////////////////////////////
 
-
-// Polylogarithm and multiple polylogarithm
-
-static ex Li_eval(const ex& x1, const ex& x2)
-{
-	if (x2.is_zero()) {
-		return 0;
-	}
-	else {
-		if (x2.info(info_flags::numeric) && (!x2.info(info_flags::crational)))
-			return Li_num(ex_to<numeric>(x1).to_int(), ex_to<numeric>(x2));
-		return Li(x1,x2).hold();
-	}
-}
-
-static ex Li_evalf(const ex& x1, const ex& x2)
-{
-	// classical polylogs
-	if (is_a<numeric>(x1) && is_a<numeric>(x2)) {
-		return Li_num(ex_to<numeric>(x1).to_int(), ex_to<numeric>(x2));
-	}
-	// multiple polylogs
-	else if (is_a<lst>(x1) && is_a<lst>(x2)) {
-		for (int i=0; i<x1.nops(); i++) {
-			if (!is_a<numeric>(x1.op(i)))
-				return Li(x1,x2).hold();
-			if (!is_a<numeric>(x2.op(i)))
-				return Li(x1,x2).hold();
-			if (x2.op(i) >= 1)
-				return Li(x1,x2).hold();
-		}
-
-		cln::cl_N m_1 = ex_to<numeric>(x1.op(x1.nops()-1)).to_cl_N();
-		cln::cl_N x_1 = ex_to<numeric>(x2.op(x2.nops()-1)).to_cl_N();
-		std::vector<cln::cl_N> x;
-		std::vector<cln::cl_N> m;
-		const int nops = ex_to<numeric>(x1.nops()).to_int();
-		for (int i=nops-2; i>=0; i--) {
-			m.push_back(ex_to<numeric>(x1.op(i)).to_cl_N());
-			x.push_back(ex_to<numeric>(x2.op(i)).to_cl_N());
-		}
-
-		cln::cl_N res;
-		cln::cl_N resbuf;
-		for (int i=nops; true; i++) {
-			resbuf = res;
-			res = res + cln::expt(x_1,i) / cln::expt(i,m_1) * numeric_zsum(i, x, m);
-			if (cln::zerop(res-resbuf))
-				break;
-		}
-
-		return numeric(res);
-
-	}
-
-	return Li(x1,x2).hold();
-}
-
-static ex Li_series(const ex& x1, const ex& x2, const relational& rel, int order, unsigned options)
-{
-	epvector seq;
-	seq.push_back(expair(Li(x1,x2), 0));
-	return pseries(rel,seq);
-}
-
-REGISTER_FUNCTION(Li, eval_func(Li_eval).evalf_func(Li_evalf).do_not_evalf_params().series_func(Li_series));
-
-
-// Nielsen's generalized polylogarithm
-
-static ex S_eval(const ex& x1, const ex& x2, const ex& x3)
-{
-	if (x2 == 1) {
-		return Li(x1+1,x3);
-	}
-	if (x3.info(info_flags::numeric) && (!x3.info(info_flags::crational)) && 
-			x1.info(info_flags::posint) && x2.info(info_flags::posint)) {
-		return S_num(ex_to<numeric>(x1).to_int(), ex_to<numeric>(x2).to_int(), ex_to<numeric>(x3));
-	}
-	return S(x1,x2,x3).hold();
-}
-
-static ex S_evalf(const ex& x1, const ex& x2, const ex& x3)
-{
-	if (is_a<numeric>(x1) && is_a<numeric>(x2) && is_a<numeric>(x3)) {
-		if ((x3 == -1) && (x2 != 1)) {
-			// no formula to evaluate this ... sorry
-//			return S(x1,x2,x3).hold();
-		}
-		return S_num(ex_to<numeric>(x1).to_int(), ex_to<numeric>(x2).to_int(), ex_to<numeric>(x3));
-	}
-	return S(x1,x2,x3).hold();
-}
-
-static ex S_series(const ex& x1, const ex& x2, const ex& x3, const relational& rel, int order, unsigned options)
-{
-	epvector seq;
-	seq.push_back(expair(S(x1,x2,x3), 0));
-	return pseries(rel,seq);
-}
-
-REGISTER_FUNCTION(S, eval_func(S_eval).evalf_func(S_evalf).do_not_evalf_params().series_func(S_series));
-
-
-// Harmonic polylogarithm
 
 static ex H_eval(const ex& x1, const ex& x2)
 {
@@ -861,6 +896,7 @@ static ex H_eval(const ex& x1, const ex& x2)
 	}
 	return H(x1,x2).hold();
 }
+
 
 static ex H_evalf(const ex& x1, const ex& x2)
 {
@@ -897,6 +933,7 @@ static ex H_evalf(const ex& x1, const ex& x2)
 	return H(x1,x2).hold();
 }
 
+
 static ex H_series(const ex& x1, const ex& x2, const relational& rel, int order, unsigned options)
 {
 	epvector seq;
@@ -904,15 +941,33 @@ static ex H_series(const ex& x1, const ex& x2, const relational& rel, int order,
 	return pseries(rel,seq);
 }
 
+
 REGISTER_FUNCTION(H, eval_func(H_eval).evalf_func(H_evalf).do_not_evalf_params().series_func(H_series));
 
 
-// Multiple zeta value
+//////////////////////////////////////////////////////////////////////
+//
+// Multiple zeta values  mZeta
+//
+// helper functions
+//
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+//
+// Multiple zeta values  mZeta
+//
+// GiNaC function
+//
+//////////////////////////////////////////////////////////////////////
+
 
 static ex mZeta_eval(const ex& x1)
 {
 	return mZeta(x1).hold();
 }
+
 
 static ex mZeta_evalf(const ex& x1)
 {
@@ -955,12 +1010,14 @@ static ex mZeta_evalf(const ex& x1)
 	return mZeta(x1).hold();
 }
 
+
 static ex mZeta_series(const ex& x1, const relational& rel, int order, unsigned options)
 {
 	epvector seq;
 	seq.push_back(expair(mZeta(x1), 0));
 	return pseries(rel,seq);
 }
+
 
 REGISTER_FUNCTION(mZeta, eval_func(mZeta_eval).evalf_func(mZeta_evalf).do_not_evalf_params().series_func(mZeta_series));
 
