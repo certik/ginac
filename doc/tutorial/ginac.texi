@@ -3378,21 +3378,16 @@ The last example would be written in C++ in this way:
 @end example
 
 @subsection Algebraic substitutions
-This subsection is not written by one of the original authors of GiNaC but
-by Chris Dams. All errors in the here described feature can be attributed to
-him (but mailed to the GiNaC mailing list, which he reads).
+The @code{subs()} method has an extra, optional, argument. This argument can
+be used to pass one of the @code{subs_options} to it. The only option that is
+currently available is the @code{subs_smart} option which affects
+multiplications and powers. If you want to substitute some factors of a
+product, you only need to list these factors in your pattern. Furthermore, if
+an (integer) power of some expression occurs in your pattern and in the
+expression that you want the substitution to occur in, it can be substituted
+as many times as possible, without getting negative powers.
 
-The @code{subs()} method has an extra, optional, argument. This
-argument can be used to pass one of the @code{subs_options} to it.
-The only option that is currently
-available is the @code{subs_smart} option and it affects multiplications
-and powers. If you want to substitute some factors of a multiplication, you
-only need to list these factors in your pattern. Furthermore if a(n) (integer)
-power of some expression occurs in your pattern and in the expression that
-you want the substitution to occur in, it can be substituted as many times
-as possible, without getting negative powers.
-
-An example clarifies it all (hopefully).
+An example clarifies it all (hopefully):
 
 @example
 cout << (a*a*a*a+b*b*b*b+pow(x+y,4)).subs(wild()*wild()==pow(wild(),3),
@@ -3434,6 +3429,7 @@ cout << expand((a*sin(x+y)*sin(x+y)+a*cos(x+y)*cos(x+y)+b)
                                 subs_options::subs_smart)) << endl;
 // --> b+a
 @end example
+
 
 @node Applying a Function on Subexpressions, Polynomial Arithmetic, Pattern Matching and Advanced Substitutions, Methods and Functions
 @c    node-name, next, previous, up
