@@ -6,6 +6,7 @@ This file records noteworthy changes.
   with iterators.
 * Fixed the LaTeX output of the varidx class.
 * Fixed bugs in series expansion and complex conjugation.
+* (p.i*p.i).get_free_indices() returns the correct result () instead of (.i).
 * Symbolic functions without any eval(), evalf() etc. functions now work
   properly.
 * integer_content(), content(), and primpart() now also work for polynomials
