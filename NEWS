@@ -5,6 +5,7 @@ This file records noteworthy changes.
   sequential access this is one order faster than using op().
 * Implemented relational::subs() (this was done in 1.0.9 but inadvertently
   omitted from the 1.1 branch).
+* pole_error and do_taylor are available to library users.
 
 1.1.0 (3 April 2003)
 * Removed deprecated macros is_ex_a, is_ex_exactly_a and friends for good.

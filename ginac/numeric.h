@@ -26,6 +26,8 @@
 #include "basic.h"
 #include "ex.h"
 
+#include <stdexcept>
+
 #include <cln/number.h>
 // forward decln of cln::cl_N, since cln/complex_class.h is not included:
 namespace cln { class cl_N; }
@@ -61,6 +63,17 @@ private:
 	long digits;                        ///< Number of decimal digits
 	static bool too_late;               ///< Already one object present
 };
+
+
+/** Exception class thrown when a singularity is encountered. */
+class pole_error : public std::domain_error {
+public:
+	explicit pole_error(const std::string& what_arg, int degree);
+	int degree() const;
+private:
+	int deg;
+};
+
 
 /** This class is a wrapper around CLN-numbers within the GiNaC class
  *  hierarchy. Objects of this type may directly be created by the user.*/
@@ -165,6 +178,7 @@ public:
 protected:
 	cln::cl_number value;
 };
+
 
 // global constants
 

@@ -223,6 +223,7 @@ typedef ex (* evalf_funcp_exvector)(const exvector &);
 typedef ex (* derivative_funcp_exvector)(const exvector &, unsigned);
 typedef ex (* series_funcp_exvector)(const exvector &, const relational &, int, unsigned);
 
+
 class function_options
 {
 	friend class function;
@@ -287,6 +288,12 @@ protected:
 
 	ex symtree;
 };
+
+
+/** Exception class thrown by classes which provide their own series expansion
+ *  to signal that ordinary Taylor expansion is safe. */
+class do_taylor {};
+
 
 /** The class function is used to implement builtin functions like sin, cos...
 	and user defined functions */

@@ -27,29 +27,15 @@
 #include "config.h"
 
 #include <string>
-#include <stdexcept>
 #include <functional>
 
 #include "assertion.h"
 
 namespace GiNaC {
 
-/** Exception class thrown by classes which provide their own series expansion
- *  to signal that ordinary Taylor expansion is safe. */
-class do_taylor {};
-
 /** Exception class thrown by functions to signal unimplemented functionality
  *  so the expression may just be .hold() */
 class dunno {};
-
-/** Exception class thrown when a singularity is encountered. */
-class pole_error : public std::domain_error {
-public:
-	explicit pole_error(const std::string& what_arg, int degree);
-	int degree(void) const;
-private:
-	int deg;
-};
 
 // some compilers (e.g. cygwin) define a macro log2, causing confusion
 #ifndef log2
