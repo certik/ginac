@@ -230,6 +230,10 @@ static ex beta_evalf(const ex & x, const ex & y)
 
 static ex beta_eval(const ex & x, const ex & y)
 {
+	if (x.is_equal(_ex1))
+		return 1/y;
+	if (y.is_equal(_ex1))
+		return 1/x;
 	if (x.info(info_flags::numeric) && y.info(info_flags::numeric)) {
 		// treat all problematic x and y that may not be passed into tgamma,
 		// because they would throw there although beta(x,y) is well-defined
