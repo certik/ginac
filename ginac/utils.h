@@ -28,6 +28,8 @@
 
 #include <string>
 #include <stdexcept>
+#include <functional>
+
 #include "assertion.h"
 
 namespace GiNaC {
@@ -56,11 +58,14 @@ unsigned log2(unsigned n);
 
 /** Compare two pointers (just to establish some sort of canonical order).
  *  @return -1, 0, or 1 */
-inline int compare_pointers(const void * a, const void * b)
+template <class T>
+inline int compare_pointers(const T * a, const T * b)
 {
-	if (a<b)
+	// '<' is not defined for pointers that don't point to the same array,
+	// but std::less is.
+	if (std::less<const T *>()(a, b))
 		return -1;
-	else if (a>b)
+	else if (std::less<const T *>()(b, a))
 		return 1;
 	return 0;
 }
