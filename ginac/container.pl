@@ -244,7 +244,6 @@ public:
 	ex subs(const lst & ls, const lst & lr, unsigned options = 0) const;
 protected:
 	bool is_equal_same_type(const basic & other) const;
-	unsigned return_type(void) const;
 
 	// new virtual functions which can be overridden by derived classes
 public:
@@ -521,11 +520,6 @@ bool ${CONTAINER}::is_equal_same_type(const basic & other) const
 	}
 
 	return true;
-}
-
-unsigned ${CONTAINER}::return_type(void) const
-{
-	return return_types::noncommutative_composite;
 }
 
 //////////
