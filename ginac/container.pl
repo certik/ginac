@@ -398,9 +398,13 @@ ${CONTAINER}::${CONTAINER}(${STLT} const & s, bool discardable) :  basic(TINFO_$
 
 ${CONTAINER}::${CONTAINER}(${STLT} * vp) : basic(TINFO_${CONTAINER})
 {
-	GINAC_ASSERT(vp!=0);
-	seq.swap(*vp);
-	delete vp;
+	if (vp == 0) {
+		// lst(0) ends up here
+		seq.push_back(0);
+	} else {
+		seq.swap(*vp);
+		delete vp;
+	}
 }
 
 ${CONTAINER}::${CONTAINER}(exvector::const_iterator b, exvector::const_iterator e) :  basic(TINFO_${CONTAINER}), seq(b, e)
