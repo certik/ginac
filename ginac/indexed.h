@@ -26,6 +26,7 @@
 #include <map>
 
 #include "exprseq.h"
+#include "wildcard.h"
 
 namespace GiNaC {
 
@@ -192,17 +193,22 @@ protected:
 };
 
 
-typedef std::pair<ex, ex> spmapkey;
+class spmapkey {
+public:
+	spmapkey() : dim(wild()) {}
+	spmapkey(const ex & v1, const ex & v2, const ex & dim = wild());
+	~spmapkey() {}
 
-struct spmapkey_is_less {
-	bool operator() (const spmapkey &p, const spmapkey &q) const 
-	{
-		int cmp = p.first.compare(q.first);
-		return ((cmp<0) || (!(cmp>0) && p.second.compare(q.second)<0));
-	}
+	bool operator==(const spmapkey &other) const;
+	bool operator<(const spmapkey &other) const;
+
+	void debugprint(void) const;
+
+protected:
+	ex v1, v2, dim;
 };
 
-typedef std::map<spmapkey, ex, spmapkey_is_less> spmap;
+typedef std::map<spmapkey, ex> spmap;
 
 /** Helper class for storing information about known scalar products which
  *  are to be automatically replaced by simplify_indexed().
@@ -210,24 +216,30 @@ typedef std::map<spmapkey, ex, spmapkey_is_less> spmap;
  *  @see simplify_indexed */
 class scalar_products {
 public:
+	scalar_products() {}
+	~scalar_products() {}
+	scalar_products(const scalar_products & other);
+	const scalar_products & operator=(const scalar_products & other);
+
 	/** Register scalar product pair and its value. */
 	void add(const ex & v1, const ex & v2, const ex & sp);
+
+	/** Register scalar product pair and its value for a specific space dimension. */
+	void add(const ex & v1, const ex & v2, const ex & dim, const ex & sp);
 
 	/** Register list of vectors. This adds all possible pairs of products
 	 *  a.i * b.i with the value a*b (note that this is not a scalar vector
 	 *  product but an ordinary product of scalars). */
-	void add_vectors(const lst & l);
+	void add_vectors(const lst & l, const ex & dim = wild());
 
 	/** Clear all registered scalar products. */
 	void clear(void);
 
-	bool is_defined(const ex & v1, const ex & v2) const;
-	ex evaluate(const ex & v1, const ex & v2) const;
+	bool is_defined(const ex & v1, const ex & v2, const ex & dim) const;
+	ex evaluate(const ex & v1, const ex & v2, const ex & dim) const;
 	void debugprint(void) const;
 
-private:
-	static spmapkey make_key(const ex & v1, const ex & v2);
-
+protected:
 	spmap spm; /*< Map from defined scalar product pairs to their values */
 };
 

@@ -701,8 +701,25 @@ try_again:
 			// At least one dummy index, is it a defined scalar product?
 			bool contracted = false;
 			if (free.empty()) {
-				if (sp.is_defined(*it1, *it2)) {
-					*it1 = sp.evaluate(*it1, *it2);
+
+				// Find minimal dimension of all indices of both factors
+				exvector::const_iterator dit = ex_to<indexed>(*it1).seq.begin() + 1, ditend = ex_to<indexed>(*it1).seq.end();
+				ex dim = ex_to<idx>(*dit).get_dim();
+				++dit;
+				for (; dit != ditend; ++dit) {
+					dim = minimal_dim(dim, ex_to<idx>(*dit).get_dim());
+				}
+				dit = ex_to<indexed>(*it2).seq.begin() + 1;
+				ditend = ex_to<indexed>(*it2).seq.end();
+				for (; dit != ditend; ++dit) {
+					dim = minimal_dim(dim, ex_to<idx>(*dit).get_dim());
+				}
+
+				// User-defined scalar product?
+				if (sp.is_defined(*it1, *it2, dim)) {
+
+					// Yes, substitute it
+					*it1 = sp.evaluate(*it1, *it2, dim);
 					*it2 = _ex1;
 					goto contraction_done;
 				}
@@ -951,12 +968,76 @@ ex ex::symmetrize_cyclic(void) const
 // helper classes
 //////////
 
-void scalar_products::add(const ex & v1, const ex & v2, const ex & sp)
+spmapkey::spmapkey(const ex & v1_, const ex & v2_, const ex & dim_) : dim(dim_)
 {
-	spm[make_key(v1, v2)] = sp;
+	// If indexed, extract base objects
+	ex s1 = is_a<indexed>(v1_) ? v1_.op(0) : v1_;
+	ex s2 = is_a<indexed>(v2_) ? v2_.op(0) : v2_;
+
+	// Enforce canonical order in pair
+	if (s1.compare(s2) > 0) {
+		v1 = s2;
+		v2 = s1;
+	} else {
+		v1 = s1;
+		v2 = s2;
+	}
 }
 
-void scalar_products::add_vectors(const lst & l)
+bool spmapkey::operator==(const spmapkey &other) const
+{
+	if (!v1.is_equal(other.v1))
+		return false;
+	if (!v2.is_equal(other.v2))
+		return false;
+	if (is_a<wildcard>(dim) || is_a<wildcard>(other.dim))
+		return true;
+	else
+		return dim.is_equal(other.dim);
+}
+
+bool spmapkey::operator<(const spmapkey &other) const
+{
+	int cmp = v1.compare(other.v1);
+	if (cmp)
+		return cmp < 0;
+	cmp = v2.compare(other.v2);
+	if (cmp)
+		return cmp < 0;
+
+	// Objects are equal, now check dimensions
+	if (is_a<wildcard>(dim) || is_a<wildcard>(other.dim))
+		return false;
+	else
+		return dim.compare(other.dim) < 0;
+}
+
+void spmapkey::debugprint(void) const
+{
+	std::cerr << "(" << v1 << "," << v2 << "," << dim << ")";
+}
+
+scalar_products::scalar_products(const scalar_products & other) : spm(other.spm) {}
+
+const scalar_products & scalar_products::operator=(const scalar_products & other)
+{
+	if (this != &other) {
+		spm = other.spm;
+	}
+	return *this;
+}
+
+void scalar_products::add(const ex & v1, const ex & v2, const ex & sp)
+{
+	spm[spmapkey(v1, v2)] = sp;
+}
+
+void scalar_products::add(const ex & v1, const ex & v2, const ex & dim, const ex & sp)
+{
+	spm[spmapkey(v1, v2, dim)] = sp;
+}
+
+void scalar_products::add_vectors(const lst & l, const ex & dim)
 {
 	// Add all possible pairs of products
 	unsigned num = l.nops();
@@ -964,7 +1045,7 @@ void scalar_products::add_vectors(const lst & l)
 		ex a = l.op(i);
 		for (unsigned j=0; j<num; j++) {
 			ex b = l.op(j);
-			add(a, b, a*b);
+			add(a, b, dim, a*b);
 		}
 	}
 }
@@ -975,15 +1056,15 @@ void scalar_products::clear(void)
 }
 
 /** Check whether scalar product pair is defined. */
-bool scalar_products::is_defined(const ex & v1, const ex & v2) const
+bool scalar_products::is_defined(const ex & v1, const ex & v2, const ex & dim) const
 {
-	return spm.find(make_key(v1, v2)) != spm.end();
+	return spm.find(spmapkey(v1, v2, dim)) != spm.end();
 }
 
 /** Return value of defined scalar product pair. */
-ex scalar_products::evaluate(const ex & v1, const ex & v2) const
+ex scalar_products::evaluate(const ex & v1, const ex & v2, const ex & dim) const
 {
-	return spm.find(make_key(v1, v2))->second;
+	return spm.find(spmapkey(v1, v2, dim))->second;
 }
 
 void scalar_products::debugprint(void) const
@@ -992,24 +1073,11 @@ void scalar_products::debugprint(void) const
 	spmap::const_iterator i = spm.begin(), end = spm.end();
 	while (i != end) {
 		const spmapkey & k = i->first;
-		std::cerr << "item key=(" << k.first << "," << k.second;
-		std::cerr << "), value=" << i->second << std::endl;
+		std::cerr << "item key=";
+		k.debugprint();
+		std::cerr << ", value=" << i->second << std::endl;
 		++i;
 	}
-}
-
-/** Make key from object pair. */
-spmapkey scalar_products::make_key(const ex & v1, const ex & v2)
-{
-	// If indexed, extract base objects
-	ex s1 = is_a<indexed>(v1) ? v1.op(0) : v1;
-	ex s2 = is_a<indexed>(v2) ? v2.op(0) : v2;
-
-	// Enforce canonical order in pair
-	if (s1.compare(s2) > 0)
-		return spmapkey(s2, s1);
-	else
-		return spmapkey(s1, s2);
 }
 
 } // namespace GiNaC
