@@ -192,19 +192,17 @@ void indexed::print(const print_context & c, unsigned level) const
 
 		bool is_tex = is_a<print_latex>(c);
 		const ex & base = seq[0];
-		bool need_parens = is_exactly_a<add>(base) || is_exactly_a<mul>(base)
-		                || is_exactly_a<ncmul>(base) || is_exactly_a<power>(base)
-		                || is_a<indexed>(base);
+
+		if (precedence() <= level)
+			c.s << (is_tex ? "{(" : "(");
 		if (is_tex)
 			c.s << "{";
-		if (need_parens)
-			c.s << "(";
-		base.print(c);
-		if (need_parens)
-			c.s << ")";
+		base.print(c, precedence());
 		if (is_tex)
 			c.s << "}";
 		printindices(c, level);
+		if (precedence() <= level)
+			c.s << (is_tex ? ")}" : ")");
 	}
 }
 
