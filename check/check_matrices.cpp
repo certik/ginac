@@ -1,6 +1,8 @@
 /** @file check_matrices.cpp
  *
- *  Here we test manipulations on GiNaC's symbolic matrices. */
+ *  Here we test manipulations on GiNaC's symbolic matrices.  They are a
+ *  well-tried resource for cross-checking the underlying symbolic
+ *  manipulations. */
 
 /*
  *  GiNaC Copyright (C) 1999-2002 Johannes Gutenberg University Mainz, Germany
@@ -29,7 +31,7 @@ static unsigned integdom_matrix_determinants(void)
 	unsigned result = 0;
 	symbol a("a");
 	
-	for (unsigned size=3; size<20; ++size) {
+	for (unsigned size=3; size<22; ++size) {
 		matrix A(size,size);
 		// populate one element in each row:
 		for (unsigned r=0; r<size-1; ++r)
@@ -56,7 +58,7 @@ static unsigned rational_matrix_determinants(void)
 	unsigned result = 0;
 	symbol a("a"), b("b"), c("c");
 	
-	for (unsigned size=3; size<8; ++size) {
+	for (unsigned size=3; size<9; ++size) {
 		matrix A(size,size);
 		for (unsigned r=0; r<size-1; ++r) {
 			// populate one or two elements in each row:
@@ -90,7 +92,7 @@ static unsigned funny_matrix_determinants(void)
 	unsigned result = 0;
 	symbol a("a"), b("b"), c("c");
 	
-	for (unsigned size=3; size<7; ++size) {
+	for (unsigned size=3; size<8; ++size) {
 		matrix A(size,size);
 		for (unsigned co=0; co<size-1; ++co) {
 			// populate one or two elements in each row:
@@ -124,7 +126,7 @@ static unsigned compare_matrix_determinants(void)
 	unsigned result = 0;
 	symbol a("a");
 	
-	for (unsigned size=2; size<7; ++size) {
+	for (unsigned size=2; size<8; ++size) {
 		matrix A(size,size);
 		for (unsigned co=0; co<size; ++co) {
 			for (unsigned ro=0; ro<size; ++ro) {
@@ -161,7 +163,7 @@ static unsigned symbolic_matrix_inverse(void)
 	unsigned result = 0;
 	symbol a("a"), b("b"), c("c");
 	
-	for (unsigned size=2; size<5; ++size) {
+	for (unsigned size=2; size<6; ++size) {
 		matrix A(size,size);
 		do {
 			for (unsigned co=0; co<size; ++co) {
