@@ -731,12 +731,12 @@ static bool divide_in_z(const ex &a, const ex &b, ex &q, sym_desc_vec::const_ite
 	numeric point = _num0;
 	ex c;
 	for (i=0; i<=adeg; i++) {
-		ex bs = b.subs(*x == point);
+		ex bs = b.subs(*x == point, subs_options::no_pattern);
 		while (bs.is_zero()) {
 			point += _num1;
-			bs = b.subs(*x == point);
+			bs = b.subs(*x == point, subs_options::no_pattern);
 		}
-		if (!divide_in_z(a.subs(*x == point), bs, c, var+1))
+		if (!divide_in_z(a.subs(*x == point, subs_options::no_pattern), bs, c, var+1))
 			return false;
 		alpha.push_back(point);
 		u.push_back(c);
@@ -1189,7 +1189,7 @@ static ex heur_gcd(const ex &a, const ex &b, ex *ca, ex *cb, sym_desc_vec::const
 
 		// Apply evaluation homomorphism and calculate GCD
 		ex cp, cq;
-		ex gamma = heur_gcd(p.subs(x == xi), q.subs(x == xi), &cp, &cq, var+1).expand();
+		ex gamma = heur_gcd(p.subs(x == xi, subs_options::no_pattern), q.subs(x == xi, subs_options::no_pattern), &cp, &cq, var+1).expand();
 		if (!is_exactly_a<fail>(gamma)) {
 
 			// Reconstruct polynomial from GCD of mapped polynomials
@@ -1697,9 +1697,8 @@ static ex replace_with_symbol(const ex &e, lst &sym_lst, lst &repl_lst)
 	// Otherwise create new symbol and add to list, taking care that the
 	// replacement expression doesn't contain symbols from the sym_lst
 	// because subs() is not recursive
-	symbol s;
-	ex es(s);
-	ex e_replaced = e.subs(sym_lst, repl_lst);
+	ex es = (new symbol)->setflag(status_flags::dynallocated);
+	ex e_replaced = e.subs(sym_lst, repl_lst, subs_options::no_pattern);
 	sym_lst.append(es);
 	repl_lst.append(e_replaced);
 	return es;
@@ -1720,9 +1719,8 @@ static ex replace_with_symbol(const ex &e, lst &repl_lst)
 	// Otherwise create new symbol and add to list, taking care that the
 	// replacement expression doesn't contain symbols from the sym_lst
 	// because subs() is not recursive
-	symbol s;
-	ex es(s);
-	ex e_replaced = e.subs(repl_lst);
+	ex es = (new symbol)->setflag(status_flags::dynallocated);
+	ex e_replaced = e.subs(repl_lst, subs_options::no_pattern);
 	repl_lst.append(es == e_replaced);
 	return es;
 }
@@ -2033,7 +2031,7 @@ ex ex::normal(int level) const
 
 	// Re-insert replaced symbols
 	if (sym_lst.nops() > 0)
-		e = e.subs(sym_lst, repl_lst);
+		e = e.subs(sym_lst, repl_lst, subs_options::no_pattern);
 
 	// Convert {numerator, denominator} form back to fraction
 	return e.op(0) / e.op(1);
@@ -2054,7 +2052,7 @@ ex ex::numer(void) const
 
 	// Re-insert replaced symbols
 	if (sym_lst.nops() > 0)
-		return e.op(0).subs(sym_lst, repl_lst);
+		return e.op(0).subs(sym_lst, repl_lst, subs_options::no_pattern);
 	else
 		return e.op(0);
 }
@@ -2074,7 +2072,7 @@ ex ex::denom(void) const
 
 	// Re-insert replaced symbols
 	if (sym_lst.nops() > 0)
-		return e.op(1).subs(sym_lst, repl_lst);
+		return e.op(1).subs(sym_lst, repl_lst, subs_options::no_pattern);
 	else
 		return e.op(1);
 }
@@ -2094,7 +2092,7 @@ ex ex::numer_denom(void) const
 
 	// Re-insert replaced symbols
 	if (sym_lst.nops() > 0)
-		return e.subs(sym_lst, repl_lst);
+		return e.subs(sym_lst, repl_lst, subs_options::no_pattern);
 	else
 		return e;
 }
@@ -2339,7 +2337,7 @@ ex collect_common_factors(const ex & e)
 		lst repl;
 		ex factor = 1;
 		ex r = find_common_factor(e, factor, repl);
-		return factor.subs(repl) * r.subs(repl);
+		return factor.subs(repl, subs_options::no_pattern) * r.subs(repl, subs_options::no_pattern);
 
 	} else
 		return e;
