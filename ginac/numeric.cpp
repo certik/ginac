@@ -584,7 +584,7 @@ unsigned numeric::calchash(void) const
 	// equivalence relation on numbers).  As a consequence, 3 and 3.0 share
 	// the same hashvalue.  That shouldn't really matter, though.
 	setflag(status_flags::hash_calculated);
-	hashvalue = golden_ratio_hash(cln::equal_hashcode(cln::the<cln::cl_N>(value))) | 0x80000000U;
+	hashvalue = golden_ratio_hash(cln::equal_hashcode(cln::the<cln::cl_N>(value)));
 	return hashvalue;
 }
 

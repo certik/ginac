@@ -803,10 +803,10 @@ unsigned function::calchash(void) const
 {
 	unsigned v = golden_ratio_hash(golden_ratio_hash(tinfo()) ^ serial);
 	for (unsigned i=0; i<nops(); i++) {
-		v = rotate_left_31(v);
+		v = rotate_left(v);
 		v ^= this->op(i).gethash();
 	}
-	v &= 0x7FFFFFFFU;
+
 	if (flags & status_flags::evaluated) {
 		setflag(status_flags::hash_calculated);
 		hashvalue = v;

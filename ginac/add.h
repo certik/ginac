@@ -62,7 +62,6 @@ public:
 	ex simplify_ncmul(const exvector & v) const;
 protected:
 	ex derivative(const symbol & s) const;
-	bool is_equal_same_type(const basic & other) const;
 	unsigned return_type(void) const;
 	unsigned return_type_tinfo(void) const;
 	ex thisexpairseq(const epvector & v, const ex & oc) const;

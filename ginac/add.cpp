@@ -420,11 +420,6 @@ int add::compare_same_type(const basic & other) const
 	return inherited::compare_same_type(other);
 }
 
-bool add::is_equal_same_type(const basic & other) const
-{
-	return inherited::is_equal_same_type(other);
-}
-
 unsigned add::return_type(void) const
 {
 	if (seq.empty())

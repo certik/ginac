@@ -639,13 +639,10 @@ unsigned basic::calchash(void) const
 {
 	unsigned v = golden_ratio_hash(tinfo());
 	for (unsigned i=0; i<nops(); i++) {
-		v = rotate_left_31(v);
+		v = rotate_left(v);
 		v ^= (const_cast<basic *>(this))->op(i).gethash();
 	}
-	
-	// mask out numeric hashes:
-	v &= 0x7FFFFFFFU;
-	
+
 	// store calculated hash value only if object is already evaluated
 	if (flags & status_flags::evaluated) {
 		setflag(status_flags::hash_calculated);
@@ -707,7 +704,9 @@ ex basic::subs(const ex & e, bool no_pattern) const
 	return subs(ls, lr, no_pattern);
 }
 
-/** Compare objects to establish canonical ordering.
+extern "C" { int putchar(int c); }  // FIXME: removeme
+
+/** Compare objects syntactically to establish canonical ordering.
  *  All compare functions return: -1 for *this less than other, 0 equal,
  *  1 greater. */
 int basic::compare(const basic & other) const
@@ -722,7 +721,7 @@ int basic::compare(const basic & other) const
 	if (typeid_this==typeid_other) {
 		GINAC_ASSERT(typeid(*this)==typeid(other));
 // 		int cmpval = compare_same_type(other);
-// 		if ((cmpval!=0) && (hash_this<0x80000000U)) {
+// 		if (cmpval!=0) {
 // 			std::cout << "hash collision, same type: " 
 // 			          << *this << " and " << other << std::endl;
 // 			this->print(print_tree(std::cout));
@@ -733,17 +732,17 @@ int basic::compare(const basic & other) const
 // 		return cmpval;
 		return compare_same_type(other);
 	} else {
-// 			std::cout << "hash collision, different types: " 
-// 			          << *this << " and " << other << std::endl;
-// 			this->print(print_tree(std::cout));
-// 			std::cout << " and ";
-// 			other.print(print_tree(std::cout));
-// 			std::cout << std::endl;
+// 		std::cout << "hash collision, different types: " 
+// 		          << *this << " and " << other << std::endl;
+// 		this->print(print_tree(std::cout));
+// 		std::cout << " and ";
+// 		other.print(print_tree(std::cout));
+// 		std::cout << std::endl;
 		return (typeid_this<typeid_other ? -1 : 1);
 	}
 }
 
-/** Test for equality.
+/** Test for syntactic equality.
  *  This is only a quick test, meaning objects should be in the same domain.
  *  You might have to .expand(), .normal() objects first, depending on the
  *  domain of your computation, to get a more reliable answer.

@@ -65,46 +65,37 @@ inline int compare_pointers(const void * a, const void * b)
 	return 0;
 }
 
-/** Rotate lower 31 bits of unsigned value by one bit to the left
- *  (upper bit gets cleared). */
-inline unsigned rotate_left_31(unsigned n)
+/** Rotate bits of unsigned value by one bit to the left. */
+inline unsigned rotate_left(unsigned n)
 {
-	// clear highest bit and shift 1 bit to the left
-	n = (n & 0x7FFFFFFFU) << 1;
-	
-	// overflow? clear highest bit and set lowest bit
 	if (n & 0x80000000U)
-		n = (n & 0x7FFFFFFFU) | 0x00000001U;
-	
-	GINAC_ASSERT(n<0x80000000U);
-	
+		n = n << 1 | 0x00000001U;
+	else
+		n = n << 1;
 	return n;
 }
 
-/** Golden ratio hash function for the 31 least significant bits. */
+/** Truncated multiplication with golden ratio, for computing hash values. */
 inline unsigned golden_ratio_hash(unsigned n)
 {
 	// This function requires arithmetic with at least 64 significant bits
 #if SIZEOF_LONG >= 8
 	// So 'long' has 64 bits.  Excellent!  We prefer it because it might be
 	// more efficient than 'long long'.
-	unsigned long l = n * 0x4f1bbcddL;
-	return (l & 0x7fffffffU) ^ (l >> 32);
+	unsigned long l = n * 0x4f1bbcddUL;
+	return (unsigned)l;
 #elif SIZEOF_LONG_LONG >= 8
 	// This requires 'long long' (or an equivalent 64 bit type)---which is,
 	// unfortunately, not ANSI-C++-compliant.
 	// (Yet C99 demands it, which is reason for hope.)
-	unsigned long long l = n * 0x4f1bbcddL;
-	return (l & 0x7fffffffU) ^ (l >> 32);
-#elif SIZEOF_LONG_DOUBLE > 8
-	// If 'long double' is bigger than 64 bits, we assume that the mantissa
-	// has at least 64 bits. This is not guaranteed but it's a good guess.
-	// Unfortunately, it may lead to horribly slow code.
-	const static long double golden_ratio = .618033988749894848204586834370;
-	long double m = golden_ratio * n;
-	return unsigned((m - int(m)) * 0x80000000);
+	unsigned long long l = n * 0x4f1bbcddULL;
+	return (unsigned)l;
 #else
-#error "No 64 bit data type. You lose."
+	// Do the multiplication manually by splitting n up into the lower and
+	// upper two bytes.
+	const unsigned n0 = (n & 0x0000ffffU);
+	const unsigned n1 = (n & 0xffff0000U) >> 16;
+	return (n0 * 0x0000bcddU) + ((n1 * 0x0000bcddU + n0 * 0x00004f1bU) << 16);
 #endif
 }
 

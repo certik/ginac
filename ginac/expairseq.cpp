@@ -555,15 +555,14 @@ unsigned expairseq::calchash(void) const
 		v ^= i->rest.gethash();
 #if !EXPAIRSEQ_USE_HASHTAB
 		// rotation spoils commutativity!
-		v = rotate_left_31(v);
+		v = rotate_left(v);
 		v ^= i->coeff.gethash();
 #endif // !EXPAIRSEQ_USE_HASHTAB
 		++i;
 	}
-	
+
 	v ^= overall_coeff.gethash();
-	v &= 0x7FFFFFFFU;
-	
+
 	// store calculated hash value only if object is already evaluated
 	if (flags &status_flags::evaluated) {
 		setflag(status_flags::hash_calculated);
@@ -1122,7 +1121,7 @@ unsigned expairseq::calc_hashtabsize(unsigned sz) const
 	size = nearest_power_of_2/hashtabfactor;
 	if (size<minhashtabsize)
 		return 0;
-	GINAC_ASSERT(hashtabsize<=0x8000000U); // really max size due to 31 bit hashing
+
 	// hashtabsize must be a power of 2
 	GINAC_ASSERT((1U << log2(size))==size);
 	return size;
@@ -1131,16 +1130,14 @@ unsigned expairseq::calc_hashtabsize(unsigned sz) const
 unsigned expairseq::calc_hashindex(const ex &e) const
 {
 	// calculate hashindex
-	unsigned hash = e.gethash();
 	unsigned hashindex;
-	if (is_a_numeric_hash(hash)) {
+	if (is_a<numeric>(e)) {
 		hashindex = hashmask;
 	} else {
-		hashindex = hash &hashmask;
+		hashindex = e.gethash() & hashmask;
 		// last hashtab entry is reserved for numerics
 		if (hashindex==hashmask) hashindex = 0;
 	}
-	GINAC_ASSERT(hashindex>=0);
 	GINAC_ASSERT((hashindex<hashtabsize)||(hashtabsize==0));
 	return hashindex;
 }

@@ -170,9 +170,6 @@ protected:
 extern const numeric I;
 extern _numeric_digits Digits;
 
-// deprecated macro, for internal use only
-#define is_a_numeric_hash(x) ((x)&0x80000000U)
-
 // global functions
 
 const numeric exp(const numeric &x);

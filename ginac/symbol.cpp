@@ -223,10 +223,7 @@ bool symbol::is_equal_same_type(const basic & other) const
 
 unsigned symbol::calchash(void) const
 {
-	// this is where the schoolbook method
-	// (golden_ratio_hash(tinfo()) ^ serial)
-	// is not good enough yet...
-	hashvalue = golden_ratio_hash(golden_ratio_hash(tinfo()) ^ serial);
+	hashvalue = golden_ratio_hash(tinfo() ^ serial);
 	setflag(status_flags::hash_calculated);
 	return hashvalue;
 }

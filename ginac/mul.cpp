@@ -507,11 +507,6 @@ int mul::compare_same_type(const basic & other) const
 	return inherited::compare_same_type(other);
 }
 
-bool mul::is_equal_same_type(const basic & other) const
-{
-	return inherited::is_equal_same_type(other);
-}
-
 unsigned mul::return_type(void) const
 {
 	if (seq.empty()) {
@@ -590,7 +585,7 @@ expair mul::combine_ex_with_coeff_to_pair(const ex & e,
 	// expression like (4^(1/3))^(3/2)
 	if (are_ex_trivially_equal(c,_ex1))
 		return split_ex_to_pair(e);
-	
+
 	return split_ex_to_pair(power(e,c));
 }
 	
@@ -603,7 +598,7 @@ expair mul::combine_pair_with_coeff_to_pair(const expair & p,
 	// expression like (4^(1/3))^(3/2)
 	if (are_ex_trivially_equal(c,_ex1))
 		return p;
-	
+
 	return split_ex_to_pair(power(recombine_pair_to_ex(p),c));
 }
 	
@@ -612,25 +607,25 @@ ex mul::recombine_pair_to_ex(const expair & p) const
 	if (ex_to<numeric>(p.coeff).is_equal(_num1)) 
 		return p.rest;
 	else
-		return power(p.rest,p.coeff);
+		return (new power(p.rest,p.coeff))->setflag(status_flags::dynallocated);
 }
 
 bool mul::expair_needs_further_processing(epp it)
 {
-	if (is_exactly_a<mul>((*it).rest) &&
-		ex_to<numeric>((*it).coeff).is_integer()) {
+	if (is_exactly_a<mul>(it->rest) &&
+		ex_to<numeric>(it->coeff).is_integer()) {
 		// combined pair is product with integer power -> expand it
 		*it = split_ex_to_pair(recombine_pair_to_ex(*it));
 		return true;
 	}
-	if (is_exactly_a<numeric>((*it).rest)) {
-		expair ep=split_ex_to_pair(recombine_pair_to_ex(*it));
+	if (is_exactly_a<numeric>(it->rest)) {
+		expair ep = split_ex_to_pair(recombine_pair_to_ex(*it));
 		if (!ep.is_equal(*it)) {
 			// combined pair is a numeric power which can be simplified
 			*it = ep;
 			return true;
 		}
-		if (ex_to<numeric>((*it).coeff).is_equal(_num1)) {
+		if (it->coeff.is_equal(_ex1)) {
 			// combined pair has coeff 1 and must be moved to the end
 			return true;
 		}

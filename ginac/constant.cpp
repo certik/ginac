@@ -187,11 +187,9 @@ bool constant::is_equal_same_type(const basic & other) const
 unsigned constant::calchash(void) const
 {
 	hashvalue = golden_ratio_hash(tinfo() ^ serial);
-	// mask out numeric hashes:
-	hashvalue &= 0x7FFFFFFFU;
-	
+
 	setflag(status_flags::hash_calculated);
-	
+
 	return hashvalue;
 }
 

@@ -1288,7 +1288,7 @@ int matrix::fraction_free_elimination(const bool det)
 	//
 	// Bareiss (fraction-free) elimination in addition divides that element
 	// by m[k-1](k-1,k-1) for k>1, where it can be shown by means of the
-	// Sylvester determinant that this really divides m[k+1](r,c).
+	// Sylvester identity that this really divides m[k+1](r,c).
 	//
 	// We also allow rational functions where the original prove still holds.
 	// However, we must care for numerator and denominator separately and

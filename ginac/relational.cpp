@@ -249,7 +249,7 @@ unsigned relational::calchash(void) const
 	unsigned lhash = lh.gethash();
 	unsigned rhash = rh.gethash();
 
-	v = rotate_left_31(v);
+	v = rotate_left(v);
 	switch(o) {
 		case equal:
 		case not_equal:
@@ -270,11 +270,8 @@ unsigned relational::calchash(void) const
 			lhash = rhash;
 			break;
 	}
-	v = rotate_left_31(v);
+	v = rotate_left(v);
 	v ^= lhash;
-
-	// mask out numeric hashes:
-	v &= 0x7FFFFFFFU;
 
 	// store calculated hash value only if object is already evaluated
 	if (flags & status_flags::evaluated) {
