@@ -520,7 +520,7 @@ ex basic::series(const relational & r, int order, unsigned options) const
 		seq.push_back(expair(coeff, _ex0));
 	
 	int n;
-	for (n=1; n<=order; ++n) {
+	for (n=1; n<order; ++n) {
 		fac = fac.mul(n);
 		// We need to test for zero in order to see if the series terminates.
 		// The problem is that there is no such thing as a perfect test for
@@ -535,33 +535,9 @@ ex basic::series(const relational & r, int order, unsigned options) const
 	}
 	
 	// Higher-order terms, if present
-	int ldeg;
-	try {
-		ldeg = std::abs(deriv.ldegree(s));
-	}
-	catch (std::runtime_error) {
-		ldeg = 0;
-	}
-	if (ldeg != 0) {
-		// pure polynomial
-		if (!deriv.subs(r, subs_options::no_pattern).is_zero()) {
-			seq.push_back(expair(Order(_ex1), n));
-		} else {
-		seq.push_back(expair(Order(_ex1), n+ldeg-1));
-		}
-	} else {
-		// something more complicated -> loop until next coefficient is found
-		for (;; ++n) {
-			deriv = deriv.diff(s).expand();
-			if (deriv.is_zero()) {
-				break;
-			}
-			if (!deriv.subs(r, subs_options::no_pattern).is_zero()) {
-				seq.push_back(expair(Order(_ex1), n));
-				break;
-			}
-		}
-	}
+	deriv = deriv.diff(s);
+	if (!deriv.expand().is_zero())
+		seq.push_back(expair(Order(_ex1), n));
 	
 	return pseries(r, seq);
 }
@@ -882,7 +858,7 @@ ex pseries::power_const(const numeric &p, int deg) const
 	co.reserve(deg);
 	co.push_back(power(coeff(var, ldeg), p));
 	bool all_sums_zero = true;
-	for (int i=1; i<=deg; ++i) {
+	for (int i=1; i<deg; ++i) {
 		ex sum = _ex0;
 		for (int j=1; j<=i; ++j) {
 			ex c = coeff(var, j + ldeg);
@@ -900,7 +876,7 @@ ex pseries::power_const(const numeric &p, int deg) const
 	// Construct new series (of non-zero coefficients)
 	epvector new_seq;
 	bool higher_order = false;
-	for (int i=0; i<=deg; ++i) {
+	for (int i=0; i<deg; ++i) {
 		if (!co[i].is_zero())
 			new_seq.push_back(expair(co[i], p * ldeg + i));
 		if (is_order_function(co[i])) {
@@ -909,7 +885,7 @@ ex pseries::power_const(const numeric &p, int deg) const
 		}
 	}
 	if (!higher_order && !all_sums_zero)
-		new_seq.push_back(expair(Order(_ex1), p * ldeg + deg + 1));
+		new_seq.push_back(expair(Order(_ex1), p * ldeg + deg));
 
 	return pseries(relational(var,point), new_seq);
 }

@@ -47,19 +47,19 @@ static unsigned exam_series1(void)
 	ex e, d;
 	
 	e = sin(x);
-	d = x - pow(x, 3) / 6 + pow(x, 5) / 120 - pow(x, 7) / 5040 + Order(pow(x, 9));
+	d = x - pow(x, 3) / 6 + pow(x, 5) / 120 - pow(x, 7) / 5040 + Order(pow(x, 8));
 	result += check_series(e, 0, d);
 	
 	e = cos(x);
-	d = 1 - pow(x, 2) / 2 + pow(x, 4) / 24 - pow(x, 6) / 720 + pow(x, 8) / 40320 + Order(pow(x, 10));
+	d = 1 - pow(x, 2) / 2 + pow(x, 4) / 24 - pow(x, 6) / 720 + Order(pow(x, 8));
 	result += check_series(e, 0, d);
 	
 	e = exp(x);
-	d = 1 + x + pow(x, 2) / 2 + pow(x, 3) / 6 + pow(x, 4) / 24 + pow(x, 5) / 120 + pow(x, 6) / 720 + pow(x, 7) / 5040 + pow(x, 8) / 40320 + Order(pow(x, 9));
+	d = 1 + x + pow(x, 2) / 2 + pow(x, 3) / 6 + pow(x, 4) / 24 + pow(x, 5) / 120 + pow(x, 6) / 720 + pow(x, 7) / 5040 + Order(pow(x, 8));
 	result += check_series(e, 0, d);
 	
 	e = pow(1 - x, -1);
-	d = 1 + x + pow(x, 2) + pow(x, 3) + pow(x, 4) + pow(x, 5) + pow(x, 6) + pow(x, 7) + pow(x, 8) + Order(pow(x, 9));
+	d = 1 + x + pow(x, 2) + pow(x, 3) + pow(x, 4) + pow(x, 5) + pow(x, 6) + pow(x, 7) + Order(pow(x, 8));
 	result += check_series(e, 0, d);
 	
 	e = x + pow(x, -1);
@@ -67,37 +67,37 @@ static unsigned exam_series1(void)
 	result += check_series(e, 0, d);
 	
 	e = x + pow(x, -1);
-	d = 2 + pow(x-1, 2) - pow(x-1, 3) + pow(x-1, 4) - pow(x-1, 5) + pow(x-1, 6) - pow(x-1, 7) + pow(x-1, 8) + Order(pow(x-1, 9));
+	d = 2 + pow(x-1, 2) - pow(x-1, 3) + pow(x-1, 4) - pow(x-1, 5) + pow(x-1, 6) - pow(x-1, 7) + Order(pow(x-1, 8));
 	result += check_series(e, 1, d);
 	
 	e = pow(x + pow(x, 3), -1);
-	d = pow(x, -1) - x + pow(x, 3) - pow(x, 5) + pow(x, 7) + Order(pow(x, 9));
+	d = pow(x, -1) - x + pow(x, 3) - pow(x, 5) + pow(x, 7) + Order(pow(x, 8));
 	result += check_series(e, 0, d);
 	
 	e = pow(pow(x, 2) + pow(x, 4), -1);
-	d = pow(x, -2) - 1 + pow(x, 2) - pow(x, 4) + pow(x, 6) - pow(x, 8) + Order(pow(x, 9));
+	d = pow(x, -2) - 1 + pow(x, 2) - pow(x, 4) + pow(x, 6) + Order(pow(x, 8));
 	result += check_series(e, 0, d);
 	
 	e = pow(sin(x), -2);
-	d = pow(x, -2) + numeric(1,3) + pow(x, 2) / 15 + pow(x, 4) * 2/189 + pow(x, 6) / 675  + pow(x, 8) * 2/10395 + Order(pow(x, 9));
+	d = pow(x, -2) + numeric(1,3) + pow(x, 2) / 15 + pow(x, 4) * 2/189 + pow(x, 6) / 675  + Order(pow(x, 8));
 	result += check_series(e, 0, d);
 	
 	e = sin(x) / cos(x);
-	d = x + pow(x, 3) / 3 + pow(x, 5) * 2/15 + pow(x, 7) * 17/315 + Order(pow(x, 9));
+	d = x + pow(x, 3) / 3 + pow(x, 5) * 2/15 + pow(x, 7) * 17/315 + Order(pow(x, 8));
 	result += check_series(e, 0, d);
 	
 	e = cos(x) / sin(x);
-	d = pow(x, -1) - x / 3 - pow(x, 3) / 45 - pow(x, 5) * 2/945 - pow(x, 7) / 4725 + Order(pow(x, 9));
+	d = pow(x, -1) - x / 3 - pow(x, 3) / 45 - pow(x, 5) * 2/945 - pow(x, 7) / 4725 + Order(pow(x, 8));
 	result += check_series(e, 0, d);
 	
 	e = pow(numeric(2), x);
 	ex t = log(2) * x;
-	d = 1 + t + pow(t, 2) / 2 + pow(t, 3) / 6 + pow(t, 4) / 24 + pow(t, 5) / 120 + pow(t, 6) / 720 + pow(t, 7) / 5040 + pow(t, 8) / 40320 + Order(pow(x, 9));
+	d = 1 + t + pow(t, 2) / 2 + pow(t, 3) / 6 + pow(t, 4) / 24 + pow(t, 5) / 120 + pow(t, 6) / 720 + pow(t, 7) / 5040 + Order(pow(x, 8));
 	result += check_series(e, 0, d.expand());
 	
 	e = pow(Pi, x);
 	t = log(Pi) * x;
-	d = 1 + t + pow(t, 2) / 2 + pow(t, 3) / 6 + pow(t, 4) / 24 + pow(t, 5) / 120 + pow(t, 6) / 720 + pow(t, 7) / 5040 + pow(t, 8) / 40320 + Order(pow(x, 9));
+	d = 1 + t + pow(t, 2) / 2 + pow(t, 3) / 6 + pow(t, 4) / 24 + pow(t, 5) / 120 + pow(t, 6) / 720 + pow(t, 7) / 5040 + Order(pow(x, 8));
 	result += check_series(e, 0, d.expand());
 	
 	e = log(x);
@@ -115,7 +115,7 @@ static unsigned exam_series2(void)
 	ex e, d;
 	
 	e = pow(sin(x), -1).series(x==0, 8) + pow(sin(-x), -1).series(x==0, 12);
-	d = Order(pow(x, 9));
+	d = Order(pow(x, 8));
 	result += check_series(e, 0, d);
 	
 	return result;
@@ -128,7 +128,7 @@ static unsigned exam_series3(void)
 	ex e, d;
 	
 	e = sin(x).series(x==0, 8) * pow(sin(x), -1).series(x==0, 12);
-	d = 1 + Order(pow(x, 8));
+	d = 1 + Order(pow(x, 7));
 	result += check_series(e, 0, d);
 	
 	return result;
@@ -141,10 +141,10 @@ static unsigned exam_series4(void)
 	ex e, d;
 	
 	e = pow((2*cos(x)).series(x==0, 5), 2).series(x==0, 5);
-	d = 4 - 4*pow(x, 2) + 4*pow(x, 4)/3 + Order(pow(x, 6));
+	d = 4 - 4*pow(x, 2) + 4*pow(x, 4)/3 + Order(pow(x, 5));
 	result += check_series(e, 0, d);
 	
-	e = pow(tgamma(x), 2).series(x==0, 1);
+	e = pow(tgamma(x), 2).series(x==0, 2);
 	d = pow(x,-2) - 2*Euler/x + (pow(Pi,2)/6+2*pow(Euler,2)) 
 		+ x*(-4*pow(Euler, 3)/3 -pow(Pi,2)*Euler/3 - 2*zeta(3)/3) + Order(pow(x, 2));
 	result += check_series(e, 0, d);
@@ -163,9 +163,9 @@ static unsigned exam_series5(void)
 	result += check_series(e, 0, d, 0);
 	d = 1 + Order(x);
 	result += check_series(e, 0, d, 1);
-	d = 1 + x + pow(x, 2) + Order(pow(x, 3));
+	d = 1 + x + Order(pow(x, 2));
 	result += check_series(e, 0, d, 2);
-	d = 1 + x + pow(x, 2) + pow(x, 3);
+	d = 1 + x + pow(x, 2) + Order(pow(x, 3));
 	result += check_series(e, 0, d, 3);
 	d = 1 + x + pow(x, 2) + pow(x, 3);
 	result += check_series(e, 0, d, 4);
@@ -201,7 +201,7 @@ static unsigned exam_series6(void)
 	                   numeric(1,40)*pow(Pi,4) +
 	                   numeric(4,3)*zeta(3)*Euler) +
 	       Order(pow(x+1,4));
-	return check_series(e, -1, d, 3);
+	return check_series(e, -1, d, 4);
 }
 	
 // Series expansion of tan(x==Pi/2)
@@ -211,15 +211,15 @@ static unsigned exam_series7(void)
 	ex d = pow(x-1,-1)/Pi*(-2) + pow(x-1,1)*Pi/6 + pow(x-1,3)*pow(Pi,3)/360
 	      +pow(x-1,5)*pow(Pi,5)/15120 + pow(x-1,7)*pow(Pi,7)/604800
 	      +Order(pow(x-1,9));
-	return check_series(e,1,d,8);
+	return check_series(e,1,d,9);
 }
 
 // Series expansion of log(sin(x==0))
 static unsigned exam_series8(void)
 {
 	ex e = log(sin(x));
-	ex d = log(x) - pow(x,2)/6 - pow(x,4)/180 - pow(x,6)/2835 - pow(x,8)/37800 + Order(pow(x,10));
-	return check_series(e,0,d,8);
+	ex d = log(x) - pow(x,2)/6 - pow(x,4)/180 - pow(x,6)/2835 - pow(x,8)/37800 + Order(pow(x,9));
+	return check_series(e,0,d,9);
 }
 
 // Series expansion of Li2(sin(x==0))
@@ -243,7 +243,7 @@ static unsigned exam_series10(void)
 	       + (numeric(11,27) - log(3)/12 + I*Pi/12*csgn(I-I*pow(x,2))) * pow(x-2,3)
 	       + (numeric(-155,648) + log(3)/32 - I*Pi/32*csgn(I-I*pow(x,2))) * pow(x-2,4)
 	       + Order(pow(x-2,5));
-	return check_series(e,2,d,4);
+	return check_series(e,2,d,5);
 }
 
 // Series expansion of logarithms around branch points
@@ -283,7 +283,7 @@ static unsigned exam_series11(void)
 	
 	e = log((1-x)/x);
 	d = log(1-x) - (x-1) + pow(x-1,2)/2 - pow(x-1,3)/3  + pow(x-1,4)/4 + Order(pow(x-1,5));
-	result += check_series(e,1,d,4);
+	result += check_series(e,1,d,5);
 	
 	return result;
 }
@@ -300,18 +300,18 @@ static unsigned exam_series12(void)
 	// takes into account that by assumption |x|<1.
 	e = atan(x);
 	d = (I*log(2)/2-I*log(1+I*x)/2) + (x-I)/4 + I*pow(x-I,2)/16 + Order(pow(x-I,3));
-	result += check_series(e,I,d,2);
+	result += check_series(e,I,d,3);
 	
 	// NB: here, at -I, Mathematica disagrees, but it is wrong -- they
 	// pick up a complex phase by incorrectly expanding logarithms.
 	e = atan(x);
 	d = (-I*log(2)/2+I*log(1-I*x)/2) + (x+I)/4 - I*pow(x+I,2)/16 + Order(pow(x+I,3));
-	result += check_series(e,-I,d,2);
+	result += check_series(e,-I,d,3);
 	
 	// This is basically the same as above, the branch point is at +/-1:
 	e = atanh(x);
 	d = (-log(2)/2+log(x+1)/2) + (x+1)/4 + pow(x+1,2)/16 + Order(pow(x+1,3));
-	result += check_series(e,-1,d,2);
+	result += check_series(e,-1,d,3);
 	
 	return result;
 }
