@@ -1,6 +1,7 @@
 This file records noteworthy changes.
 
 1.1.0 (<date>)
+* "(x+1).subs(x==x-1)" now returns the correct result "x" instead of "x-1".
 
 1.0.5 (<date>)
 * (l)degree(s), coeff(s, n) and collect(s) were extended to accept expressions
