@@ -464,7 +464,7 @@ static ex Li_evalf(const ex& x1, const ex& x2)
 			if (!is_a<numeric>(x2.op(i))) {
 				return Li(x1,x2).hold();
 			}
-			if (x2.op(i) >= 1) {
+			if (abs(x2.op(i)) >= 1) {
 				return Li(x1,x2).hold();
 			}
 		}
