@@ -5,6 +5,11 @@ This file records noteworthy changes.
   more than one representation label by specifying a set or list of labels.
 * diracgamma::contract_with() uses Chisholm identities in 4 dimensions to
   produce more compact results.
+* The --enable-html-doc and --enable-ps-doc configure options are gone.
+  Documentation in HTML, DVI, PostScript, and PDF formats is now built with
+  "make html", "make dvi", "make ps", and "make pdf", respectively. The only
+  documentation that gets built by default are the tutorial in .info format
+  and the manpages.
 
 1.2.2 (3 August 2004)
 * Added const_preorder_iterator and const_postorder_iterator classes (and
