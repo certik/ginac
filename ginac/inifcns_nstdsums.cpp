@@ -14,7 +14,7 @@
  *      This document will be referenced as [Kol] throughout this source code.
  *    - Classical polylogarithms (Li) and nielsen's generalized polylogarithms (S) can be numerically
  *    	evaluated in the whole complex plane. And of course, there is still room for speed optimizations ;-).
- *    - The calculation of classical polylogarithms is speed up by using Euler-MacLaurin summation.
+ *    - The calculation of classical polylogarithms is speed up by using Euler-MacLaurin summation (EuMac).
  *    - The remaining functions can only be numerically evaluated with arguments lying in the unit sphere
  *      at the moment. Sorry. The evaluation especially for mZeta is very slow ... better not use it
  *      right now.
@@ -156,6 +156,7 @@ static void fill_Xn(int n)
 	xnsize++;
 }
 
+
 // This function calculates the Y_n. The Y_n are needed for the evaluation of S_{n,p}(x).
 // The Y_n are basically Euler-Zagier sums with all m_i=1. They are subsums in the Z-sum
 // representing S_{n,p}(x).
@@ -200,6 +201,7 @@ static void fill_Yn(int n, const cln::float_format_t& prec)
 	ynsize++;
 }
 
+
 // make Yn longer ... 
 static void make_Yn_longer(int newsize, const cln::float_format_t& prec)
 {
@@ -231,76 +233,136 @@ static void make_Yn_longer(int newsize, const cln::float_format_t& prec)
 }
 
 
-static cln::cl_N Li_series(int n, const cln::cl_N& x, const cln::float_format_t& prec)
+// calculates Li(2,x) without EuMac
+static cln::cl_N Li2_series(const cln::cl_N& x)
 {
-	// check if precalculated values are sufficient
-	if (n > xnsize+1) {
-		for (int i=xnsize; i<n-1; i++) {
-			fill_Xn(i);
-		}
-	}
-
-	// using Euler-MacLaurin summation
-	if (n==2) {
-		// Li_2. X_0 is special ...
-		std::vector<cln::cl_N>::const_iterator it = Xn[0].begin();
-		cln::cl_N u = -cln::log(cln::complex(cln::cl_float(1, prec), 0)-x);
-		cln::cl_N factor = u;
-		cln::cl_N res = u - u*u/4;
-		cln::cl_N resbuf;
-		for (int i=1; true; i++) {
-			resbuf = res;
-			factor = factor * u*u / (2*i * (2*i+1));
-			res = res + (*it) * factor;
-			it++; // should we check it? or rely on initsize? ...
-			if (cln::zerop(res-resbuf))
-			{
-				break;
-			}
-		}
-		return res;
-	} else {
-		// Li_3 and higher
-		std::vector<cln::cl_N>::const_iterator it = Xn[n-2].begin();
-		cln::cl_N u = -cln::log(cln::complex(cln::cl_float(1, prec), 0)-x);
-		cln::cl_N factor = u;
-		cln::cl_N res = u;
-		cln::cl_N resbuf;
-		for (int i=1; true; i++) {
-			resbuf = res;
-			factor = factor * u / (i+1);
-			res = res + (*it) * factor;
-			it++; // should we check it? or rely on initsize? ...
-			if (cln::zerop(res-resbuf))
-			{
-				// should not be needed. 
-//				if (!cln::zerop(*it)) {
-					break;
-//				}
-			}
-		}
-		return res;
-	}
+	cln::cl_N res = x;
+	cln::cl_N resbuf;
+	cln::cl_N num = x;
+	cln::cl_I den = 1; // n^2 = 1
+	unsigned i = 3;
+	do {
+		resbuf = res;
+		num = num * x;
+		den = den + i;  // n^2 = 4, 9, 16, ...
+		i += 2;
+		res = res + num / den;
+	} while (res != resbuf);
+	return res;
 }
 
 
-// forward declaration needed by function C below
+// calculates Li(2,x) with EuMac
+static cln::cl_N Li2_series_EuMac(const cln::cl_N& x)
+{
+	std::vector<cln::cl_N>::const_iterator it = Xn[0].begin();
+	cln::cl_N u = -cln::log(1-x);
+	cln::cl_N factor = u;
+	cln::cl_N res = u - u*u/4;
+	cln::cl_N resbuf;
+	unsigned i = 1;
+	do {
+		resbuf = res;
+		factor = factor * u*u / (2*i * (2*i+1));
+		res = res + (*it) * factor;
+		it++; // should we check it? or rely on initsize? ...
+		i++;
+	} while (res != resbuf);
+	return res;
+}
+
+
+// calculates Li(n,x), n>2 without EuMac
+static cln::cl_N Lin_series(int n, const cln::cl_N& x)
+{
+	cln::cl_N factor = x;
+	cln::cl_N res = x;
+	cln::cl_N resbuf;
+	int i=2;
+	do {
+		resbuf = res;
+		factor = factor * x;
+		res = res + factor / cln::expt(cln::cl_I(i),n);
+		i++;
+	} while (res != resbuf);
+	return res;
+}
+
+
+// calculates Li(n,x), n>2 with EuMac
+static cln::cl_N Lin_series_EuMac(int n, const cln::cl_N& x)
+{
+	std::vector<cln::cl_N>::const_iterator it = Xn[n-2].begin();
+	cln::cl_N u = -cln::log(1-x);
+	cln::cl_N factor = u;
+	cln::cl_N res = u;
+	cln::cl_N resbuf;
+	unsigned i=2;
+	do {
+		resbuf = res;
+		factor = factor * u / i;
+		res = res + (*it) * factor;
+		it++; // should we check it? or rely on initsize? ...
+		i++;
+	} while (res != resbuf);
+	return res;
+}
+
+
+// forward declaration needed by function Li_projection and C below
 static numeric S_num(int n, int p, const numeric& x);
 
 
 // helper function for classical polylog Li
 static cln::cl_N Li_projection(int n, const cln::cl_N& x, const cln::float_format_t& prec)
 {
-	if (cln::realpart(x) < 0.5) {
-		return Li_series(n, x, prec);
+	// treat n=2 as special case
+	if (n == 2) {
+		// check if precalculated X0 exists
+		if (xnsize == 0) {
+			fill_Xn(0);
+		}
+
+		if (cln::realpart(x) < 0.5) {
+			// choose the faster algorithm
+			// the switching point was empirically determined. the optimal point
+			// depends on hardware, Digits, ... so an approx value is okay.
+			// it solves also the problem with precision due to the u=-log(1-x) transformation
+			if (cln::abs(cln::realpart(x)) < 0.25) {
+				
+				return Li2_series(x);
+			} else {
+				return Li2_series_EuMac(x);
+			}
+		} else {
+			// choose the faster algorithm
+			if (cln::abs(cln::realpart(x)) > 0.75) {
+				return -Li2_series(1-x) - cln::log(x) * cln::log(1-x) + cln::zeta(2);
+			} else {
+				return -Li2_series_EuMac(1-x) - cln::log(x) * cln::log(1-x) + cln::zeta(2);
+			}
+		}
 	} else {
-		if (n==2) {
-			return -Li_series(2, 1-x, prec) - cln::log(x) * cln::log(1-x) + cln::zeta(2);
+		// check if precalculated Xn exist
+		if (n > xnsize+1) {
+			for (int i=xnsize; i<n-1; i++) {
+				fill_Xn(i);
+			}
+		}
+
+		if (cln::realpart(x) < 0.5) {
+			// choose the faster algorithm
+			// with n>=12 the "normal" summation always wins against EuMac
+			if ((cln::abs(cln::realpart(x)) < 0.3) || (n >= 12)) {
+				return Lin_series(n, x);
+			} else {
+				return Lin_series_EuMac(n, x);
+			}
 		} else {
 			cln::cl_N result = -cln::expt(cln::log(x), n-1) * cln::log(1-x) / cln::factorial(n-1);
 			for (int j=0; j<n-1; j++) {
 				result = result + (S_num(n-j-1, 1, 1).to_cl_N() - S_num(1, n-j-1, 1-x).to_cl_N())
-						* cln::expt(cln::log(x), j) / cln::factorial(j) ;
+					* cln::expt(cln::log(x), j) / cln::factorial(j);
 			}
 			return result;
 		}
@@ -488,7 +550,7 @@ static cln::cl_N b_k(int k)
 static cln::cl_N S_series(int n, int p, const cln::cl_N& x, const cln::float_format_t& prec)
 {
 	if (p==1) {
-		return Li_series(n+1, x, prec);
+		return Li_projection(n+1, x, prec);
 	}
 	
 	// TODO -> check for vector boundaries and do missing calculations
@@ -697,6 +759,8 @@ static ex Li_eval(const ex& x1, const ex& x2)
 		return 0;
 	}
 	else {
+		if (x2.info(info_flags::numeric) && (!x2.info(info_flags::crational)))
+			return Li_num(ex_to<numeric>(x1).to_int(), ex_to<numeric>(x2));
 		return Li(x1,x2).hold();
 	}
 }
@@ -761,6 +825,10 @@ static ex S_eval(const ex& x1, const ex& x2, const ex& x3)
 	if (x2 == 1) {
 		return Li(x1+1,x3);
 	}
+	if (x3.info(info_flags::numeric) && (!x3.info(info_flags::crational)) && 
+			x1.info(info_flags::posint) && x2.info(info_flags::posint)) {
+		return S_num(ex_to<numeric>(x1).to_int(), ex_to<numeric>(x2).to_int(), ex_to<numeric>(x3));
+	}
 	return S(x1,x2,x3).hold();
 }
 
@@ -790,6 +858,9 @@ REGISTER_FUNCTION(S, eval_func(S_eval).evalf_func(S_evalf).do_not_evalf_params()
 
 static ex H_eval(const ex& x1, const ex& x2)
 {
+	if (x2.info(info_flags::numeric) && (!x2.info(info_flags::crational))) {
+		return H(x1,x2).evalf();
+	}
 	return H(x1,x2).hold();
 }
 
@@ -854,6 +925,12 @@ static ex mZeta_evalf(const ex& x1)
 		}
 
 		cln::cl_N m_1 = ex_to<numeric>(x1.op(x1.nops()-1)).to_cl_N();
+
+		// check for divergence
+		if (m_1 == 1) {
+			return mZeta(x1).hold();
+		}
+		
 		std::vector<cln::cl_N> m;
 		const int nops = ex_to<numeric>(x1.nops()).to_int();
 		for (int i=nops-2; i>=0; i--) {
