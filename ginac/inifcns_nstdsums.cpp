@@ -68,10 +68,12 @@ namespace GiNaC {
 //////////////////////////////////////////////////////////////////////
 
 
+namespace {
 // lookup table for Euler-Maclaurin optimization
 // see fill_Xn()
 std::vector<std::vector<cln::cl_N> > Xn;
 int xnsize = 0;
+}
 
 
 // This function calculates the X_n. The X_n are needed for the Euler-Maclaurin summation (EMS) of
@@ -472,11 +474,13 @@ REGISTER_FUNCTION(Li, eval_func(Li_eval).evalf_func(Li_evalf).do_not_evalf_param
 //////////////////////////////////////////////////////////////////////
 
 
+namespace {
 // lookup table for special Euler-Zagier-Sums (used for S_n,p(x))
 // see fill_Yn()
 std::vector<std::vector<cln::cl_N> > Yn;
 int ynsize = 0; // number of Yn[]
 int ynlength = 100; // initial length of all Yn[i]
+}
 
 
 // This function calculates the Y_n. The Y_n are needed for the evaluation of S_{n,p}(x).
@@ -954,6 +958,248 @@ REGISTER_FUNCTION(H, eval_func(H_eval).evalf_func(H_evalf).do_not_evalf_params()
 //////////////////////////////////////////////////////////////////////
 
 
+namespace {
+const cln::cl_N lambda = cln::cl_N("319/320");
+int L1;
+int L2;
+std::vector<std::vector<cln::cl_N> > f_kj;
+std::vector<cln::cl_N> crB;
+std::vector<std::vector<cln::cl_N> > crG;
+std::vector<cln::cl_N> crX;
+}
+
+
+static void halfcyclic_convolute(const std::vector<cln::cl_N>& a, const std::vector<cln::cl_N>& b, std::vector<cln::cl_N>& c)
+{
+	const int size = a.size();
+	for (int n=0; n<size; n++) {
+		c[n] = 0;
+		for (int m=0; m<=n; m++) {
+			c[n] = c[n] + a[m]*b[n-m];
+		}
+	}
+}
+
+
+static void initcX(const std::vector<int>& s)
+{
+	const int k = s.size();
+
+	crX.clear();
+	crG.clear();
+	crB.clear();
+
+	for (int i=0; i<=L2; i++) {
+		crB.push_back(bernoulli(i).to_cl_N() / cln::factorial(i));
+	}
+
+	int Sm = 0;
+	int Smp1 = 0;
+	for (int m=0; m<k-1; m++) {
+		std::vector<cln::cl_N> crGbuf;
+		Sm = Sm + s[m];
+		Smp1 = Sm + s[m+1];
+		for (int i=0; i<=L2; i++) {
+			crGbuf.push_back(cln::factorial(i + Sm - m - 2) / cln::factorial(i + Smp1 - m - 2));
+		}
+		crG.push_back(crGbuf);
+	}
+
+	crX = crB;
+
+	for (int m=0; m<k-1; m++) {
+		std::vector<cln::cl_N> Xbuf;
+		for (int i=0; i<=L2; i++) {
+			Xbuf.push_back(crX[i] * crG[m][i]);
+		}
+		halfcyclic_convolute(Xbuf, crB, crX);
+	}
+}
+
+
+static cln::cl_N crandall_Y_loop(const cln::cl_N& Sqk)
+{
+	cln::cl_F one = cln::cl_float(1, cln::float_format(Digits));
+	cln::cl_N factor = cln::expt(lambda, Sqk);
+	cln::cl_N res = factor / Sqk * crX[0] * one;
+	cln::cl_N resbuf;
+	int N = 0;
+	do {
+		resbuf = res;
+		factor = factor * lambda;
+		N++;
+		res = res + crX[N] * factor / (N+Sqk);
+	} while ((res != resbuf) || cln::zerop(crX[N]));
+	return res;
+}
+
+
+static void calc_f(int maxr)
+{
+	f_kj.clear();
+	f_kj.resize(L1);
+	
+	cln::cl_N t0, t1, t2, t3, t4;
+	int i, j, k;
+	std::vector<std::vector<cln::cl_N> >::iterator it = f_kj.begin();
+	cln::cl_F one = cln::cl_float(1, cln::float_format(Digits));
+	
+	t0 = cln::exp(-lambda);
+	t2 = 1;
+	for (k=1; k<=L1; k++) {
+		t1 = k * lambda;
+		t2 = t0 * t2;
+		for (j=1; j<=maxr; j++) {
+			t3 = 1;
+			t4 = 1;
+			for (i=2; i<=j; i++) {
+				t4 = t4 * (j-i+1);
+				t3 = t1 * t3 + t4;
+			}
+			(*it).push_back(t2 * t3 * cln::expt(cln::cl_I(k),-j) * one);
+		}
+		it++;
+	}
+}
+
+
+static cln::cl_N crandall_Z(const std::vector<int>& s)
+{
+	const int j = s.size();
+
+	if (j == 1) {	
+		cln::cl_N t0;
+		cln::cl_N t0buf;
+		int q = 0;
+		do {
+			t0buf = t0;
+			q++;
+			t0 = t0 + f_kj[q+j-2][s[0]-1];
+		} while (t0 != t0buf);
+		
+		return t0 / cln::factorial(s[0]-1);
+	}
+
+	std::vector<cln::cl_N> t(j);
+
+	cln::cl_N t0buf;
+	int q = 0;
+	do {
+		t0buf = t[0];
+		q++;
+		t[j-1] = t[j-1] + 1 / cln::expt(cln::cl_I(q),s[j-1]);
+		for (int k=j-2; k>=1; k--) {
+			t[k] = t[k] + t[k+1] / cln::expt(cln::cl_I(q+j-1-k), s[k]);
+		}
+		t[0] = t[0] + t[1] * f_kj[q+j-2][s[0]-1];
+	} while (t[0] != t0buf);
+	
+	return t[0] / cln::factorial(s[0]-1);
+}
+
+
+static cln::cl_N mZeta_Crandall(const std::vector<int>& s)
+{
+	std::vector<int> r = s;
+	const int j = r.size();
+
+	// decide on maximal size of f_kj for crandall_Z
+	if (Digits < 50) {
+		L1 = 150;
+	} else {
+		L1 = Digits * 3 + j*2;
+	}
+
+	// decide on maximal size of crX for crandall_Y
+	if (Digits < 38) {
+		L2 = 63;
+	} else if (Digits < 86) {
+		L2 = 127;
+	} else if (Digits < 192) {
+		L2 = 255;
+	} else if (Digits < 394) {
+		L2 = 511;
+	} else if (Digits < 808) {
+		L2 = 1023;
+	} else {
+		L2 = 2047;
+	}
+
+	cln::cl_N res;
+
+	int maxr = 0;
+	int S = 0;
+	for (int i=0; i<j; i++) {
+		S += r[i];
+		if (r[i] > maxr) {
+			maxr = r[i];
+		}
+	}
+
+	calc_f(maxr);
+
+	const cln::cl_N r0factorial = cln::factorial(r[0]-1);
+
+	std::vector<int> rz;
+	int skp1buf;
+	int Srun = S;
+	for (int k=r.size()-1; k>0; k--) {
+
+		rz.insert(rz.begin(), r.back());
+		skp1buf = rz.front();
+		Srun -= skp1buf;
+		r.pop_back();
+
+		initcX(r);
+		
+		for (int q=0; q<skp1buf; q++) {
+			
+			cln::cl_N pp1 = crandall_Y_loop(Srun+q-k);
+			cln::cl_N pp2 = crandall_Z(rz);
+
+			rz.front()--;
+			
+			if (q & 1) {
+				res = res - pp1 * pp2 / cln::factorial(q);
+			} else {
+				res = res + pp1 * pp2 / cln::factorial(q);
+			}
+		}
+		rz.front() = skp1buf;
+	}
+	rz.insert(rz.begin(), r.back());
+
+	initcX(rz);
+
+	res = (res + crandall_Y_loop(S-j)) / r0factorial + crandall_Z(rz);
+
+	return res;
+}
+
+
+static cln::cl_N mZeta_ordinary(const std::vector<int>& r)
+{
+	const int j = r.size();
+
+	// buffer for subsums
+	std::vector<cln::cl_N> t(j);
+	cln::cl_F one = cln::cl_float(1, cln::float_format(Digits));
+
+	cln::cl_N t0buf;
+	int q = 0;
+	do {
+		t0buf = t[0];
+		q++;
+		t[j-1] = t[j-1] + one / cln::expt(cln::cl_I(q),r[j-1]);
+		for (int k=j-2; k>=0; k--) {
+			t[k] = t[k] + one * t[k+1] / cln::expt(cln::cl_I(q+j-1-k), r[k]);
+		}
+	} while (t[0] != t0buf);
+
+	return t[0];
+}
+
+
 //////////////////////////////////////////////////////////////////////
 //
 // Multiple zeta values  mZeta
@@ -988,23 +1234,22 @@ static ex mZeta_evalf(const ex& x1)
 		if (r[0] == 1) {
 			return mZeta(x1).hold();
 		}
+
+		// if only one argument, use cln::zeta
+		if (j == 1) {
+			return numeric(cln::zeta(r[0]));
+		}
 		
-		// buffer for subsums
-		std::vector<cln::cl_N> t(j);
-		cln::cl_F one = cln::cl_float(1, cln::float_format(Digits));
-
-		cln::cl_N t0buf;
-		int q = 0;
-		do {
-			t0buf = t[0];
-			q++;
-			t[j-1] = t[j-1] + one / cln::expt(cln::cl_I(q),r[j-1]);
-			for (int k=j-2; k>=0; k--) {
-				t[k] = t[k] + one * t[k+1] / cln::expt(cln::cl_I(q+j-1-k), r[k]);
-			}
-		} while (t[0] != t0buf);
-
-		return numeric(t[0]);
+		// decide on summation algorithm
+		// this is still a bit clumsy
+		int limit = (Digits>17) ? 10 : 6;
+		if (r[0]<limit || (j>3 && r[1]<limit/2)) {
+			return numeric(mZeta_Crandall(r));
+		} else {
+			return numeric(mZeta_ordinary(r));
+		}
+	} else if (x1.info(info_flags::posint) && (x1 != 1)) {
+		return numeric(cln::zeta(ex_to<numeric>(x1).to_int()));
 	}
 
 	return mZeta(x1).hold();
