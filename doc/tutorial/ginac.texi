@@ -23,7 +23,7 @@
 This is a tutorial that documents GiNaC @value{VERSION}, an open
 framework for symbolic computation within the C++ programming language.
 
-Copyright (C) 1999-2003 Johannes Gutenberg University Mainz, Germany
+Copyright (C) 1999-2004 Johannes Gutenberg University Mainz, Germany
 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
@@ -4643,9 +4643,14 @@ in the same order as they appear in the nested sums representation
 in the cases of @code{Li} and @code{zeta}).
 If you want to numerically evaluate the functions, the parameters @code{n}
 and @code{p} as well as @code{x} in the case of @code{zeta} must all be
-positive integers (or @code{lst}s containing them). The multiple polylogarithm
-has the additional restriction that the second parameter must only
-contain arguments with an absolute value smaller than one.
+positive integers (or @code{lst}s containing them).
+This means, that the harmonic polylogarithm in GiNaC @value{VERSION} is only
+a subset of the original definition by Remiddi and Vermaseren. If you want to
+have the complete harmonic polylogarithm, then you have to upgrade to GiNaC 1.2
+or higher. Note also that the convention for arguments on the branch cut as
+explained above is different from the one Remiddi and Vermaseren have chosen.
+The multiple polylogarithm has the additional restriction that the second
+parameter must only contain arguments with an absolute value smaller than one.
 
 @node Solving Linear Systems of Equations, Input/Output, Built-in Functions, Methods and Functions
 @c    node-name, next, previous, up
