@@ -68,12 +68,10 @@ class scalar_products;
 class ex
 {
 	friend class archive_node;
-	friend bool are_ex_trivially_equal(const ex &, const ex &);
-	template<class T> friend const T &ex_to(const ex &);
-	template<class T> friend bool is_a(const ex &);
-	template<class T> friend bool is_exactly_a(const ex &);
-
-// member functions
+	friend inline bool are_ex_trivially_equal(const ex &, const ex &);
+	template<class T> friend inline const T &ex_to(const ex &);
+	template<class T> friend inline bool is_a(const ex &);
+	template<class T> friend inline bool is_exactly_a(const ex &);
 	
 	// default ctor, dtor, copy ctor, assignment operator and helpers
 public:
