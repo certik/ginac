@@ -556,7 +556,7 @@ bool tryfactsubs(const ex & origfactor, const ex & patternfactor, unsigned & num
 	repls = saverepls;
 
 	int newnummatches = origexponent / patternexponent;
-	if (newnummatches < nummatches)
+	if (newnummatches < static_cast<int>(nummatches))
 		nummatches = newnummatches;
 	return true;
 }
@@ -566,7 +566,7 @@ ex mul::algebraic_subs_mul(const lst & ls, const lst & lr, unsigned options) con
 	std::vector<bool> subsed(seq.size(), false);
 	exvector subsresult(seq.size());
 
-	for (int i=0; i<ls.nops(); i++) {
+	for (unsigned i=0; i<ls.nops(); i++) {
 
 		if (is_exactly_a<mul>(ls.op(i))) {
 
@@ -575,9 +575,9 @@ ex mul::algebraic_subs_mul(const lst & ls, const lst & lr, unsigned options) con
 			bool succeed = true;
 			lst repls;
 
-			for (int j=0; j<ls.op(i).nops(); j++) {
+			for (unsigned j=0; j<ls.op(i).nops(); j++) {
 				bool found=false;
-				for (int k=0; k<nops(); k++) {
+				for (unsigned k=0; k<nops(); k++) {
 					if (currsubsed[k] || subsed[k])
 						continue;
 					if (tryfactsubs(op(k), ls.op(i).op(j), nummatches, repls)) {
@@ -595,7 +595,7 @@ ex mul::algebraic_subs_mul(const lst & ls, const lst & lr, unsigned options) con
 				continue;
 
 			bool foundfirstsubsedfactor = false;
-			for (int j=0; j<subsed.size(); j++) {
+			for (unsigned j=0; j<subsed.size(); j++) {
 				if (currsubsed[j]) {
 					if (foundfirstsubsedfactor)
 						subsresult[j] = op(j);
@@ -612,7 +612,7 @@ ex mul::algebraic_subs_mul(const lst & ls, const lst & lr, unsigned options) con
 			unsigned nummatches = std::numeric_limits<unsigned>::max();
 			lst repls;
 
-			for (int j=0; j<this->nops(); j++) {
+			for (unsigned j=0; j<this->nops(); j++) {
 				if (!subsed[j] && tryfactsubs(op(j), ls.op(i), nummatches, repls)) {
 					subsed[j] = true;
 					subsresult[j] = op(j) * power(lr.op(i).subs(ex(repls), subs_options::subs_no_pattern) / ls.op(i).subs(ex(repls), subs_options::subs_no_pattern), nummatches);
@@ -622,7 +622,7 @@ ex mul::algebraic_subs_mul(const lst & ls, const lst & lr, unsigned options) con
 	}
 
 	bool subsfound = false;
-	for (int i=0; i<subsed.size(); i++) {
+	for (unsigned i=0; i<subsed.size(); i++) {
 		if (subsed[i]) {
 			subsfound = true;
 			break;
@@ -632,7 +632,7 @@ ex mul::algebraic_subs_mul(const lst & ls, const lst & lr, unsigned options) con
 		return basic::subs(ls, lr, options | subs_options::subs_algebraic);
 
 	exvector ev; ev.reserve(nops());
-	for (int i=0; i<nops(); i++) {
+	for (unsigned i=0; i<nops(); i++) {
 		if (subsed[i])
 			ev.push_back(subsresult[i]);
 		else

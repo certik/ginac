@@ -530,7 +530,7 @@ extern bool tryfactsubs(const ex &, const ex &, unsigned &, lst &);
 ex power::subs(const lst & ls, const lst & lr, unsigned options) const
 {
 	if (options & subs_options::subs_algebraic) {
-		for (int i=0; i<ls.nops(); i++) {
+		for (unsigned i=0; i<ls.nops(); i++) {
 			unsigned nummatches = std::numeric_limits<unsigned>::max();
 			lst repls;
 			if (tryfactsubs(*this, ls.op(i), nummatches, repls))
