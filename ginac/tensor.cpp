@@ -443,15 +443,9 @@ ex tensepsilon::eval_indexed(const basic & i) const
 	return i.hold();
 }
 
-/** Contraction of an indexed delta tensor with something else. */
-bool tensdelta::contract_with(exvector::iterator self, exvector::iterator other, exvector & v) const
+bool tensor::replace_contr_index(exvector::iterator self, exvector::iterator other) const
 {
-	GINAC_ASSERT(is_a<indexed>(*self));
-	GINAC_ASSERT(is_a<indexed>(*other));
-	GINAC_ASSERT(self->nops() == 3);
-	GINAC_ASSERT(is_a<tensdelta>(self->op(0)));
-
-	// Try to contract first index
+	// Try to contract the first index
 	const idx *self_idx = &ex_to<idx>(self->op(1));
 	const idx *free_idx = &ex_to<idx>(self->op(2));
 	bool first_index_tried = false;
@@ -462,8 +456,8 @@ again:
 			const idx &other_idx = ex_to<idx>(other->op(i));
 			if (is_dummy_pair(*self_idx, other_idx)) {
 
-				// Contraction found, remove delta tensor and substitute
-				// index in second object
+				// Contraction found, remove this tensor and substitute the
+				// index in the second object
 				*self = _ex1;
 				*other = other->subs(other_idx == *free_idx);
 				return true;
@@ -473,7 +467,7 @@ again:
 
 	if (!first_index_tried) {
 
-		// No contraction with first index found, try second index
+		// No contraction with the first index found, try the second index
 		self_idx = &ex_to<idx>(self->op(2));
 		free_idx = &ex_to<idx>(self->op(1));
 		first_index_tried = true;
@@ -481,6 +475,19 @@ again:
 	}
 
 	return false;
+}
+
+/** Contraction of an indexed delta tensor with something else. */
+bool tensdelta::contract_with(exvector::iterator self, exvector::iterator other, exvector & v) const
+{
+	GINAC_ASSERT(is_a<indexed>(*self));
+	GINAC_ASSERT(is_a<indexed>(*other));
+	GINAC_ASSERT(self->nops() == 3);
+	GINAC_ASSERT(is_a<tensdelta>(self->op(0)));
+
+	// Replace the dummy index with this tensor's other index and remove
+	// the tensor (this is valid for contractions with all other tensors)
+	return replace_contr_index(self, other);
 }
 
 /** Contraction of an indexed 4-dimensional delta tensor with something else. */
@@ -495,36 +502,9 @@ bool tens4delta::contract_with(exvector::iterator self, exvector::iterator other
 	if (!(is_a<tens4delta>(other->op(0)) || is_a<mink4metric>(other->op(0)) || is_a<tensepsilon>(other->op(0))))
 		return false;
 
-	// Try to contract first index
-	const idx *self_idx = &ex_to<idx>(self->op(1));
-	const idx *free_idx = &ex_to<idx>(self->op(2));
-	bool first_index_tried = false;
-
-again:
-	if (self_idx->is_symbolic()) {
-		for (unsigned i=1; i<other->nops(); i++) {
-			const idx &other_idx = ex_to<idx>(other->op(i));
-			if (is_dummy_pair(*self_idx, other_idx)) {
-
-				// Contraction found, remove delta tensor and substitute
-				// index in second object
-				*self = _ex1;
-				*other = other->subs(other_idx == *free_idx);
-				return true;
-			}
-		}
-	}
-
-	if (!first_index_tried) {
-
-		// No contraction with first index found, try second index
-		self_idx = &ex_to<idx>(self->op(2));
-		free_idx = &ex_to<idx>(self->op(1));
-		first_index_tried = true;
-		goto again;
-	}
-
-	return false;
+	// Replace the dummy index with this tensor's other index and remove
+	// the tensor
+	return replace_contr_index(self, other);
 }
 
 /** Contraction of an indexed metric tensor with something else. */
@@ -540,36 +520,9 @@ bool tensmetric::contract_with(exvector::iterator self, exvector::iterator other
 	if (is_a<tensdelta>(other->op(0)))
 		return false;
 
-	// Try to contract first index
-	const idx *self_idx = &ex_to<idx>(self->op(1));
-	const idx *free_idx = &ex_to<idx>(self->op(2));
-	bool first_index_tried = false;
-
-again:
-	if (self_idx->is_symbolic()) {
-		for (unsigned i=1; i<other->nops(); i++) {
-			const idx &other_idx = ex_to<idx>(other->op(i));
-			if (is_dummy_pair(*self_idx, other_idx)) {
-
-				// Contraction found, remove metric tensor and substitute
-				// index in second object
-				*self = _ex1;
-				*other = other->subs(other_idx == *free_idx);
-				return true;
-			}
-		}
-	}
-
-	if (!first_index_tried) {
-
-		// No contraction with first index found, try second index
-		self_idx = &ex_to<idx>(self->op(2));
-		free_idx = &ex_to<idx>(self->op(1));
-		first_index_tried = true;
-		goto again;
-	}
-
-	return false;
+	// Replace the dummy index with this tensor's other index and remove
+	// the tensor
+	return replace_contr_index(self, other);
 }
 
 /** Contraction of an indexed 4-dimensional Lorentz metric tensor with something else. */
@@ -584,36 +537,9 @@ bool mink4metric::contract_with(exvector::iterator self, exvector::iterator othe
 	if (!(is_a<mink4metric>(other->op(0)) || is_a<tensepsilon>(other->op(0))))
 		return false;
 
-	// Try to contract first index
-	const idx *self_idx = &ex_to<idx>(self->op(1));
-	const idx *free_idx = &ex_to<idx>(self->op(2));
-	bool first_index_tried = false;
-
-again:
-	if (self_idx->is_symbolic()) {
-		for (unsigned i=1; i<other->nops(); i++) {
-			const idx &other_idx = ex_to<idx>(other->op(i));
-			if (is_dummy_pair(*self_idx, other_idx)) {
-
-				// Contraction found, remove metric tensor and substitute
-				// index in second object
-				*self = _ex1;
-				*other = other->subs(other_idx == *free_idx);
-				return true;
-			}
-		}
-	}
-
-	if (!first_index_tried) {
-
-		// No contraction with first index found, try second index
-		self_idx = &ex_to<idx>(self->op(2));
-		free_idx = &ex_to<idx>(self->op(1));
-		first_index_tried = true;
-		goto again;
-	}
-
-	return false;
+	// Replace the dummy index with this tensor's other index and remove
+	// the tensor
+	return replace_contr_index(self, other);
 }
 
 
