@@ -87,6 +87,7 @@ protected:
 public:
 	ex algebraic_subs_mul(const lst & ls, const lst & lr, unsigned options) const;
 protected:
+	static bool can_be_further_expanded(const ex & e);
 	epvector * expandchildren(unsigned options) const;
 };
 
