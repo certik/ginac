@@ -1,5 +1,10 @@
 This file records noteworthy changes.
 
+1.1.6 (<date>)
+* Added a function option "dummy()" which means "no options". This simplifies
+  the implementation of symbolic functions which are not to be further
+  evaluated.
+
 1.1.5 (5 November 2003)
 * Harmonic polylogarithms now numerically evaluate for arbitrary arguments
   (parameter must still be positive integers).
