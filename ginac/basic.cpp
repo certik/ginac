@@ -712,48 +712,35 @@ ex basic::subs(const ex & e, bool no_pattern) const
  *  1 greater. */
 int basic::compare(const basic & other) const
 {
-	unsigned hash_this = gethash();
-	unsigned hash_other = other.gethash();
-	
+	const unsigned hash_this = gethash();
+	const unsigned hash_other = other.gethash();
 	if (hash_this<hash_other) return -1;
 	if (hash_this>hash_other) return 1;
-	
-	unsigned typeid_this = tinfo();
-	unsigned typeid_other = other.tinfo();
-	
-	if (typeid_this<typeid_other) {
-// 		std::cout << "hash collision, different types: " 
-// 		          << *this << " and " << other << std::endl;
-// 		this->print(print_tree(std::cout));
-// 		std::cout << " and ";
-// 		other.print(print_tree(std::cout));
-// 		std::cout << std::endl;
-		return -1;
+
+	const unsigned typeid_this = tinfo();
+	const unsigned typeid_other = other.tinfo();
+	if (typeid_this==typeid_other) {
+		GINAC_ASSERT(typeid(*this)==typeid(other));
+// 		int cmpval = compare_same_type(other);
+// 		if ((cmpval!=0) && (hash_this<0x80000000U)) {
+// 			std::cout << "hash collision, same type: " 
+// 			          << *this << " and " << other << std::endl;
+// 			this->print(print_tree(std::cout));
+// 			std::cout << " and ";
+// 			other.print(print_tree(std::cout));
+// 			std::cout << std::endl;
+// 		}
+// 		return cmpval;
+		return compare_same_type(other);
+	} else {
+// 			std::cout << "hash collision, different types: " 
+// 			          << *this << " and " << other << std::endl;
+// 			this->print(print_tree(std::cout));
+// 			std::cout << " and ";
+// 			other.print(print_tree(std::cout));
+// 			std::cout << std::endl;
+		return (typeid_this<typeid_other ? -1 : 1);
 	}
-	if (typeid_this>typeid_other) {
-// 		std::cout << "hash collision, different types: " 
-// 		          << *this << " and " << other << std::endl;
-// 		this->print(print_tree(std::cout));
-// 		std::cout << " and ";
-// 		other.print(print_tree(std::cout));
-// 		std::cout << std::endl;
-		return 1;
-	}
-	
-	GINAC_ASSERT(typeid(*this)==typeid(other));
-	
-// 	int cmpval = compare_same_type(other);
-// 	if ((cmpval!=0) && (hash_this<0x80000000U)) {
-// 		std::cout << "hash collision, same type: " 
-// 		          << *this << " and " << other << std::endl;
-// 		this->print(print_tree(std::cout));
-// 		std::cout << " and ";
-// 		other.print(print_tree(std::cout));
-// 		std::cout << std::endl;
-// 	}
-// 	return cmpval;
-	
-	return compare_same_type(other);
 }
 
 /** Test for equality.
