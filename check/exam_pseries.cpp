@@ -28,7 +28,7 @@ static unsigned check_series(const ex &e, const ex &point, const ex &d, int orde
 {
 	ex es = e.series(x==point, order);
 	ex ep = ex_to<pseries>(es).convert_to_poly();
-	if (!(ep - d).is_zero()) {
+	if (!(ep - d).expand().is_zero()) {
 		clog << "series expansion of " << e << " at " << point
 		     << " erroneously returned " << ep << " (instead of " << d
 		     << ")" << endl;
@@ -71,15 +71,15 @@ static unsigned exam_series1(void)
 	result += check_series(e, 1, d);
 	
 	e = pow(x + pow(x, 3), -1);
-	d = pow(x, -1) - x + pow(x, 3) - pow(x, 5) + Order(pow(x, 7));
+	d = pow(x, -1) - x + pow(x, 3) - pow(x, 5) + pow(x, 7) + Order(pow(x, 8));
 	result += check_series(e, 0, d);
 	
 	e = pow(pow(x, 2) + pow(x, 4), -1);
-	d = pow(x, -2) - 1 + pow(x, 2) - pow(x, 4) + Order(pow(x, 6));
+	d = pow(x, -2) - 1 + pow(x, 2) - pow(x, 4) + pow(x, 6) + Order(pow(x, 8));
 	result += check_series(e, 0, d);
 	
 	e = pow(sin(x), -2);
-	d = pow(x, -2) + numeric(1,3) + pow(x, 2) / 15 + pow(x, 4) * 2/189 + Order(pow(x, 5));
+	d = pow(x, -2) + numeric(1,3) + pow(x, 2) / 15 + pow(x, 4) * 2/189 + pow(x, 6) / 675 + Order(pow(x, 8));
 	result += check_series(e, 0, d);
 	
 	e = sin(x) / cos(x);
@@ -87,7 +87,7 @@ static unsigned exam_series1(void)
 	result += check_series(e, 0, d);
 	
 	e = cos(x) / sin(x);
-	d = pow(x, -1) - x / 3 - pow(x, 3) / 45 - pow(x, 5) * 2/945 + Order(pow(x, 6));
+	d = pow(x, -1) - x / 3 - pow(x, 3) / 45 - pow(x, 5) * 2/945 - pow(x, 7) / 4725 + Order(pow(x, 8));
 	result += check_series(e, 0, d);
 	
 	e = pow(numeric(2), x);
@@ -115,7 +115,7 @@ static unsigned exam_series2(void)
 	ex e, d;
 	
 	e = pow(sin(x), -1).series(x==0, 8) + pow(sin(-x), -1).series(x==0, 12);
-	d = Order(pow(x, 6));
+	d = Order(pow(x, 8));
 	result += check_series(e, 0, d);
 	
 	return result;
@@ -144,8 +144,9 @@ static unsigned exam_series4(void)
 	d = 4 - 4*pow(x, 2) + 4*pow(x, 4)/3 + Order(pow(x, 5));
 	result += check_series(e, 0, d);
 	
-	e = pow(tgamma(x), 2).series(x==0, 3);
-	d = pow(x,-2) - 2*Euler/x + (pow(Pi,2)/6+2*pow(Euler,2)) + Order(x);
+	e = pow(tgamma(x), 2).series(x==0, 2);
+	d = pow(x,-2) - 2*Euler/x + (pow(Pi,2)/6+2*pow(Euler,2)) 
+		+ x*(-4*pow(Euler, 3)/3 -pow(Pi,2)*Euler/3 - 2*zeta(3)/3) + Order(pow(x, 2));
 	result += check_series(e, 0, d);
 	
 	return result;
