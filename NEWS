@@ -1,13 +1,11 @@
 This file records noteworthy changes.
 
-1.1.7 (<date>)
+1.1.7 (11 March 2004)
 * Fixed a bug in canonicalize_clifford().
 * Series expansion now works predictably. All terms with the exponent of the
   expansion variable smaller than the given order are calculated exactly. If
-  the series is not terminating, the Order-function is of the given order.
-
-The term with the highest exponent with
-  regards to the expansion variable is the Order-function
+  the series is not terminating, the Order function is (at least) of the given
+  order.
 
 1.1.6 (22 January 2004)
 * Added a function option "dummy()" which means "no options". This simplifies
