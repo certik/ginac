@@ -95,6 +95,7 @@ public:
 	ex map(map_function & f) const;
 	ex eval(int level=0) const;
 	ex to_rational(lst &repl_lst) const;
+	ex to_polynomial(lst &repl_lst) const;
 	bool match(const ex & pattern, lst & repl_lst) const;
 	ex subs(const lst & ls, const lst & lr, unsigned options = 0) const;
 protected:

@@ -1953,7 +1953,8 @@ static ex replace_with_symbol(const ex &e, lst &sym_lst, lst &repl_lst)
 /** Create a symbol for replacing the expression "e" (or return a previously
  *  assigned symbol). An expression of the form "symbol == expression" is added
  *  to repl_lst and the symbol is returned.
- *  @see basic::to_rational */
+ *  @see basic::to_rational
+ *  @see basic::to_polynomial */
 static ex replace_with_symbol(const ex &e, lst &repl_lst)
 {
 	// Expression already in repl_lst? Then return the assigned symbol
@@ -2340,7 +2341,7 @@ ex ex::numer_denom(void) const
 
 
 /** Rationalization of non-rational functions.
- *  This function converts a general expression to a rational polynomial
+ *  This function converts a general expression to a rational function
  *  by replacing all non-rational subexpressions (like non-rational numbers,
  *  non-integer powers or functions like sin(), cos() etc.) to temporary
  *  symbols. This makes it possible to use functions like gcd() and divide()
@@ -2353,7 +2354,25 @@ ex ex::numer_denom(void) const
  *
  *  @param repl_lst collects a list of all temporary symbols and their replacements
  *  @return rationalized expression */
+ex ex::to_rational(lst &repl_lst) const
+{
+	return bp->to_rational(repl_lst);
+}
+
+ex ex::to_polynomial(lst &repl_lst) const
+{
+	return bp->to_polynomial(repl_lst);
+}
+
+
+/** Default implementation of ex::to_rational(). This replaces the object with
+ *  a temporary symbol. */
 ex basic::to_rational(lst &repl_lst) const
+{
+	return replace_with_symbol(*this, repl_lst);
+}
+
+ex basic::to_polynomial(lst &repl_lst) const
 {
 	return replace_with_symbol(*this, repl_lst);
 }
@@ -2362,6 +2381,13 @@ ex basic::to_rational(lst &repl_lst) const
 /** Implementation of ex::to_rational() for symbols. This returns the
  *  unmodified symbol. */
 ex symbol::to_rational(lst &repl_lst) const
+{
+	return *this;
+}
+
+/** Implementation of ex::to_polynomial() for symbols. This returns the
+ *  unmodified symbol. */
+ex symbol::to_polynomial(lst &repl_lst) const
 {
 	return *this;
 }
@@ -2385,12 +2411,40 @@ ex numeric::to_rational(lst &repl_lst) const
 	return *this;
 }
 
+/** Implementation of ex::to_polynomial() for a numeric. It splits complex
+ *  numbers into re+I*im and replaces I and non-integer real numbers with a
+ *  temporary symbol. */
+ex numeric::to_polynomial(lst &repl_lst) const
+{
+	if (is_real()) {
+		if (!is_integer())
+			return replace_with_symbol(*this, repl_lst);
+	} else { // complex
+		numeric re = real();
+		numeric im = imag();
+		ex re_ex = re.is_integer() ? re : replace_with_symbol(re, repl_lst);
+		ex im_ex = im.is_integer() ? im : replace_with_symbol(im, repl_lst);
+		return re_ex + im_ex * replace_with_symbol(I, repl_lst);
+	}
+	return *this;
+}
+
 
 /** Implementation of ex::to_rational() for powers. It replaces non-integer
  *  powers by temporary symbols. */
 ex power::to_rational(lst &repl_lst) const
 {
 	if (exponent.info(info_flags::integer))
+		return power(basis.to_rational(repl_lst), exponent);
+	else
+		return replace_with_symbol(*this, repl_lst);
+}
+
+/** Implementation of ex::to_polynomial() for powers. It replaces non-posint
+ *  powers by temporary symbols. */
+ex power::to_polynomial(lst &repl_lst) const
+{
+	if (exponent.info(info_flags::posint))
 		return power(basis.to_rational(repl_lst), exponent);
 	else
 		return replace_with_symbol(*this, repl_lst);
@@ -2415,6 +2469,24 @@ ex expairseq::to_rational(lst &repl_lst) const
 	return thisexpairseq(s, default_overall_coeff());
 }
 
+/** Implementation of ex::to_polynomial() for expairseqs. */
+ex expairseq::to_polynomial(lst &repl_lst) const
+{
+	epvector s;
+	s.reserve(seq.size());
+	epvector::const_iterator i = seq.begin(), end = seq.end();
+	while (i != end) {
+		s.push_back(split_ex_to_pair(recombine_pair_to_ex(*i).to_polynomial(repl_lst)));
+		++i;
+	}
+	ex oc = overall_coeff.to_polynomial(repl_lst);
+	if (oc.info(info_flags::numeric))
+		return thisexpairseq(s, overall_coeff);
+	else
+		s.push_back(combine_ex_with_coeff_to_pair(oc, _ex1));
+	return thisexpairseq(s, default_overall_coeff());
+}
+
 
 /** Remove the common factor in the terms of a sum 'e' by calculating the GCD,
  *  and multiply it into the expression 'factor' (which needs to be initialized
@@ -2429,7 +2501,7 @@ static ex find_common_factor(const ex & e, ex & factor, lst & repl)
 
 		// Find the common GCD
 		for (unsigned i=0; i<num; i++) {
-			ex x = e.op(i).to_rational(repl);
+			ex x = e.op(i).to_polynomial(repl);
 
 			if (is_exactly_a<add>(x) || is_exactly_a<mul>(x)) {
 				ex f = 1;
@@ -2491,11 +2563,7 @@ term_done:	;
 
 	} else if (is_exactly_a<power>(e)) {
 
-		ex x = e.to_rational(repl);
-		if (is_exactly_a<power>(x) && x.op(1).info(info_flags::negative))
-			return replace_with_symbol(x, repl);
-		else
-			return x;
+		return e.to_polynomial(repl);
 
 	} else
 		return e;

@@ -135,7 +135,8 @@ public:
 	ex primpart(const symbol &x) const;
 	ex primpart(const symbol &x, const ex &cont) const;
 	ex normal(int level = 0) const;
-	ex to_rational(lst &repl_lst) const { return bp->to_rational(repl_lst); }
+	ex to_rational(lst &repl_lst) const;
+	ex to_polynomial(lst &repl_lst) const;
 	ex smod(const numeric &xi) const { return bp->smod(xi); }
 	numeric max_coefficient(void) const;
 	ex collect(const ex & s, bool distributed = false) const { return bp->collect(s, distributed); }
@@ -403,6 +404,9 @@ inline ex normal(const ex & thisex, int level=0)
 
 inline ex to_rational(const ex & thisex, lst & repl_lst)
 { return thisex.to_rational(repl_lst); }
+
+inline ex to_polynomial(const ex & thisex, lst & repl_lst)
+{ return thisex.to_polynomial(repl_lst); }
 
 inline ex collect(const ex & thisex, const ex & s, bool distributed = false)
 { return thisex.collect(s, distributed); }

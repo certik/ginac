@@ -64,6 +64,7 @@ public:
 	ex subs(const lst & ls, const lst & lr, unsigned options = 0) const;
 	ex normal(lst &sym_lst, lst &repl_lst, int level = 0) const;
 	ex to_rational(lst &repl_lst) const;
+	ex to_polynomial(lst &repl_lst) const;
 	exvector get_free_indices(void) const;
 protected:
 	ex derivative(const symbol & s) const;

@@ -35,6 +35,7 @@
 namespace GiNaC {
 
 class ex;
+class ex_is_less;
 class symbol;
 class lst;
 class numeric;
@@ -115,6 +116,7 @@ public: // only const functions please (may break reference counting)
 	virtual ex subs(const lst & ls, const lst & lr, unsigned options = 0) const;
 	virtual ex normal(lst &sym_lst, lst &repl_lst, int level = 0) const;
 	virtual ex to_rational(lst &repl_lst) const;
+	virtual ex to_polynomial(lst &repl_lst) const;
 	virtual numeric integer_content(void) const;
 	virtual ex smod(const numeric &xi) const;
 	virtual numeric max_coefficient(void) const;

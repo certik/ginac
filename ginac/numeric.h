@@ -93,6 +93,7 @@ public:
 	ex evalf(int level = 0) const;
 	ex normal(lst &sym_lst, lst &repl_lst, int level = 0) const;
 	ex to_rational(lst &repl_lst) const;
+	ex to_polynomial(lst &repl_lst) const;
 	numeric integer_content(void) const;
 	ex smod(const numeric &xi) const;
 	numeric max_coefficient(void) const;
