@@ -1,5 +1,8 @@
 This file records noteworthy changes.
 
+1.2.4 (<date>)
+* binomial(n, k) evaluates for non-integer arguments n.
+
 1.2.3 (13 August 2004)
 * Added variants of dirac_trace() and color_trace() that take the trace over
   more than one representation label by specifying a set or list of labels.
