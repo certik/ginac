@@ -39,7 +39,7 @@ static unsigned check_series(const ex &e, const ex &point, const ex &d, int orde
 }
 
 // Series expansion
-static unsigned exam_series1(void)
+static unsigned exam_series1()
 {
 	using GiNaC::log;
 
@@ -108,12 +108,18 @@ static unsigned exam_series1(void)
 	e = pow(x, 8) * pow(pow(x,3)+ pow(x + pow(x,3), 2), -2);
 	d = pow(x, 4) - 2*pow(x, 5) + Order(pow(x, 6));
 	result += check_series(e, 0, d, 6);
+
+	e = cos(x) * pow(sin(x)*(pow(x, 5) + 4 * pow(x, 2)), -3);
+	d = pow(x, -9) / 64 - 3 * pow(x, -6) / 256 - pow(x, -5) / 960 + 535 * pow(x, -3) / 96768
+	    + pow(x, -2) / 1280 - pow(x, -1) / 14400 - numeric(283, 129024) - 2143 * x / 5322240
+	    + Order(pow(x, 2));
+	result += check_series(e, 0, d, 2);
 	
 	return result;
 }
 
 // Series addition
-static unsigned exam_series2(void)
+static unsigned exam_series2()
 {
 	unsigned result = 0;
 	ex e, d;
@@ -126,7 +132,7 @@ static unsigned exam_series2(void)
 }
 
 // Series multiplication
-static unsigned exam_series3(void)
+static unsigned exam_series3()
 {
 	unsigned result = 0;
 	ex e, d;
@@ -139,7 +145,7 @@ static unsigned exam_series3(void)
 }
 
 // Series exponentiation
-static unsigned exam_series4(void)
+static unsigned exam_series4()
 {
 	unsigned result = 0;
 	ex e, d;
@@ -157,7 +163,7 @@ static unsigned exam_series4(void)
 }
 
 // Order term handling
-static unsigned exam_series5(void)
+static unsigned exam_series5()
 {
 	unsigned result = 0;
 	ex e, d;
@@ -177,7 +183,7 @@ static unsigned exam_series5(void)
 }
 
 // Series expansion of tgamma(-1)
-static unsigned exam_series6(void)
+static unsigned exam_series6()
 {
 	ex e = tgamma(2*x);
 	ex d = pow(x+1,-1)*numeric(1,4) +
@@ -209,7 +215,7 @@ static unsigned exam_series6(void)
 }
 	
 // Series expansion of tan(x==Pi/2)
-static unsigned exam_series7(void)
+static unsigned exam_series7()
 {
 	ex e = tan(x*Pi/2);
 	ex d = pow(x-1,-1)/Pi*(-2) + pow(x-1,1)*Pi/6 + pow(x-1,3)*pow(Pi,3)/360
@@ -219,7 +225,7 @@ static unsigned exam_series7(void)
 }
 
 // Series expansion of log(sin(x==0))
-static unsigned exam_series8(void)
+static unsigned exam_series8()
 {
 	ex e = log(sin(x));
 	ex d = log(x) - pow(x,2)/6 - pow(x,4)/180 - pow(x,6)/2835 - pow(x,8)/37800 + Order(pow(x,9));
@@ -227,7 +233,7 @@ static unsigned exam_series8(void)
 }
 
 // Series expansion of Li2(sin(x==0))
-static unsigned exam_series9(void)
+static unsigned exam_series9()
 {
 	ex e = Li2(sin(x));
 	ex d = x + pow(x,2)/4 - pow(x,3)/18 - pow(x,4)/48
@@ -237,7 +243,7 @@ static unsigned exam_series9(void)
 }
 
 // Series expansion of Li2((x==2)^2), caring about branch-cut
-static unsigned exam_series10(void)
+static unsigned exam_series10()
 {
 	using GiNaC::log;
 
@@ -251,7 +257,7 @@ static unsigned exam_series10(void)
 }
 
 // Series expansion of logarithms around branch points
-static unsigned exam_series11(void)
+static unsigned exam_series11()
 {
 	using GiNaC::log;
 
@@ -293,7 +299,7 @@ static unsigned exam_series11(void)
 }
 
 // Series expansion of other functions around branch points
-static unsigned exam_series12(void)
+static unsigned exam_series12()
 {
 	using GiNaC::log;
 
@@ -321,7 +327,7 @@ static unsigned exam_series12(void)
 }
 
 
-unsigned exam_pseries(void)
+unsigned exam_pseries()
 {
 	unsigned result = 0;
 	
