@@ -4,21 +4,21 @@ lib_LTLIBRARIES = libginac.la
 libginac_la_SOURCES = add.cpp archive.cpp basic.cpp constant.cpp ex.cpp \
   expair.cpp expairseq.cpp exprseq.cpp fail.cpp function.cpp inifcns.cpp \
   inifcns_trans.cpp inifcns_zeta.cpp inifcns_gamma.cpp inifcns_nstdsums.cpp \
-  matrix.cpp mul.cpp \
-  normal.cpp numeric.cpp operators.cpp power.cpp registrar.cpp relational.cpp \
-  symbol.cpp pseries.cpp utils.cpp ncmul.cpp structure.cpp exprseq_suppl.cpp \
-  lst.cpp lst_suppl.cpp input_parser.yy input_lexer.ll input_lexer.h \
-  remember.h remember.cpp utils.h idx.cpp indexed.cpp tensor.cpp color.cpp \
-  clifford.cpp wildcard.cpp print.cpp symmetry.cpp fderivative.cpp tostring.h
+  matrix.cpp mul.cpp normal.cpp numeric.cpp operators.cpp power.cpp \
+  registrar.cpp relational.cpp symbol.cpp pseries.cpp utils.cpp ncmul.cpp \
+  structure.cpp exprseq_suppl.cpp lst.cpp lst_suppl.cpp input_parser.yy \
+  input_lexer.ll input_lexer.h remember.h remember.cpp utils.h idx.cpp \
+  indexed.cpp tensor.cpp color.cpp clifford.cpp wildcard.cpp print.cpp \
+  symmetry.cpp fderivative.cpp tostring.h
 libginac_la_LDFLAGS = -version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) \
   -release $(LT_RELEASE)
 ginacincludedir = $(includedir)/ginac
 ginacinclude_HEADERS = ginac.h add.h archive.h basic.h constant.h ex.h \
-  expair.h expairseq.h exprseq.h fail.h flags.h function.h inifcns.h \
-  lst.h matrix.h mul.h ncmul.h normal.h numeric.h operators.h power.h \
-  registrar.h relational.h pseries.h structure.h symbol.h tinfos.h assertion.h \
-  version.h idx.h indexed.h tensor.h color.h clifford.h wildcard.h print.h \
-  symmetry.h fderivative.h
+  expair.h expairseq.h exprseq.h fail.h flags.h function.h hash_map.h \
+  inifcns.h lst.h matrix.h mul.h ncmul.h normal.h numeric.h operators.h \
+  power.h registrar.h relational.h pseries.h structure.h symbol.h tinfos.h \
+  assertion.h version.h idx.h indexed.h tensor.h color.h clifford.h wildcard.h \
+  print.h symmetry.h fderivative.h
 LFLAGS = -Pginac_yy -olex.yy.c
 YFLAGS = -p ginac_yy -d
 EXTRA_DIST = container.pl function.pl structure.pl input_parser.h version.h.in
