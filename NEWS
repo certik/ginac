@@ -1,6 +1,6 @@
 This file records noteworthy changes.
 
-1.1.5 (4 November 2003)
+1.1.5 (5 November 2003)
 * Harmonic polylogarithms now numerically evaluate for arbitrary arguments
   (parameter must still be positive integers).
 * The zeta function now can also be given a lst as a parameter in which case
