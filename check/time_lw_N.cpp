@@ -24,7 +24,7 @@
 
 #include "times.h"
 
-static const bool do_test = true;  // set to true in order to run this beast
+static const bool do_test = false;  // set to true in order to run this beast
 
 static unsigned test(void)
 {
