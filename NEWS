@@ -6,8 +6,13 @@ This file records noteworthy changes.
 * The scalar_products mechanism allows the specification of an index dimension.
 * Removed dirac_gamma6/7().
 * Added ex::to_polynomial().
-* print_options
-* subs_options
+* print_context constructors accept an optional "options" argument. The only
+  available option at the moment is print_options::print_index_dimensions,
+  which enables the output of index dimensions in square brackets after the
+  index value.
+* subs() accepts an optional "options" argument. The option
+  subs_option::subs_algebraic enables "smart" substitutions in products and
+  powers.
 
 1.0.13 (27 January 2003)
 * Contracting epsilon tensors with Euclidean indices now works.

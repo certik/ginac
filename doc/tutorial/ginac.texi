@@ -3380,53 +3380,52 @@ The last example would be written in C++ in this way:
 @subsection Algebraic substitutions
 The @code{subs()} method has an extra, optional, argument. This argument can
 be used to pass one of the @code{subs_options} to it. The only option that is
-currently available is the @code{subs_smart} option which affects
-multiplications and powers. If you want to substitute some factors of a
-product, you only need to list these factors in your pattern. Furthermore, if
-an (integer) power of some expression occurs in your pattern and in the
-expression that you want the substitution to occur in, it can be substituted
-as many times as possible, without getting negative powers.
+currently available is the @code{subs_algebraic} option which affects
+products and powers. If you want to substitute some factors of a product, you
+only need to list these factors in your pattern. Furthermore, if an (integer)
+power of some expression occurs in your pattern and in the expression that you
+want the substitution to occur in, it can be substituted as many times as
+possible, without getting negative powers.
 
 An example clarifies it all (hopefully):
 
 @example
 cout << (a*a*a*a+b*b*b*b+pow(x+y,4)).subs(wild()*wild()==pow(wild(),3),
-                                        subs_options::subs_smart) << endl;
+                                        subs_options::subs_algebraic) << endl;
 // --> (y+x)^6+b^6+a^6
 
-cout << ((a+b+c)*(a+b+c)).subs(a+b==x,subs_options::subs_smart) << endl;
+cout << ((a+b+c)*(a+b+c)).subs(a+b==x,subs_options::subs_algebraic) << endl;
 // --> (c+b+a)^2
-// Powers and multiplications are smart, but addition is just the same.
+// Powers and products are smart, but addition is just the same.
 
-cout << ((a+b+c)*(a+b+c)).subs(a+b+wild()==x+wild(), subs_options::subs_smart)
+cout << ((a+b+c)*(a+b+c)).subs(a+b+wild()==x+wild(), subs_options::subs_algebraic)
                                                                       << endl;
 // --> (x+c)^2
 // As I said: addition is just the same.
 
-cout << (pow(a,5)*pow(b,7)+2*b).subs(b*b*a==x,subs_options::subs_smart) << endl;
+cout << (pow(a,5)*pow(b,7)+2*b).subs(b*b*a==x,subs_options::subs_algebraic) << endl;
 // --> x^3*b*a^2+2*b
 
-cout << (pow(a,-5)*pow(b,-7)+2*b).subs(1/(b*b*a)==x,subs_options::subs_smart)
+cout << (pow(a,-5)*pow(b,-7)+2*b).subs(1/(b*b*a)==x,subs_options::subs_algebraic)
                                                                        << endl;
 // --> 2*b+x^3*b^(-1)*a^(-2)
 
-cout << (4*x*x*x-2*x*x+5*x-1).subs(x==a,subs_options::subs_smart)
-                                                                << endl;
+cout << (4*x*x*x-2*x*x+5*x-1).subs(x==a,subs_options::subs_algebraic) << endl;
 // --> -1-2*a^2+4*a^3+5*a
 
 cout << (4*x*x*x-2*x*x+5*x-1).subs(pow(x,wild())==pow(a,wild()),
-                                subs_options::subs_smart) << endl;
+                                subs_options::subs_algebraic) << endl;
 // --> -1+5*x+4*x^3-2*x^2
 // You should not really need this kind of patterns very often now.
 // But perhaps this it's-not-a-bug-it's-a-feature (c/sh)ould still change.
 
 cout << ex(sin(1+sin(x))).subs(sin(wild())==cos(wild()),
-                                subs_options::subs_smart) << endl;
+                                subs_options::subs_algebraic) << endl;
 // --> cos(1+cos(x))
 
 cout << expand((a*sin(x+y)*sin(x+y)+a*cos(x+y)*cos(x+y)+b)
         .subs((pow(cos(wild()),2)==1-pow(sin(wild()),2)),
-                                subs_options::subs_smart)) << endl;
+                                subs_options::subs_algebraic)) << endl;
 // --> b+a
 @end example
 
