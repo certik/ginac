@@ -379,9 +379,9 @@ found:		;
 			for (size_t i=0; i<num; i++)
 				vp->push_back(split_ex_to_pair(ops[i]));
 			ex rest = thisexpairseq(vp, default_overall_coeff());
-			for (size_t i=0; i<repl_lst.nops(); i++) {
-				if (repl_lst.op(i).op(0).is_equal(global_wildcard))
-					return rest.is_equal(repl_lst.op(i).op(1));
+			for (lst::const_iterator it = repl_lst.begin(); it != repl_lst.end(); ++it) {
+				if (it->op(0).is_equal(global_wildcard))
+					return rest.is_equal(it->op(1));
 			}
 			repl_lst.append(global_wildcard == rest);
 			return true;
@@ -1564,8 +1564,8 @@ epvector * expairseq::subschildren(const lst &ls, const lst &lr, unsigned option
 	// is a product or power. In this case we have to recombine the pairs
 	// because the numeric coefficients may be part of the search pattern.
 	bool complex_subs = false;
-	for (size_t i=0; i<ls.nops(); ++i) {
-		if (is_exactly_a<mul>(ls.op(i)) || is_exactly_a<power>(ls.op(i))) {
+	for (lst::const_iterator it = ls.begin(); it != ls.end(); ++it) {
+		if (is_exactly_a<mul>(*it) || is_exactly_a<power>(*it)) {
 			complex_subs = true;
 			break;
 		}

@@ -376,16 +376,17 @@ ex idx::subs(const lst & ls, const lst & lr, unsigned options) const
 	GINAC_ASSERT(ls.nops() == lr.nops());
 
 	// First look for index substitutions
-	for (size_t i=0; i<ls.nops(); i++) {
-		if (is_equal(ex_to<basic>(ls.op(i)))) {
+	lst::const_iterator its, itr;
+	for (its = ls.begin(), itr = lr.begin(); its != ls.end(); ++its, ++itr) {
+		if (is_equal(ex_to<basic>(*its))) {
 
 			// Substitution index->index
-			if (is_a<idx>(lr.op(i)))
-				return lr.op(i);
+			if (is_a<idx>(*itr))
+				return *itr;
 
 			// Otherwise substitute value
 			idx *i_copy = static_cast<idx *>(duplicate());
-			i_copy->value = lr.op(i);
+			i_copy->value = *itr;
 			i_copy->clearflag(status_flags::hash_calculated);
 			return i_copy->setflag(status_flags::dynallocated);
 		}

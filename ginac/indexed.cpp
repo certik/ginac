@@ -1224,14 +1224,9 @@ void scalar_products::add(const ex & v1, const ex & v2, const ex & dim, const ex
 void scalar_products::add_vectors(const lst & l, const ex & dim)
 {
 	// Add all possible pairs of products
-	size_t num = l.nops();
-	for (size_t i=0; i<num; i++) {
-		ex a = l.op(i);
-		for (size_t j=0; j<num; j++) {
-			ex b = l.op(j);
-			add(a, b, dim, a*b);
-		}
-	}
+	for (lst::const_iterator it1 = l.begin(); it1 != l.end(); ++it1)
+		for (lst::const_iterator it2 = l.begin(); it2 != l.end(); ++it2)
+			add(*it1, *it2, *it1 * *it2);
 }
 
 void scalar_products::clear(void)

@@ -524,6 +524,7 @@ ex power::evalm(void) const
 	return (new power(ebasis, eexponent))->setflag(status_flags::dynallocated);
 }
 
+// from mul.cpp
 extern bool tryfactsubs(const ex &, const ex &, int &, lst &);
 
 ex power::subs(const lst & ls, const lst & lr, unsigned options) const
@@ -538,11 +539,12 @@ ex power::subs(const lst & ls, const lst & lr, unsigned options) const
 	if(!(options & subs_options::subs_algebraic))
 		return basic::subs(ls, lr, options);
 
-	for (size_t i=0; i<ls.nops(); i++) {
+	lst::const_iterator its, itr;
+	for (its = ls.begin(), itr = lr.begin(); its != ls.end(); ++its, ++itr) {
 		int nummatches = std::numeric_limits<int>::max();
 		lst repls;
-		if (tryfactsubs(*this, ls.op(i), nummatches, repls))
-			return (ex_to<basic>((*this) * power(lr.op(i).subs(ex(repls), subs_options::subs_no_pattern) / ls.op(i).subs(ex(repls), subs_options::subs_no_pattern), nummatches))).basic::subs(ls, lr, options);
+		if (tryfactsubs(*this, *its, nummatches, repls))
+			return (ex_to<basic>((*this) * power(itr->subs(ex(repls), subs_options::subs_no_pattern) / its->subs(ex(repls), subs_options::subs_no_pattern), nummatches))).basic::subs(ls, lr, options);
 	}
 
 	ex result=basic::subs(ls, lr, options);

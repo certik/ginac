@@ -1,5 +1,9 @@
 This file records noteworthy changes.
 
+1.1.1 (<date>)
+* lst (and exprseq) provide iterators for read-only element access. For
+  sequential access this is one order faster than using op().
+
 1.1.0 (3 April 2003)
 * Removed deprecated macros is_ex_a, is_ex_exactly_a and friends for good.
 * The scalar_products mechanism allows the specification of an index dimension.

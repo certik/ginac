@@ -245,6 +245,10 @@ class ${CONTAINER} : public basic
 	GINAC_DECLARE_REGISTERED_CLASS(${CONTAINER}, basic)
 
 public:
+	typedef ${STLT}::const_iterator const_iterator;
+	typedef ${STLT}::const_reverse_iterator const_reverse_iterator;
+
+public:
 	${CONTAINER}(${STLT} const & s, bool discardable = false);
 	${CONTAINER}(${STLT} * vp); // vp will be deleted
 ${constructors_interface}
@@ -275,6 +279,13 @@ protected:
 	                      unsigned upper_precedence = 0) const;
 	virtual ex this${CONTAINER}(${STLT} const & v) const;
 	virtual ex this${CONTAINER}(${STLT} * vp) const;
+
+	// non-virtual functions in this class
+public:
+	const_iterator begin() const {return seq.begin();}
+	const_iterator end() const {return seq.end();}
+	const_reverse_iterator rbegin() const {return seq.rbegin();}
+	const_reverse_iterator rend() const {return seq.rend();}
 
 protected:
 	bool is_canonical() const;

@@ -1689,9 +1689,10 @@ ex sqrfree_parfrac(const ex & a, const symbol & x)
 static ex replace_with_symbol(const ex &e, lst &sym_lst, lst &repl_lst)
 {
 	// Expression already in repl_lst? Then return the assigned symbol
-	for (size_t i=0; i<repl_lst.nops(); i++)
-		if (repl_lst.op(i).is_equal(e))
-			return sym_lst.op(i);
+	lst::const_iterator its, itr;
+	for (its = sym_lst.begin(), itr = repl_lst.begin(); itr != repl_lst.end(); ++its, ++itr)
+		if (itr->is_equal(e))
+			return *its;
 	
 	// Otherwise create new symbol and add to list, taking care that the
 	// replacement expression doesn't contain symbols from the sym_lst
@@ -1712,9 +1713,9 @@ static ex replace_with_symbol(const ex &e, lst &sym_lst, lst &repl_lst)
 static ex replace_with_symbol(const ex &e, lst &repl_lst)
 {
 	// Expression already in repl_lst? Then return the assigned symbol
-	for (size_t i=0; i<repl_lst.nops(); i++)
-		if (repl_lst.op(i).op(1).is_equal(e))
-			return repl_lst.op(i).op(0);
+	for (lst::const_iterator it = repl_lst.begin(); it != repl_lst.end(); ++it)
+		if (it->op(1).is_equal(e))
+			return it->op(0);
 	
 	// Otherwise create new symbol and add to list, taking care that the
 	// replacement expression doesn't contain symbols from the sym_lst

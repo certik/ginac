@@ -269,7 +269,7 @@ void ncmul::append_factors(exvector & v, const ex & e) const
 	if ((is_exactly_a<mul>(e)&&(e.return_type()!=return_types::commutative))||
 		(is_exactly_a<ncmul>(e))) {
 		for (size_t i=0; i<e.nops(); i++)
-			append_factors(v,e.op(i));
+			append_factors(v, e.op(i));
 	} else 
 		v.push_back(e);
 }

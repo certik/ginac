@@ -566,21 +566,22 @@ ex mul::algebraic_subs_mul(const lst & ls, const lst & lr, unsigned options) con
 	std::vector<bool> subsed(seq.size(), false);
 	exvector subsresult(seq.size());
 
-	for (size_t i=0; i<ls.nops(); i++) {
+	lst::const_iterator its, itr;
+	for (its = ls.begin(), itr != lr.begin(); its != ls.end(); ++its, ++itr) {
 
-		if (is_exactly_a<mul>(ls.op(i))) {
+		if (is_exactly_a<mul>(*its)) {
 
 			int nummatches = std::numeric_limits<int>::max();
 			std::vector<bool> currsubsed(seq.size(), false);
 			bool succeed = true;
 			lst repls;
 
-			for (size_t j=0; j<ls.op(i).nops(); j++) {
+			for (size_t j=0; j<its->nops(); j++) {
 				bool found=false;
 				for (size_t k=0; k<nops(); k++) {
 					if (currsubsed[k] || subsed[k])
 						continue;
-					if (tryfactsubs(op(k), ls.op(i).op(j), nummatches, repls)) {
+					if (tryfactsubs(op(k), its->op(j), nummatches, repls)) {
 						currsubsed[k] = true;
 						found = true;
 						break;
@@ -601,7 +602,7 @@ ex mul::algebraic_subs_mul(const lst & ls, const lst & lr, unsigned options) con
 						subsresult[j] = op(j);
 					else {
 						foundfirstsubsedfactor = true;
-						subsresult[j] = op(j) * power(lr.op(i).subs(ex(repls), subs_options::subs_no_pattern) / ls.op(i).subs(ex(repls), subs_options::subs_no_pattern), nummatches);
+						subsresult[j] = op(j) * power(itr->subs(ex(repls), subs_options::subs_no_pattern) / its->subs(ex(repls), subs_options::subs_no_pattern), nummatches);
 					}
 					subsed[j] = true;
 				}
@@ -613,9 +614,9 @@ ex mul::algebraic_subs_mul(const lst & ls, const lst & lr, unsigned options) con
 			lst repls;
 
 			for (size_t j=0; j<this->nops(); j++) {
-				if (!subsed[j] && tryfactsubs(op(j), ls.op(i), nummatches, repls)) {
+				if (!subsed[j] && tryfactsubs(op(j), *its, nummatches, repls)) {
 					subsed[j] = true;
-					subsresult[j] = op(j) * power(lr.op(i).subs(ex(repls), subs_options::subs_no_pattern) / ls.op(i).subs(ex(repls), subs_options::subs_no_pattern), nummatches);
+					subsresult[j] = op(j) * power(itr->subs(ex(repls), subs_options::subs_no_pattern) / its->subs(ex(repls), subs_options::subs_no_pattern), nummatches);
 				}
 			}
 		}

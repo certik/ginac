@@ -32,6 +32,7 @@
 #include "lst.h"
 #include "idx.h"
 #include "indexed.h"
+#include "add.h"
 #include "power.h"
 #include "symbol.h"
 #include "operators.h"
@@ -95,12 +96,13 @@ matrix::matrix(unsigned r, unsigned c, const lst & l)
 {
 	m.resize(r*c, _ex0);
 
-	for (size_t i=0; i<l.nops(); i++) {
+	size_t i = 0;
+	for (lst::const_iterator it = l.begin(); it != l.end(); ++it, ++i) {
 		size_t x = i % c;
 		size_t y = i / c;
 		if (y >= r)
 			break; // matrix smaller than list: throw away excessive elements
-		m[y*c+x] = l.op(i);
+		m[y*c+x] = *it;
 	}
 }
 
@@ -880,6 +882,7 @@ ex matrix::charpoly(const symbol & lambda) const
 	// trapped and we use Leverrier's algorithm which goes as row^3 for
 	// every coefficient.  The expensive part is the matrix multiplication.
 	if (numeric_flag) {
+
 		matrix B(*this);
 		ex c = B.trace();
 		ex poly = power(lambda,row)-c*power(lambda,row-1);
@@ -887,20 +890,22 @@ ex matrix::charpoly(const symbol & lambda) const
 			for (unsigned j=0; j<row; ++j)
 				B.m[j*col+j] -= c;
 			B = this->mul(B);
-			c = B.trace()/ex(i+1);
+			c = B.trace() / ex(i+1);
 			poly -= c*power(lambda,row-i-1);
 		}
 		if (row%2)
 			return -poly;
 		else
 			return poly;
+
+	} else {
+	
+		matrix M(*this);
+		for (unsigned r=0; r<col; ++r)
+			M.m[r*col+r] -= lambda;
+	
+		return M.determinant().collect(lambda);
 	}
-	
-	matrix M(*this);
-	for (unsigned r=0; r<col; ++r)
-		M.m[r*col+r] -= lambda;
-	
-	return M.determinant().collect(lambda);
 }
 
 
@@ -1452,34 +1457,45 @@ int matrix::pivot(unsigned ro, unsigned co, bool symbolic)
 
 ex lst_to_matrix(const lst & l)
 {
+	lst::const_iterator itr, itc;
+
 	// Find number of rows and columns
-	size_t rows = l.nops(), cols = 0, i, j;
-	for (i=0; i<rows; i++)
-		if (l.op(i).nops() > cols)
-			cols = l.op(i).nops();
+	size_t rows = l.nops(), cols = 0;
+	for (itr = l.begin(); itr != l.end(); ++itr) {
+		if (!is_a<lst>(*itr))
+			throw (std::invalid_argument("lst_to_matrix: argument must be a list of lists"));
+		if (itr->nops() > cols)
+			cols = itr->nops();
+	}
 
 	// Allocate and fill matrix
 	matrix &M = *new matrix(rows, cols);
 	M.setflag(status_flags::dynallocated);
-	for (i=0; i<rows; i++)
-		for (j=0; j<cols; j++)
-			if (l.op(i).nops() > j)
-				M(i, j) = l.op(i).op(j);
-			else
-				M(i, j) = _ex0;
+
+	unsigned i;
+	for (itr = l.begin(), i = 0; itr != l.end(); ++itr, ++i) {
+		unsigned j;
+		for (itc = ex_to<lst>(*itr).begin(), j = 0; itc != ex_to<lst>(*itr).end(); ++itc, ++j)
+			M(i, j) = *itc;
+	}
+
 	return M;
 }
 
 ex diag_matrix(const lst & l)
 {
+	lst::const_iterator it;
 	size_t dim = l.nops();
 
-	matrix &m = *new matrix(dim, dim);
-	m.setflag(status_flags::dynallocated);
-	for (size_t i=0; i<dim; i++)
-		m(i, i) = l.op(i);
+	// Allocate and fill matrix
+	matrix &M = *new matrix(dim, dim);
+	M.setflag(status_flags::dynallocated);
 
-	return m;
+	unsigned i;
+	for (it = l.begin(), i = 0; it != l.end(); ++it, ++i)
+		M(i, i) = *it;
+
+	return M;
 }
 
 ex unit_matrix(unsigned r, unsigned c)

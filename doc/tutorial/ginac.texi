@@ -1304,6 +1304,51 @@ individual elements:
     ...
 @end example
 
+As with the standard @code{list<T>} container, accessing random elements of a
+@code{lst} is generally an operation of order @math{O(N)}. Faster read-only
+sequential access to the elements of a list is possible with the
+iterator types provided by the @code{lst} class:
+
+@example
+typedef ... lst::const_iterator;
+typedef ... lst::const_reverse_iterator;
+lst::const_iterator lst::begin() const;
+lst::const_iterator lst::end() const;
+lst::const_reverse_iterator lst::rbegin() const;
+lst::const_reverse_iterator lst::rend() const;
+@end example
+
+For example, to print the elements of a list individually you can use:
+
+@example
+    ...
+    // O(N)
+    for (lst::const_iterator i = l.begin(); i != l.end(); ++i)
+        cout << *i << endl;
+    ...
+@end example
+
+which is one order faster than
+
+@example
+    ...
+    // O(N^2)
+    for (size_t i = 0; i < l.nops(); ++i)
+        cout << l.op(i) << endl;
+    ...
+@end example
+
+These iterators also allow you to use some of the algorithms provided by
+the C++ standard library:
+
+@example
+    ...
+    // sum up the elements of the list (requires #include <numeric>)
+    ex sum = accumulate(l.begin(), l.end(), ex(0));
+    cout << sum << endl;  // prints '2+2*x+2*y'
+    ...
+@end example
+
 @code{lst} is one of the few GiNaC classes that allow in-place modifications
 (the only other one is @code{matrix}). You can modify single elements:
 

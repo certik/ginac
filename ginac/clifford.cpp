@@ -695,8 +695,9 @@ ex canonicalize_clifford(const ex & e)
 	ex aux = e.to_rational(srl);
 	for (size_t i=0; i<srl.nops(); i++) {
 
-		ex lhs = srl.op(i).lhs();
-		ex rhs = srl.op(i).rhs();
+		ex o = srl.op(i);
+		ex lhs = o.lhs();
+		ex rhs = o.rhs();
 
 		if (is_exactly_a<ncmul>(rhs)
 		 && rhs.return_type() == return_types::noncommutative

@@ -484,9 +484,9 @@ bool basic::match(const ex & pattern, lst & repl_lst) const
 		// Wildcard matches anything, but check whether we already have found
 		// a match for that wildcard first (if so, it the earlier match must
 		// be the same expression)
-		for (size_t i=0; i<repl_lst.nops(); i++) {
-			if (repl_lst.op(i).op(0).is_equal(pattern))
-				return is_equal(ex_to<basic>(repl_lst.op(i).op(1)));
+		for (lst::const_iterator it = repl_lst.begin(); it != repl_lst.end(); ++it) {
+			if (it->op(0).is_equal(pattern))
+				return is_equal(ex_to<basic>(it->op(1)));
 		}
 		repl_lst.append(pattern == *this);
 		return true;
@@ -526,16 +526,18 @@ ex basic::subs(const lst & ls, const lst & lr, unsigned options) const
 {
 	GINAC_ASSERT(ls.nops() == lr.nops());
 
+	lst::const_iterator its, itr;
+
 	if (options & subs_options::subs_no_pattern) {
-		for (size_t i=0; i<ls.nops(); i++) {
-			if (is_equal(ex_to<basic>(ls.op(i))))
-				return lr.op(i);
+		for (its = ls.begin(), itr = lr.begin(); its != ls.end(); ++its, ++itr) {
+			if (is_equal(ex_to<basic>(*its)))
+				return *itr;
 		}
 	} else {
-		for (size_t i=0; i<ls.nops(); i++) {
+		for (its = ls.begin(), itr = lr.begin(); its != ls.end(); ++its, ++itr) {
 			lst repl_lst;
-			if (match(ex_to<basic>(ls.op(i)), repl_lst))
-				return lr.op(i).subs(repl_lst, options | subs_options::subs_no_pattern); // avoid infinite recursion when re-substituting the wildcards
+			if (match(ex_to<basic>(*its), repl_lst))
+				return itr->subs(repl_lst, options | subs_options::subs_no_pattern); // avoid infinite recursion when re-substituting the wildcards
 		}
 	}
 
@@ -711,10 +713,13 @@ ex basic::subs(const ex & e, unsigned options) const
 	if (!e.info(info_flags::list)) {
 		throw(std::invalid_argument("basic::subs(ex): argument must be a list"));
 	}
+
+	// Split list into two
 	lst ls;
 	lst lr;
-	for (size_t i=0; i<e.nops(); i++) {
-		ex r = e.op(i);
+	GINAC_ASSERT(is_a<lst>(e));
+	for (lst::const_iterator it = ex_to<lst>(e).begin(); it != ex_to<lst>(e).end(); ++it) {
+		ex r = *it;
 		if (!r.info(info_flags::relation_equal)) {
 			throw(std::invalid_argument("basic::subs(ex): argument must be a list of equations"));
 		}
