@@ -150,7 +150,11 @@ expairseq::expairseq(const archive_node &n, lst &sym_lst) : inherited(n, sym_lst
 #if EXPAIRSEQ_USE_HASHTAB
 	, hashtabsize(0)
 #endif
+
 {
+
+	canonicalize();
+	GINAC_ASSERT(is_canonical());
 	for (unsigned int i=0; true; i++) {
 		ex rest;
 		ex coeff;
