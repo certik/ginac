@@ -1,3 +1,9 @@
+ginac (1.2.2-1) unstable; urgency=low
+
+  * New upstream (bugfix only) release.
+
+ -- Richard Kreckel <kreckel@ginac.de>  Tue,  3 Aug 2004 17:22:23 +0200
+
 ginac (1.2.1-1) unstable; urgency=low
 
   * New upstream (bugfix only) release.
