@@ -567,7 +567,7 @@ ex mul::algebraic_subs_mul(const lst & ls, const lst & lr, unsigned options) con
 	exvector subsresult(seq.size());
 
 	lst::const_iterator its, itr;
-	for (its = ls.begin(), itr != lr.begin(); its != ls.end(); ++its, ++itr) {
+	for (its = ls.begin(), itr = lr.begin(); its != ls.end(); ++its, ++itr) {
 
 		if (is_exactly_a<mul>(*its)) {
 
