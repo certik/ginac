@@ -29,6 +29,7 @@
 #include "basic.h"
 #include "ex.h"
 #include "numeric.h"
+#include "mul.h"
 #include "power.h"
 #include "symbol.h"
 #include "lst.h"
@@ -528,7 +529,7 @@ ex basic::subs(const lst & ls, const lst & lr, unsigned options) const
 
 	lst::const_iterator its, itr;
 
-	if (options & subs_options::subs_no_pattern) {
+	if (options & subs_options::no_pattern) {
 		for (its = ls.begin(), itr = lr.begin(); its != ls.end(); ++its, ++itr) {
 			if (is_equal(ex_to<basic>(*its)))
 				return *itr;
@@ -537,7 +538,7 @@ ex basic::subs(const lst & ls, const lst & lr, unsigned options) const
 		for (its = ls.begin(), itr = lr.begin(); its != ls.end(); ++its, ++itr) {
 			lst repl_lst;
 			if (match(ex_to<basic>(*its), repl_lst))
-				return itr->subs(repl_lst, options | subs_options::subs_no_pattern); // avoid infinite recursion when re-substituting the wildcards
+				return itr->subs(repl_lst, options | subs_options::no_pattern); // avoid infinite recursion when re-substituting the wildcards
 		}
 	}
 
@@ -723,9 +724,18 @@ ex basic::subs(const ex & e, unsigned options) const
 		if (!r.info(info_flags::relation_equal)) {
 			throw(std::invalid_argument("basic::subs(ex): argument must be a list of equations"));
 		}
-		ls.append(r.op(0));
+		const ex & s = r.op(0);
+		ls.append(s);
 		lr.append(r.op(1));
+
+		// Search for products and powers in the expressions to be substituted
+		// (for an optimization in expairseq::subs())
+		if (is_exactly_a<mul>(s) || is_exactly_a<power>(s))
+			options |= subs_options::pattern_is_product;
 	}
+	if (!(options & subs_options::pattern_is_product))
+		options |= subs_options::pattern_is_not_product;
+
 	return subs(ls, lr, options);
 }
 

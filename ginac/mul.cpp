@@ -602,7 +602,7 @@ ex mul::algebraic_subs_mul(const lst & ls, const lst & lr, unsigned options) con
 						subsresult[j] = op(j);
 					else {
 						foundfirstsubsedfactor = true;
-						subsresult[j] = op(j) * power(itr->subs(ex(repls), subs_options::subs_no_pattern) / its->subs(ex(repls), subs_options::subs_no_pattern), nummatches);
+						subsresult[j] = op(j) * power(itr->subs(ex(repls), subs_options::no_pattern) / its->subs(ex(repls), subs_options::no_pattern), nummatches);
 					}
 					subsed[j] = true;
 				}
@@ -616,7 +616,7 @@ ex mul::algebraic_subs_mul(const lst & ls, const lst & lr, unsigned options) con
 			for (size_t j=0; j<this->nops(); j++) {
 				if (!subsed[j] && tryfactsubs(op(j), *its, nummatches, repls)) {
 					subsed[j] = true;
-					subsresult[j] = op(j) * power(itr->subs(ex(repls), subs_options::subs_no_pattern) / its->subs(ex(repls), subs_options::subs_no_pattern), nummatches);
+					subsresult[j] = op(j) * power(itr->subs(ex(repls), subs_options::no_pattern) / its->subs(ex(repls), subs_options::no_pattern), nummatches);
 				}
 			}
 		}
@@ -630,7 +630,7 @@ ex mul::algebraic_subs_mul(const lst & ls, const lst & lr, unsigned options) con
 		}
 	}
 	if (!subsfound)
-		return basic::subs(ls, lr, options | subs_options::subs_algebraic);
+		return basic::subs(ls, lr, options | subs_options::algebraic);
 
 	exvector ev; ev.reserve(nops());
 	for (size_t i=0; i<nops(); i++) {

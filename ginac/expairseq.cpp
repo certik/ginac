@@ -405,7 +405,7 @@ ex expairseq::subs(const lst &ls, const lst &lr, unsigned options) const
 	epvector *vp = subschildren(ls, lr, options);
 	if (vp)
 		return ex_to<basic>(thisexpairseq(vp, overall_coeff));
-	else if ((options & subs_options::subs_algebraic) && is_exactly_a<mul>(*this))
+	else if ((options & subs_options::algebraic) && is_exactly_a<mul>(*this))
 		return static_cast<const mul *>(this)->algebraic_subs_mul(ls, lr, options);
 	else
 		return basic::subs(ls, lr, options);
@@ -1564,18 +1564,23 @@ epvector * expairseq::subschildren(const lst &ls, const lst &lr, unsigned option
 {
 	GINAC_ASSERT(ls.nops()==lr.nops());
 
-	// The substitution is "complex" when any of the objects to be substituted
-	// is a product or power. In this case we have to recombine the pairs
-	// because the numeric coefficients may be part of the search pattern.
-	bool complex_subs = false;
-	for (lst::const_iterator it = ls.begin(); it != ls.end(); ++it) {
-		if (is_exactly_a<mul>(*it) || is_exactly_a<power>(*it)) {
-			complex_subs = true;
-			break;
+	// When any of the objects to be substituted is a product or power
+	// we have to recombine the pairs because the numeric coefficients may
+	// be part of the search pattern.
+	if (!(options & (subs_options::pattern_is_product | subs_options::pattern_is_not_product))) {
+
+		// Search the list of substitutions and cache our findings
+		for (lst::const_iterator it = ls.begin(); it != ls.end(); ++it) {
+			if (is_exactly_a<mul>(*it) || is_exactly_a<power>(*it)) {
+				options |= subs_options::pattern_is_product;
+				break;
+			}
 		}
+		if (!(options & subs_options::pattern_is_product))
+			options |= subs_options::pattern_is_not_product;
 	}
 
-	if (complex_subs) {
+	if (options & subs_options::pattern_is_product) {
 
 		// Substitute in the recombined pairs
 		epvector::const_iterator cit = seq.begin(), last = seq.end();

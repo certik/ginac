@@ -536,7 +536,7 @@ ex power::subs(const lst & ls, const lst & lr, unsigned options) const
 	 || !are_ex_trivially_equal(exponent, subsed_exponent)) 
 		return power(subsed_basis, subsed_exponent).basic::subs(ls, lr, options);
 
-	if(!(options & subs_options::subs_algebraic))
+	if(!(options & subs_options::algebraic))
 		return basic::subs(ls, lr, options);
 
 	lst::const_iterator its, itr;
@@ -544,7 +544,7 @@ ex power::subs(const lst & ls, const lst & lr, unsigned options) const
 		int nummatches = std::numeric_limits<int>::max();
 		lst repls;
 		if (tryfactsubs(*this, *its, nummatches, repls))
-			return (ex_to<basic>((*this) * power(itr->subs(ex(repls), subs_options::subs_no_pattern) / its->subs(ex(repls), subs_options::subs_no_pattern), nummatches))).basic::subs(ls, lr, options);
+			return (ex_to<basic>((*this) * power(itr->subs(ex(repls), subs_options::no_pattern) / its->subs(ex(repls), subs_options::no_pattern), nummatches))).basic::subs(ls, lr, options);
 	}
 
 	ex result=basic::subs(ls, lr, options);
