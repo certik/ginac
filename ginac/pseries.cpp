@@ -511,14 +511,23 @@ bool pseries::is_terminating(void) const
 ex basic::series(const relational & r, int order, unsigned options) const
 {
 	epvector seq;
+
+	// default for order-values that make no sense for Taylor expansion
+	if (order <= 0) {
+		seq.push_back(expair(Order(_ex1), order));
+		return pseries(r, seq);
+	}
+
+	// do Taylor expansion
 	numeric fac = 1;
 	ex deriv = *this;
 	ex coeff = deriv.subs(r, subs_options::no_pattern);
 	const symbol &s = ex_to<symbol>(r.lhs());
-	
-	if (!coeff.is_zero())
+
+	if (!coeff.is_zero()) {
 		seq.push_back(expair(coeff, _ex0));
-	
+	}
+
 	int n;
 	for (n=1; n<order; ++n) {
 		fac = fac.mul(n);
@@ -533,7 +542,7 @@ ex basic::series(const relational & r, int order, unsigned options) const
 		if (!coeff.is_zero())
 			seq.push_back(expair(fac.inverse() * coeff, n));
 	}
-	
+
 	// Higher-order terms, if present
 	deriv = deriv.diff(s);
 	if (!deriv.expand().is_zero())
@@ -764,6 +773,7 @@ ex mul::series(const relational & r, int order, unsigned options) const
 
 		int ldeg = op.ldegree(sym);
 		ldegrees.push_back(ldeg);
+	
 		if (ldeg < 0) {
 			negldegree = true;
 		}
@@ -775,13 +785,12 @@ ex mul::series(const relational & r, int order, unsigned options) const
 			acc = ex_to<pseries>(acc.mul_series(ex_to<pseries>(op)));
 	}
 
-	if (seq.size() > 1) {
+	if (negldegree && (seq.size() > 1)) {
 
 		// re-calculation of series
 
 		pseries newacc;
-
-		const int degsum = std::accumulate(ldegrees.begin(), ldegrees.end(), 0);
+		int degsum = std::accumulate(ldegrees.begin(), ldegrees.end(), 0);
 
 		// Multiply with remaining terms
 		const epvector::const_reverse_iterator itbeg = seq.rbegin();
@@ -789,7 +798,11 @@ ex mul::series(const relational & r, int order, unsigned options) const
 		std::vector<int>::const_reverse_iterator itd = ldegrees.rbegin();
 		for (epvector::const_reverse_iterator it=itbeg; it!=itend; ++it, ++itd) {
 
-			ex op = recombine_pair_to_ex(*it).series(r, order-degsum+(*itd), options);
+			// re-do series expansion with adjusted order
+			degsum -= *itd;
+			ex op = recombine_pair_to_ex(*it).series(r, order-degsum, options);
+			// ldegree might have changed ...
+			degsum += op.ldegree(sym);
 
 			// Series multiplication
 			if (it==itbeg)
@@ -857,7 +870,6 @@ ex pseries::power_const(const numeric &p, int deg) const
 	exvector co;
 	co.reserve(deg);
 	co.push_back(power(coeff(var, ldeg), p));
-	bool all_sums_zero = true;
 	for (int i=1; i<deg; ++i) {
 		ex sum = _ex0;
 		for (int j=1; j<=i; ++j) {
@@ -868,8 +880,6 @@ ex pseries::power_const(const numeric &p, int deg) const
 			} else
 				sum += (p * j - (i - j)) * co[i - j] * c;
 		}
-		if (!sum.is_zero())
-			all_sums_zero = false;
 		co.push_back(sum / coeff(var, ldeg) / i);
 	}
 	
@@ -884,7 +894,7 @@ ex pseries::power_const(const numeric &p, int deg) const
 			break;
 		}
 	}
-	if (!higher_order && !all_sums_zero)
+	if (!higher_order)
 		new_seq.push_back(expair(Order(_ex1), p * ldeg + deg));
 
 	return pseries(relational(var,point), new_seq);
@@ -940,13 +950,32 @@ ex power::series(const relational & r, int order, unsigned options) const
 	}
 
 	// No, expand basis into series
+
 	int intexp = ex_to<numeric>(exponent).to_int();
-	ex e = basis.series(r, order, options);
-	int ldeg = ex_to<pseries>(e).ldegree(r.lhs());
-	if (intexp * ldeg < 0) {
-		e = basis.series(r, order + ldeg*(1-intexp), options);
+	const ex& sym = r.lhs();
+	// find existing minimal degree
+	int real_ldegree = basis.expand().ldegree(sym);
+	if (real_ldegree == 0) {
+		int orderloop = 0;
+		do {
+			orderloop++;
+			real_ldegree = basis.series(r, orderloop, options).ldegree(sym);
+		} while (real_ldegree == orderloop);
 	}
-	return ex_to<pseries>(e).power_const(intexp, order);
+
+	ex e = basis.series(r, order + real_ldegree*(1-intexp), options);
+	
+	ex result;
+	try {
+		result = ex_to<pseries>(e).power_const(intexp, order);
+	}
+	catch (pole_error) {
+		epvector ser;
+		ser.push_back(expair(Order(_ex1), order));
+		result = pseries(r, ser);
+	}
+
+	return result;
 }
 
 
