@@ -26,6 +26,8 @@
 #include "idx.h"
 #include "symbol.h"
 #include "lst.h"
+#include "relational.h"
+#include "operators.h"
 #include "print.h"
 #include "archive.h"
 #include "utils.h"
@@ -301,6 +303,7 @@ int varidx::compare_same_type(const basic & other) const
 	// Check variance last so dummy indices will end up next to each other
 	if (covariant != o.covariant)
 		return covariant ? -1 : 1;
+
 	return 0;
 }
 
@@ -311,6 +314,7 @@ bool varidx::match_same_type(const basic & other) const
 
 	if (covariant != o.covariant)
 		return false;
+
 	return inherited::match_same_type(other);
 }
 
@@ -402,8 +406,12 @@ bool idx::is_dummy_pair_same_type(const basic & other) const
 	if (!value.is_equal(o.value))
 		return false;
 
-	// Also the dimension
-	return dim.is_equal(o.dim);
+	// Dimensions need not be equal but must be comparable (so we can
+	// determine the minimum dimension of contractions)
+	if (dim.is_equal(o.dim))
+		return true;
+
+	return (dim < o.dim || dim > o.dim || (is_a<numeric>(dim) && is_a<symbol>(o.dim)) || (is_a<symbol>(dim) && is_a<numeric>(o.dim)));
 }
 
 bool varidx::is_dummy_pair_same_type(const basic & other) const
@@ -432,6 +440,24 @@ bool spinidx::is_dummy_pair_same_type(const basic & other) const
 //////////
 // non-virtual functions
 //////////
+
+ex idx::replace_dim(const ex & new_dim) const
+{
+	idx *i_copy = static_cast<idx *>(duplicate());
+	i_copy->dim = new_dim;
+	i_copy->clearflag(status_flags::hash_calculated);
+	return i_copy->setflag(status_flags::dynallocated);
+}
+
+ex idx::minimal_dim(const idx & other) const
+{
+	if (dim.is_equal(other.dim) || dim < other.dim || (is_a<numeric>(dim) && is_a<symbol>(other.dim)))
+		return dim;
+	else if (dim > other.dim || (is_a<symbol>(dim) && is_a<numeric>(other.dim)))
+		return other.dim;
+	else
+		throw (std::runtime_error("idx::minimal_dim: index dimensions cannot be ordered"));
+}
 
 ex varidx::toggle_variance(void) const
 {
