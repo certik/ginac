@@ -4,6 +4,7 @@ This file records noteworthy changes.
 * Removed deprecated macros is_ex_a, is_ex_exactly_a and friends for good.
 * Made the hashing more simple and efficient.
 * The scalar_products mechanism allows the specification of an index dimension.
+* Removed dirac_gamma6/7().
 
 Backlog from 1.0.n:
 * Powers of indexed objects are now parenthesized correctly in LaTeX output.
