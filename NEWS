@@ -1,5 +1,7 @@
 This file records noteworthy changes.
 
+1.1.0 (<date>)
+
 1.0.5 (<date>)
 * (l)degree(s), coeff(s, n) and collect(s) were extended to accept expressions
   of any class (except add/mul/ncmul/numeric) for "s". They should even work
