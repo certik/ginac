@@ -770,7 +770,7 @@ ex mul::series(const relational & r, int order, unsigned options) const
 		
 		ex buf = recombine_pair_to_ex(*it);
 		
-		int real_ldegree = buf.expand().ldegree(sym);
+		int real_ldegree = buf.expand().ldegree(sym-r.rhs());
 		if (real_ldegree == 0) {
 			int orderloop = 0;
 			do {
@@ -789,10 +789,7 @@ ex mul::series(const relational & r, int order, unsigned options) const
 	for (epvector::const_iterator it=itbeg; it!=itend; ++it, ++itd) {
 
 		// do series expansion with adjusted order
-		degsum -= *itd;
-		ex op = recombine_pair_to_ex(*it).series(r, order-degsum, options);
-		// ldegree might have changed ...
-		degsum += op.ldegree(sym);
+		ex op = recombine_pair_to_ex(*it).series(r, order-degsum+(*itd), options);
 
 		// Series multiplication
 		if (it==itbeg)
@@ -942,7 +939,7 @@ ex power::series(const relational & r, int order, unsigned options) const
 	int intexp = ex_to<numeric>(exponent).to_int();
 	const ex& sym = r.lhs();
 	// find existing minimal degree
-	int real_ldegree = basis.expand().ldegree(sym);
+	int real_ldegree = basis.expand().ldegree(sym-r.rhs());
 	if (real_ldegree == 0) {
 		int orderloop = 0;
 		do {
