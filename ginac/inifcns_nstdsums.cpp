@@ -53,6 +53,7 @@
 #include "numeric.h"
 #include "operators.h"
 #include "relational.h"
+#include "pseries.h"
 
 
 namespace GiNaC {
@@ -484,7 +485,7 @@ static ex Li_evalf(const ex& x1, const ex& x2)
 				return Li(x1,x2).hold();
 			if (!is_a<numeric>(x2.op(i)))
 				return Li(x1,x2).hold();
-			if (x2 >= 1)
+			if (x2.op(i) >= 1)
 				return Li(x1,x2).hold();
 		}
 
@@ -514,7 +515,14 @@ static ex Li_evalf(const ex& x1, const ex& x2)
 	return Li(x1,x2).hold();
 }
 
-REGISTER_FUNCTION(Li, eval_func(Li_eval).evalf_func(Li_evalf).do_not_evalf_params());
+static ex Li_series(const ex& x1, const ex& x2, const relational& rel, int order, unsigned options)
+{
+	epvector seq;
+	seq.push_back(expair(Li(x1,x2), 0));
+	return pseries(rel,seq);
+}
+
+REGISTER_FUNCTION(Li, eval_func(Li_eval).evalf_func(Li_evalf).do_not_evalf_params().series_func(Li_series));
 
 
 // Nielsen's generalized polylogarithm
@@ -539,7 +547,14 @@ static ex S_evalf(const ex& x1, const ex& x2, const ex& x3)
 	return S(x1,x2,x3).hold();
 }
 
-REGISTER_FUNCTION(S, eval_func(S_eval).evalf_func(S_evalf).do_not_evalf_params());
+static ex S_series(const ex& x1, const ex& x2, const ex& x3, const relational& rel, int order, unsigned options)
+{
+	epvector seq;
+	seq.push_back(expair(S(x1,x2,x3), 0));
+	return pseries(rel,seq);
+}
+
+REGISTER_FUNCTION(S, eval_func(S_eval).evalf_func(S_evalf).do_not_evalf_params().series_func(S_series));
 
 
 // Harmonic polylogarithm
@@ -555,6 +570,9 @@ static ex H_evalf(const ex& x1, const ex& x2)
 		for (int i=0; i<x1.nops(); i++) {
 			if (!is_a<numeric>(x1.op(i)))
 				return H(x1,x2).hold();
+		}
+		if (x2 >= 1) {
+			return H(x1,x2).hold();
 		}
 
 		cln::cl_N m_1 = ex_to<numeric>(x1.op(x1.nops()-1)).to_cl_N();
@@ -581,7 +599,14 @@ static ex H_evalf(const ex& x1, const ex& x2)
 	return H(x1,x2).hold();
 }
 
-REGISTER_FUNCTION(H, eval_func(H_eval).evalf_func(H_evalf).do_not_evalf_params());
+static ex H_series(const ex& x1, const ex& x2, const relational& rel, int order, unsigned options)
+{
+	epvector seq;
+	seq.push_back(expair(H(x1,x2), 0));
+	return pseries(rel,seq);
+}
+
+REGISTER_FUNCTION(H, eval_func(H_eval).evalf_func(H_evalf).do_not_evalf_params().series_func(H_series));
 
 
 // Multiple zeta value
@@ -624,7 +649,14 @@ static ex mZeta_evalf(const ex& x1)
 	return mZeta(x1).hold();
 }
 
-REGISTER_FUNCTION(mZeta, eval_func(mZeta_eval).evalf_func(mZeta_evalf).do_not_evalf_params());
+static ex mZeta_series(const ex& x1, const relational& rel, int order, unsigned options)
+{
+	epvector seq;
+	seq.push_back(expair(mZeta(x1), 0));
+	return pseries(rel,seq);
+}
+
+REGISTER_FUNCTION(mZeta, eval_func(mZeta_eval).evalf_func(mZeta_evalf).do_not_evalf_params().series_func(mZeta_series));
 
 
 } // namespace GiNaC
