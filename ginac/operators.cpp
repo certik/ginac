@@ -20,6 +20,9 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include <iostream>
+#include <iomanip>
+
 #include "operators.h"
 #include "numeric.h"
 #include "add.h"
@@ -272,17 +275,112 @@ const relational operator>=(const ex & lh, const ex & rh)
 	return relational(lh,rh,relational::greater_or_equal);
 }
 
-// input/output stream operators
+// input/output stream operators and manipulators
+
+static int my_ios_index()
+{
+	static int i = std::ios_base::xalloc();
+	return i;
+}
+
+static void my_ios_callback(std::ios_base::event ev, std::ios_base & s, int i)
+{
+	print_context *p = static_cast<print_context *>(s.pword(i));
+	if (ev == std::ios_base::erase_event) {
+		delete p;
+		s.pword(i) = 0;
+	} else if (ev == std::ios_base::copyfmt_event && p != 0) {
+		s.pword(i) = p->duplicate();
+	}
+}
+
+enum {
+	callback_registered = 1
+};
+
+static print_context *get_print_context(std::ios_base & s)
+{
+	return static_cast<print_context *>(s.pword(my_ios_index()));
+}
+
+static void set_print_context(std::ios_base & s, const print_context & c)
+{
+	int i = my_ios_index();
+	long flags = s.iword(i);
+	if (!(flags & callback_registered)) {
+		s.register_callback(my_ios_callback, i);
+		s.iword(i) = flags | callback_registered;
+	}
+	delete static_cast<print_context *>(s.pword(i));
+	s.pword(i) = c.duplicate();
+}
 
 std::ostream & operator<<(std::ostream & os, const ex & e)
 {
-	e.print(print_context(os));
+	if (get_print_context(os) == 0)
+		e.print(print_context(os));
+	else
+		e.print(*get_print_context(os));
 	return os;
 }
 
 std::istream & operator>>(std::istream & is, ex & e)
 {
 	throw (std::logic_error("expression input from streams not implemented"));
+}
+
+std::ostream & dflt(std::ostream & os)
+{
+	set_print_context(os, print_context(os));
+	return os;
+}
+
+std::ostream & latex(std::ostream & os)
+{
+	set_print_context(os, print_latex(os));
+	return os;
+}
+
+std::ostream & python(std::ostream & os)
+{
+	set_print_context(os, print_python(os));
+	return os;
+}
+
+std::ostream & python_repr(std::ostream & os)
+{
+	set_print_context(os, print_python_repr(os));
+	return os;
+}
+
+std::ostream & tree(std::ostream & os)
+{
+	set_print_context(os, print_tree(os));
+	return os;
+}
+
+std::ostream & csrc_float(std::ostream & os)
+{
+	set_print_context(os, print_csrc_float(os));
+	return os;
+}
+
+std::ostream & csrc_double(std::ostream & os)
+{
+	set_print_context(os, print_csrc_double(os));
+	return os;
+}
+
+std::ostream & csrc_cl_N(std::ostream & os)
+{
+	set_print_context(os, print_csrc_cl_N(os));
+	return os;
+}
+
+std::ostream & csrc(std::ostream & os)
+{
+	set_print_context(os, print_csrc_double(os));
+	return os;
 }
 
 } // namespace GiNaC

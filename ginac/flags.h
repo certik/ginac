@@ -252,7 +252,7 @@ public:
 class print_options {
 public:
 	enum {
-		print_index_dimensions = 0x0001,	///< print the dimensions of indices
+		print_index_dimensions = 0x0001 ///< print the dimensions of indices
 	};
 };
 
