@@ -752,6 +752,9 @@ inline ex denom(const ex & thisex)
 
 inline ex numer_denom(const ex & thisex)
 { return thisex.numer_denom(); }
+inline ex conjugate(const ex & thisex)
+{ return thisex.conjugate(); }
+
 
 inline ex normal(const ex & thisex, int level=0)
 { return thisex.normal(level); }

@@ -5,6 +5,7 @@ This file records noteworthy changes.
   associated methods ex::pre/postorder_begin/end()) providing tree traversal
   with iterators.
 * Fixed the LaTeX output of the varidx class.
+* Fixed bugs in series expansion and complex conjugation.
 * Symbolic functions without any eval(), evalf() etc. functions now work
   properly.
 * Added method matrix::rank().
