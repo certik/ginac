@@ -207,7 +207,7 @@ $interface=<<END_OF_INTERFACE;
  *                        \$close_bracket=${close_bracket}
  *                        \$maxargs=${maxargs}
  *
- *  GiNaC Copyright (C) 1999-2003 Johannes Gutenberg University Mainz, Germany
+ *  GiNaC Copyright (C) 1999-2004 Johannes Gutenberg University Mainz, Germany
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -338,7 +338,7 @@ $implementation=<<END_OF_IMPLEMENTATION;
  *                        \$close_bracket=${close_bracket}
  *                        \$maxargs=${maxargs}
  *
- *  GiNaC Copyright (C) 1999-2003 Johannes Gutenberg University Mainz, Germany
+ *  GiNaC Copyright (C) 1999-2004 Johannes Gutenberg University Mainz, Germany
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
