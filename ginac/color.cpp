@@ -171,7 +171,7 @@ ex color::eval_ncmul(const exvector & v) const
 	if (s.empty())
 		return color(su3one(), representation_label);
 	else
-		return simplified_ncmul(s);
+		return hold_ncmul(s);
 }
 
 ex color::thisexprseq(const exvector & v) const

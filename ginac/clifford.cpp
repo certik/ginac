@@ -454,9 +454,9 @@ ex clifford::eval_ncmul(const exvector & v) const
 	if (s.empty())
 		return clifford(diracone(), representation_label) * sign;
 	if (something_changed)
-		return nonsimplified_ncmul(s) * sign;
+		return reeval_ncmul(s) * sign;
 	else
-		return simplified_ncmul(s) * sign;
+		return hold_ncmul(s) * sign;
 }
 
 ex clifford::thisexprseq(const exvector & v) const

@@ -576,7 +576,7 @@ exvector basic::get_free_indices(void) const
 
 ex basic::eval_ncmul(const exvector & v) const
 {
-	return simplified_ncmul(v);
+	return hold_ncmul(v);
 }
 
 // protected

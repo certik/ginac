@@ -574,12 +574,12 @@ const exvector & ncmul::get_factors(void) const
 // friend functions
 //////////
 
-ex nonsimplified_ncmul(const exvector & v)
+ex reeval_ncmul(const exvector & v)
 {
 	return (new ncmul(v))->setflag(status_flags::dynallocated);
 }
 
-ex simplified_ncmul(const exvector & v)
+ex hold_ncmul(const exvector & v)
 {
 	if (v.empty())
 		return _ex1;

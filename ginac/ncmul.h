@@ -33,8 +33,8 @@ class ncmul : public exprseq
 	GINAC_DECLARE_REGISTERED_CLASS(ncmul, exprseq)
 
 	friend class power;
-	friend ex nonsimplified_ncmul(const exvector & v);
-	friend ex simplified_ncmul(const exvector & v);
+	friend ex reeval_ncmul(const exvector & v);
+	friend ex hold_ncmul(const exvector & v);
 
 // member functions
 
@@ -84,8 +84,8 @@ public:
 
 // friend funtions 
 
-ex nonsimplified_ncmul(const exvector & v);
-ex simplified_ncmul(const exvector & v);
+ex reeval_ncmul(const exvector & v);
+ex hold_ncmul(const exvector & v);
 
 // utility functions
 
