@@ -8,8 +8,12 @@ This file records noteworthy changes.
 * Fixed bugs in series expansion and complex conjugation.
 * Symbolic functions without any eval(), evalf() etc. functions now work
   properly.
+* integer_content(), content(), and primpart() now also work for polynomials
+  with rational coefficients (calculating the LCM of coefficients'
+  denominators).
 * Added method matrix::rank().
 * Added function resultant().
+* Added integer_content() function to ginsh.
 
 1.2.1 (23 April 2004)
 * Fixed infinite recursion in atan2_evalf() and improved atan2_eval().
