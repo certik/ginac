@@ -183,7 +183,7 @@ cln::cl_N Li2_do_sum(const cln::cl_N& x)
 {
 	cln::cl_N res = x;
 	cln::cl_N resbuf;
-	cln::cl_N num = x;
+	cln::cl_N num = x * cln::cl_float(1, cln::float_format(Digits));
 	cln::cl_I den = 1; // n^2 = 1
 	unsigned i = 3;
 	do {
@@ -202,7 +202,7 @@ cln::cl_N Li2_do_sum_Xn(const cln::cl_N& x)
 {
 	std::vector<cln::cl_N>::const_iterator it = Xn[0].begin();
 	cln::cl_N u = -cln::log(1-x);
-	cln::cl_N factor = u;
+	cln::cl_N factor = u * cln::cl_float(1, cln::float_format(Digits));
 	cln::cl_N res = u - u*u/4;
 	cln::cl_N resbuf;
 	unsigned i = 1;
@@ -220,7 +220,7 @@ cln::cl_N Li2_do_sum_Xn(const cln::cl_N& x)
 // calculates Li(n,x), n>2 without Xn
 cln::cl_N Lin_do_sum(int n, const cln::cl_N& x)
 {
-	cln::cl_N factor = x;
+	cln::cl_N factor = x * cln::cl_float(1, cln::float_format(Digits));
 	cln::cl_N res = x;
 	cln::cl_N resbuf;
 	int i=2;
@@ -239,7 +239,7 @@ cln::cl_N Lin_do_sum_Xn(int n, const cln::cl_N& x)
 {
 	std::vector<cln::cl_N>::const_iterator it = Xn[n-2].begin();
 	cln::cl_N u = -cln::log(1-x);
-	cln::cl_N factor = u;
+	cln::cl_N factor = u * cln::cl_float(1, cln::float_format(Digits));
 	cln::cl_N res = u;
 	cln::cl_N resbuf;
 	unsigned i=2;
