@@ -43,6 +43,7 @@ unsigned exam_indexed();
 unsigned exam_color();
 unsigned exam_clifford();
 unsigned exam_archive();
+unsigned exam_hashmap();
 unsigned exam_misc();
 unsigned exam_inifcns_nstdsums();
 

@@ -51,6 +51,7 @@ try { \
 	EXAM(color)
 	EXAM(clifford)
 	EXAM(archive)
+	EXAM(hashmap)
 	EXAM(misc)
 	
 	if (result) {
