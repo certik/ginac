@@ -176,7 +176,7 @@ extern int max_recursion_level;
 template <class T>
 inline bool is_a(const basic &obj)
 {
-	return dynamic_cast<const T *>(&obj)!=0;
+	return dynamic_cast<const T *>(&obj) != 0;
 }
 
 /** Check if obj is a T, not including base classes.  This one is just an
@@ -185,7 +185,7 @@ inline bool is_a(const basic &obj)
 template <class T>
 inline bool is_exactly_a(const class basic &obj)
 {
-	const T foo; return foo.tinfo()==obj.tinfo();
+	return obj.tinfo() == T::reg_info.tinfo_key;
 }
 
 } // namespace GiNaC
