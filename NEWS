@@ -1,5 +1,21 @@
 This file records noteworthy changes.
 
+1.1.4 (<date>)
+* Lists and matrices can now be initialized from comma-separated lists of
+  expressions, like this:
+
+    lst l;
+    l = x, 2, y, x+y;
+
+    matrix M(3, 3);
+    M = x, y, 0,
+       -y, x, 0,
+        0, 0, 1;
+
+  This is both faster and produces much smaller code than the old constructors
+  lst(ex, ex, ...) and matrix(unsigned, unsigned, lst), especially in the case
+  of matrices, and is now the recommended way to create these objects.
+
 1.1.3 (22 August 2003)
 * Added new symbolic functions for better integration with nestedsums:
   (multiple) polylogarithm Li(), Nielsen's generalized polylogarithm S(),
