@@ -188,6 +188,17 @@ ex relational::eval(int level) const
 	return (new relational(lh.eval(level-1),rh.eval(level-1),o))->setflag(status_flags::dynallocated | status_flags::evaluated);
 }
 
+ex relational::subs(const lst & ls, const lst & lr, unsigned options) const
+{
+	const ex & subsed_lh = lh.subs(ls, lr, options);
+	const ex & subsed_rh = rh.subs(ls, lr, options);
+
+	if (!are_ex_trivially_equal(lh, subsed_lh) || !are_ex_trivially_equal(rh, subsed_rh))
+		return relational(subsed_lh, subsed_rh, o).basic::subs(ls, lr, options);
+	else
+		return basic::subs(ls, lr, options);
+}
+
 ex relational::eval_ncmul(const exvector & v) const
 {
 	return lh.eval_ncmul(v);
