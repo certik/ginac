@@ -179,12 +179,13 @@ unsigned basic::nops() const
 /** Return operand/member at position i. */
 ex basic::op(int i) const
 {
-	return (const_cast<basic *>(this))->let_op(i);
+	throw(std::runtime_error(std::string("op() not implemented by ") + class_name()));
 }
 
 /** Return modifyable operand/member at position i. */
 ex & basic::let_op(int i)
 {
+	ensure_if_modifiable();
 	throw(std::runtime_error(std::string("let_op() not implemented by ") + class_name()));
 }
 

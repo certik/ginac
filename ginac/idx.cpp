@@ -275,10 +275,19 @@ unsigned idx::nops() const
 	return 1;
 }
 
-ex & idx::let_op(int i)
+ex idx::op(int i) const
 {
 	GINAC_ASSERT(i == 0);
 	return value;
+}
+
+ex idx::map(map_function & f) const
+{
+	idx *copy = static_cast<idx *>(duplicate());
+	copy->setflag(status_flags::dynallocated);
+	copy->clearflag(status_flags::hash_calculated);
+	copy->value = f(value);
+	return *copy;
 }
 
 /** Returns order relation between two indices of the same type. The order

@@ -264,12 +264,8 @@ ex pseries::op(int i) const
 {
 	if (i < 0 || unsigned(i) >= seq.size())
 		throw (std::out_of_range("op() out of range"));
-	return seq[i].rest * power(var - point, seq[i].coeff);
-}
 
-ex & pseries::let_op(int i)
-{
-	throw (std::logic_error("let_op() not defined for pseries"));
+	return seq[i].rest * power(var - point, seq[i].coeff);
 }
 
 /** Return degree of highest power of the series.  This is usually the exponent

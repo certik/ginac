@@ -91,7 +91,6 @@ public:
 	bool info(unsigned inf) const;
 	unsigned nops() const;
 	ex op(int i) const;
-	ex & let_op(int i);
 	ex map(map_function & f) const;
 	ex eval(int level=0) const;
 	ex to_rational(lst &repl_lst) const;

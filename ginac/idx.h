@@ -51,7 +51,8 @@ public:
 	void print(const print_context & c, unsigned level = 0) const;
 	bool info(unsigned inf) const;
 	unsigned nops() const;
-	ex & let_op(int i);
+	ex op(int i) const;
+	ex map(map_function & f) const;
 	ex evalf(int level = 0) const;
 	ex subs(const lst & ls, const lst & lr, unsigned options = 0) const;
 

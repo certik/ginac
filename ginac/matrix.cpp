@@ -199,11 +199,21 @@ unsigned matrix::nops() const
 }
 
 /** returns matrix entry at position (i/col, i%col). */
+ex matrix::op(int i) const
+{
+	GINAC_ASSERT(i>=0);
+	GINAC_ASSERT(i<nops());
+	
+	return m[i];
+}
+
+/** returns writable matrix entry at position (i/col, i%col). */
 ex & matrix::let_op(int i)
 {
 	GINAC_ASSERT(i>=0);
 	GINAC_ASSERT(i<nops());
 	
+	ensure_if_modifiable();
 	return m[i];
 }
 

@@ -106,12 +106,29 @@ END_OF_SORT_IMPLEMENTATION
 }
 
 if ($let_op) {
-	$LET_OP_IMPLEMENTATION=<<END_OF_LET_OP_IMPLEMENTATION
+	$LET_OP_DEFINITION=<<END_OF_LET_OP_DEFINITION;
+	ex & let_op(int i);
+END_OF_LET_OP_DEFINITION
+
+	$LET_OP_IMPLEMENTATION=<<END_OF_LET_OP_IMPLEMENTATION;
+ex ${CONTAINER}::op(int i) const
+{
+	GINAC_ASSERT(i>=0);
+	GINAC_ASSERT(i<nops());
+
+	${STLT}::const_iterator it=seq.begin();
+	for (int j=0; j<i; j++) {
+		++it;
+	}
+	return *it;
+}
+
 ex & ${CONTAINER}::let_op(int i)
 {
 	GINAC_ASSERT(i>=0);
 	GINAC_ASSERT(i<nops());
 
+	ensure_if_modifiable();
 	${STLT}::iterator it=seq.begin();
 	for (int j=0; j<i; j++) {
 		++it;
@@ -120,6 +137,7 @@ ex & ${CONTAINER}::let_op(int i)
 }
 END_OF_LET_OP_IMPLEMENTATION
 } else {
+	$LET_OP_DEFINITION="";
 	$LET_OP_IMPLEMENTATION="// ${CONTAINER}::let_op() will be implemented by user elsewhere";
 }
 
@@ -238,7 +256,8 @@ public:
 	unsigned precedence(void) const {return 10;}
 	bool info(unsigned inf) const;
 	unsigned nops() const;
-	ex & let_op(int i);
+	ex op(int i) const;
+${LET_OP_DEFINITION}
 	ex map(map_function & f) const;
 	ex eval(int level=0) const;
 	ex subs(const lst & ls, const lst & lr, unsigned options = 0) const;

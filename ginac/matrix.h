@@ -45,6 +45,7 @@ public:
 public:
 	void print(const print_context & c, unsigned level = 0) const;
 	unsigned nops() const;
+	ex op(int i) const;
 	ex & let_op(int i);
 	ex eval(int level=0) const;
 	ex evalm(void) const {return *this;}
