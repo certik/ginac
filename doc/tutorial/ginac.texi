@@ -3882,32 +3882,33 @@ Only calling the series method makes the last output simplify to
 @math{1-v^2/c^2+O(v^10)}, without that call we would just have a long
 series raised to the power @math{-2}.
 
-@cindex M@'echain's formula
+@cindex Machin's formula
 As another instructive application, let us calculate the numerical 
 value of Archimedes' constant
 @tex
 $\pi$
 @end tex
 (for which there already exists the built-in constant @code{Pi}) 
-using M@'echain's amazing formula
+using John Machin's amazing formula
 @tex
 $\pi=16$~atan~$\!\left(1 \over 5 \right)-4$~atan~$\!\left(1 \over 239 \right)$.
 @end tex
 @ifnottex
 @math{Pi==16*atan(1/5)-4*atan(1/239)}.
 @end ifnottex
-We may expand the arcus tangent around @code{0} and insert the fractions
-@code{1/5} and @code{1/239}.  But, as we have seen, a series in GiNaC
-carries an order term with it and the question arises what the system is
-supposed to do when the fractions are plugged into that order term.  The
-solution is to use the function @code{series_to_poly()} to simply strip
-the order term off:
+This equation (and similar ones) were used for over 200 years for
+computing digits of Pi.  We may expand the arcus tangent around @code{0}
+and insert the fractions @code{1/5} and @code{1/239}.  However, as we
+have seen, a series in GiNaC carries an order term with it and the
+question arises what the system is supposed to do when the fractions are
+plugged into that order term.  The solution is to use the function
+@code{series_to_poly()} to simply strip the order term off:
 
 @example
 #include <ginac/ginac.h>
 using namespace GiNaC;
 
-ex mechain_pi(int degr)
+ex machin_pi(int degr)
 @{
     symbol x;
     ex pi_expansion = series_to_poly(atan(x).series(x,degr));
@@ -3922,7 +3923,7 @@ int main()
     using std::endl;  // ...dealing with this namespace std.
     ex pi_frac;
     for (int i=2; i<12; i+=2) @{
-        pi_frac = mechain_pi(i);
+        pi_frac = machin_pi(i);
         cout << i << ":\t" << pi_frac << endl
              << "\t" << pi_frac.evalf() << endl;
     @}
@@ -5747,7 +5748,7 @@ and George Labahn, ISBN 0-7923-9259-0, 1992, Kluwer Academic Publishers, Norwell
 
 @item
 @cite{Computer Algebra: Systems and Algorithms for Algebraic Computation},
-James H. Davenport, Yvon Siret, and Evelyne Tournier, ISBN 0-12-204230-1, 1988, 
+James H. Davenport, Yvon Siret and Evelyne Tournier, ISBN 0-12-204230-1, 1988, 
 Academic Press, London
 
 @item
@@ -5757,6 +5758,10 @@ Michael J. Wester (editor), ISBN 0-471-98353-5, 1999, Wiley, Chichester
 @item
 @cite{The Art of Computer Programming, Vol 2: Seminumerical Algorithms},
 Donald E. Knuth, ISBN 0-201-89684-2, 1998, Addison Wesley
+
+@item
+@cite{Pi Unleashed}, J@"org Arndt and Christoph Haenel,
+ISBN 3-540-66572-2, 2001, Springer, Heidelberg
 
 @item
 @cite{The Role of gamma5 in Dimensional Regularization}, Dirk Kreimer, hep-ph/9401354
