@@ -32,7 +32,7 @@ static unsigned check_series(const ex &e, const ex &point, const ex &d, int orde
 		clog << "series expansion of " << e << " at " << point
 		     << " erroneously returned " << ep << " (instead of " << d
 		     << ")" << endl;
-		(ep-d).printtree(clog);
+		clog << tree << (ep-d) << dflt;
 		return 1;
 	}
 	return 0;

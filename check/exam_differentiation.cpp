@@ -45,9 +45,7 @@ static unsigned check_diff(const ex &e, const symbol &x,
 		clog << "derivative of " << e << " by " << x << " returned "
 		     << ed << " instead of " << d << endl;
 		clog << "returned:" << endl;
-		ed.printtree(clog);
-		clog << endl << "instead of" << endl;
-		d.printtree(clog);
+		clog << tree << ed << "instead of\n" << d << dflt;
 
 		return 1;
 	}
