@@ -1,11 +1,13 @@
 This file records noteworthy changes.
 
-1.1.1 (<date>)
+1.1.1 (18 June 2003)
 * lst (and exprseq) provide iterators for read-only element access. For
   sequential access this is one order faster than using op().
 * Implemented relational::subs() (this was done in 1.0.9 but inadvertently
   omitted from the 1.1 branch).
 * pole_error and do_taylor are available to library users.
+* Added on-line help and Tab-completion for print(), iprint(), print_latex()
+  and print_csrc() in ginsh.
 
 1.1.0 (3 April 2003)
 * Removed deprecated macros is_ex_a, is_ex_exactly_a and friends for good.
