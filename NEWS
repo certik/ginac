@@ -1,5 +1,13 @@
 This file records noteworthy changes.
 
+1.2.2 (<date>)
+* Added const_preorder_iterator and const_postorder_iterator classes (and
+  associated methods ex::pre/postorder_begin/end()) providing tree traversal
+  with iterators.
+* Fixed the LaTeX output of the varidx class.
+* Symbolic functions without any eval(), evalf() etc. functions now work
+  properly.
+
 1.2.1 (23 April 2004)
 * Fixed infinite recursion in atan2_evalf() and improved atan2_eval().
 * Added automatic evaluations for trigonometric functions with negative
