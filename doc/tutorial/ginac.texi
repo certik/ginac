@@ -1343,6 +1343,9 @@ the C++ standard library:
 
 @example
     ...
+    // print the elements of the list (requires #include <iterator>)
+    copy(l.begin(), l.end(), ostream_iterator<ex>(cout, "\n"));
+
     // sum up the elements of the list (requires #include <numeric>)
     ex sum = accumulate(l.begin(), l.end(), ex(0));
     cout << sum << endl;  // prints '2+2*x+2*y'
