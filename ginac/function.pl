@@ -556,7 +556,7 @@ void function_options::test_and_set_nparams(unsigned n)
 		// we do not throw an exception here because this code is
 		// usually executed before main(), so the exception could not
 		// caught anyhow
-		std::cerr << "WARNING: number of parameters ("
+		std::cerr << "WARNING: " << name << "(): number of parameters ("
 		          << n << ") differs from number set before (" 
 		          << nparams << ")" << std::endl;
 	}
