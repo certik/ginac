@@ -324,7 +324,7 @@ static ex Li2_series(const ex &x, const relational &rel, int order, unsigned opt
 			seq.push_back(expair(Li2(x_pt), _ex0));
 			// compute the intermediate terms:
 			ex replarg = series(Li2(x), s==foo, order);
-			for (unsigned i=1; i<replarg.nops()-1; ++i)
+			for (size_t i=1; i<replarg.nops()-1; ++i)
 				seq.push_back(expair((replarg.op(i)/power(s-foo,i)).series(foo==point,1,options).op(0).subs(foo==s),i));
 			// append an order term:
 			seq.push_back(expair(Order(_ex1), replarg.nops()-1));
@@ -454,7 +454,7 @@ ex lsolve(const ex &eqns, const ex &symbols, unsigned options)
 	if (!eqns.info(info_flags::list)) {
 		throw(std::invalid_argument("lsolve(): 1st argument must be a list"));
 	}
-	for (unsigned i=0; i<eqns.nops(); i++) {
+	for (size_t i=0; i<eqns.nops(); i++) {
 		if (!eqns.op(i).info(info_flags::relation_equal)) {
 			throw(std::invalid_argument("lsolve(): 1st argument must be a list of equations"));
 		}
@@ -462,7 +462,7 @@ ex lsolve(const ex &eqns, const ex &symbols, unsigned options)
 	if (!symbols.info(info_flags::list)) {
 		throw(std::invalid_argument("lsolve(): 2nd argument must be a list"));
 	}
-	for (unsigned i=0; i<symbols.nops(); i++) {
+	for (size_t i=0; i<symbols.nops(); i++) {
 		if (!symbols.op(i).info(info_flags::symbol)) {
 			throw(std::invalid_argument("lsolve(): 2nd argument must be a list of symbols"));
 		}
@@ -473,10 +473,10 @@ ex lsolve(const ex &eqns, const ex &symbols, unsigned options)
 	matrix rhs(eqns.nops(),1);
 	matrix vars(symbols.nops(),1);
 	
-	for (unsigned r=0; r<eqns.nops(); r++) {
+	for (size_t r=0; r<eqns.nops(); r++) {
 		const ex eq = eqns.op(r).op(0)-eqns.op(r).op(1); // lhs-rhs==0
 		ex linpart = eq;
-		for (unsigned c=0; c<symbols.nops(); c++) {
+		for (size_t c=0; c<symbols.nops(); c++) {
 			const ex co = eq.coeff(ex_to<symbol>(symbols.op(c)),1);
 			linpart -= co*symbols.op(c);
 			sys(r,c) = co;
@@ -486,7 +486,7 @@ ex lsolve(const ex &eqns, const ex &symbols, unsigned options)
 	}
 	
 	// test if system is linear and fill vars matrix
-	for (unsigned i=0; i<symbols.nops(); i++) {
+	for (size_t i=0; i<symbols.nops(); i++) {
 		vars(i,0) = symbols.op(i);
 		if (sys.has(symbols.op(i)))
 			throw(std::logic_error("lsolve: system is not linear"));
@@ -507,7 +507,7 @@ ex lsolve(const ex &eqns, const ex &symbols, unsigned options)
 	
 	// return list of equations of the form lst(var1==sol1,var2==sol2,...)
 	lst sollist;
-	for (unsigned i=0; i<symbols.nops(); i++)
+	for (size_t i=0; i<symbols.nops(); i++)
 		sollist.append(symbols.op(i)==solution(i,0));
 	
 	return sollist;

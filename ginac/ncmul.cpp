@@ -144,15 +144,15 @@ ex ncmul::expand(unsigned options) const
 	intvector positions_of_adds(expanded_seq.size());
 	intvector number_of_add_operands(expanded_seq.size());
 
-	int number_of_adds = 0;
-	int number_of_expanded_terms = 1;
+	size_t number_of_adds = 0;
+	size_t number_of_expanded_terms = 1;
 
-	unsigned current_position = 0;
+	size_t current_position = 0;
 	exvector::const_iterator last = expanded_seq.end();
 	for (exvector::const_iterator cit=expanded_seq.begin(); cit!=last; ++cit) {
 		if (is_exactly_a<add>(*cit)) {
 			positions_of_adds[number_of_adds] = current_position;
-			unsigned num_ops = cit->nops();
+			size_t num_ops = cit->nops();
 			number_of_add_operands[number_of_adds] = num_ops;
 			number_of_expanded_terms *= num_ops;
 			number_of_adds++;
@@ -174,7 +174,7 @@ ex ncmul::expand(unsigned options) const
 
 	while (true) {
 		exvector term = expanded_seq;
-		for (int i=0; i<number_of_adds; i++)
+		for (size_t i=0; i<number_of_adds; i++)
 			term[positions_of_adds[i]] = expanded_seq[positions_of_adds[i]].op(k[i]);
 		distrseq.push_back((new ncmul(term, true))->
 		                    setflag(status_flags::dynallocated | (options == 0 ? status_flags::expanded : 0)));
@@ -251,12 +251,12 @@ ex ncmul::coeff(const ex & s, int n) const
 	return _ex0;
 }
 
-unsigned ncmul::count_factors(const ex & e) const
+size_t ncmul::count_factors(const ex & e) const
 {
 	if ((is_exactly_a<mul>(e)&&(e.return_type()!=return_types::commutative))||
 		(is_exactly_a<ncmul>(e))) {
-		unsigned factors=0;
-		for (unsigned i=0; i<e.nops(); i++)
+		size_t factors=0;
+		for (size_t i=0; i<e.nops(); i++)
 			factors += count_factors(e.op(i));
 		
 		return factors;
@@ -268,7 +268,7 @@ void ncmul::append_factors(exvector & v, const ex & e) const
 {
 	if ((is_exactly_a<mul>(e)&&(e.return_type()!=return_types::commutative))||
 		(is_exactly_a<ncmul>(e))) {
-		for (unsigned i=0; i<e.nops(); i++)
+		for (size_t i=0; i<e.nops(); i++)
 			append_factors(v,e.op(i));
 	} else 
 		v.push_back(e);
@@ -305,7 +305,7 @@ ex ncmul::eval(int level) const
 
 	// ncmul(...,*(x1,x2),...,ncmul(x3,x4),...) ->
 	//     ncmul(...,x1,x2,...,x3,x4,...)  (associativity)
-	unsigned factors = 0;
+	size_t factors = 0;
 	exvector::const_iterator cit = evaledseq.begin(), citend = evaledseq.end();
 	while (cit != citend)
 		factors += count_factors(*cit++);
@@ -325,10 +325,10 @@ ex ncmul::eval(int level) const
 	// determine return types
 	unsignedvector rettypes;
 	rettypes.reserve(assocseq.size());
-	unsigned i = 0;
-	unsigned count_commutative=0;
-	unsigned count_noncommutative=0;
-	unsigned count_noncommutative_composite=0;
+	size_t i = 0;
+	size_t count_commutative=0;
+	size_t count_noncommutative=0;
+	size_t count_noncommutative_composite=0;
 	cit = assocseq.begin(); citend = assocseq.end();
 	while (cit != citend) {
 		switch (rettypes[i] = cit->return_type()) {
@@ -355,8 +355,8 @@ ex ncmul::eval(int level) const
 		commutativeseq.reserve(count_commutative+1);
 		exvector noncommutativeseq;
 		noncommutativeseq.reserve(assocseq.size()-count_commutative);
-		unsigned num = assocseq.size();
-		for (unsigned i=0; i<num; ++i) {
+		size_t num = assocseq.size();
+		for (size_t i=0; i<num; ++i) {
 			if (rettypes[i]==return_types::commutative)
 				commutativeseq.push_back(assocseq[i]);
 			else
@@ -374,7 +374,7 @@ ex ncmul::eval(int level) const
 		// elements in assocseq
 		GINAC_ASSERT(count_commutative==0);
 
-		unsigned assoc_num = assocseq.size();
+		size_t assoc_num = assocseq.size();
 		exvectorvector evv;
 		unsignedvector rttinfos;
 		evv.reserve(assoc_num);
@@ -383,7 +383,7 @@ ex ncmul::eval(int level) const
 		cit = assocseq.begin(), citend = assocseq.end();
 		while (cit != citend) {
 			unsigned ti = cit->return_type_tinfo();
-			unsigned rtt_num = rttinfos.size();
+			size_t rtt_num = rttinfos.size();
 			// search type in vector of known types
 			for (i=0; i<rtt_num; ++i) {
 				if (ti == rttinfos[i]) {
@@ -401,11 +401,11 @@ ex ncmul::eval(int level) const
 			++cit;
 		}
 
-		unsigned evv_num = evv.size();
+		size_t evv_num = evv.size();
 #ifdef DO_GINAC_ASSERT
 		GINAC_ASSERT(evv_num == rttinfos.size());
 		GINAC_ASSERT(evv_num > 0);
-		unsigned s=0;
+		size_t s=0;
 		for (i=0; i<evv_num; ++i)
 			s += evv[i].size();
 		GINAC_ASSERT(s == assoc_num);
@@ -474,13 +474,13 @@ ex ncmul::thisexprseq(exvector * vp) const
  *  @see ex::diff */
 ex ncmul::derivative(const symbol & s) const
 {
-	unsigned num = seq.size();
+	size_t num = seq.size();
 	exvector addseq;
 	addseq.reserve(num);
 	
 	// D(a*b*c) = D(a)*b*c + a*D(b)*c + a*b*D(c)
 	exvector ncmulseq = seq;
-	for (unsigned i=0; i<num; ++i) {
+	for (size_t i=0; i<num; ++i) {
 		ex e = seq[i].diff(s);
 		e.swap(ncmulseq[i]);
 		addseq.push_back((new ncmul(ncmulseq))->setflag(status_flags::dynallocated));

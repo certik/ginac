@@ -44,8 +44,8 @@ bool remember_table_entry::is_equal(function const & f) const
 {
 	GINAC_ASSERT(f.seq.size()==seq.size());
 	if (f.gethash()!=hashvalue) return false;
-	unsigned num = seq.size();
-	for (unsigned i=0; i<num; ++i)
+	size_t num = seq.size();
+	for (size_t i=0; i<num; ++i)
 		if (!seq[i].is_equal(f.seq[i])) return false;
 	++last_access = access_counter;
 	++successful_hits;

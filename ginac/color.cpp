@@ -530,7 +530,7 @@ ex color_trace(const ex & e, unsigned char rl)
 
 		// Trace of product: pull out non-color factors
 		ex prod = _ex1;
-		for (unsigned i=0; i<e.nops(); i++) {
+		for (size_t i=0; i<e.nops(); i++) {
 			const ex &o = e.op(i);
 			if (is_color_tinfo(o.return_type_tinfo(), rl))
 				prod *= color_trace(o, rl);
@@ -549,7 +549,7 @@ ex color_trace(const ex & e, unsigned char rl)
 		if (!is_a<ncmul>(e_expanded))
 			return color_trace(e_expanded, rl);
 
-		unsigned num = e.nops();
+		size_t num = e.nops();
 
 		if (num == 2) {
 
@@ -573,7 +573,7 @@ ex color_trace(const ex & e, unsigned char rl)
 
 			exvector v1;
 			v1.reserve(num - 2);
-			for (unsigned i=0; i<num-2; i++)
+			for (size_t i=0; i<num-2; i++)
 				v1.push_back(e.op(i));
 
 			exvector v2 = v1;

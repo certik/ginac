@@ -44,8 +44,8 @@ public:
 public:
 	void print(const print_context & c, unsigned level = 0) const;
 	unsigned precedence(void) const {return 38;} // for clarity just below add::precedence
-	unsigned nops(void) const;
-	ex op(int i) const;
+	size_t nops(void) const;
+	ex op(size_t i) const;
 	int degree(const ex &s) const;
 	int ldegree(const ex &s) const;
 	ex coeff(const ex &s, int n = 1) const;

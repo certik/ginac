@@ -117,7 +117,7 @@ void fderivative::print(const print_context & c, unsigned level) const
 			c.s << *i++ << ",";
 		c.s << *i << std::endl;
 		unsigned delta_indent = static_cast<const print_tree &>(c).delta_indent;
-		for (unsigned i=0; i<seq.size(); ++i)
+		for (size_t i=0; i<seq.size(); ++i)
 			seq[i].print(c, level + delta_indent);
 		c.s << std::string(level + delta_indent, ' ') << "=====" << std::endl;
 
@@ -180,7 +180,7 @@ ex fderivative::thisexprseq(exvector * vp) const
 ex fderivative::derivative(const symbol & s) const
 {
 	ex result;
-	for (unsigned i=0; i!=seq.size(); i++) {
+	for (size_t i=0; i<seq.size(); i++) {
 		ex arg_diff = seq[i].diff(s);
 		if (!arg_diff.is_zero()) {
 			paramset ps = parameter_set;

@@ -313,13 +313,13 @@ ex tensepsilon::eval_indexed(const basic & i) const
 		// a canonic order but we can't assume what exactly that order is)
 		std::vector<int> v;
 		v.reserve(i.nops() - 1);
-		for (unsigned j=1; j<i.nops(); j++)
+		for (size_t j=1; j<i.nops(); j++)
 			v.push_back(ex_to<numeric>(ex_to<idx>(i.op(j)).get_value()).to_int());
 		int sign = permutation_sign(v.begin(), v.end());
 
 		// In a Minkowski space, check for covariant indices
 		if (minkowski) {
-			for (unsigned j=1; j<i.nops(); j++) {
+			for (size_t j=1; j<i.nops(); j++) {
 				const ex & x = i.op(j);
 				if (!is_a<varidx>(x))
 					throw(std::runtime_error("indices of epsilon tensor in Minkowski space must be of type varidx"));
@@ -347,7 +347,7 @@ bool tensor::replace_contr_index(exvector::iterator self, exvector::iterator oth
 
 again:
 	if (self_idx->is_symbolic()) {
-		for (unsigned i=1; i<other->nops(); i++) {
+		for (size_t i=1; i<other->nops(); i++) {
 			const idx &other_idx = ex_to<idx>(other->op(i));
 			if (is_dummy_pair(*self_idx, other_idx)) {
 
@@ -462,7 +462,7 @@ bool spinmetric::contract_with(exvector::iterator self, exvector::iterator other
 
 again:
 	if (self_idx->is_symbolic()) {
-		for (unsigned i=1; i<other->nops(); i++) {
+		for (size_t i=1; i<other->nops(); i++) {
 			const idx &other_idx = ex_to<idx>(other->op(i));
 			if (is_dummy_pair(*self_idx, other_idx)) {
 
@@ -495,15 +495,15 @@ bool tensepsilon::contract_with(exvector::iterator self, exvector::iterator othe
 	GINAC_ASSERT(is_a<indexed>(*self));
 	GINAC_ASSERT(is_a<indexed>(*other));
 	GINAC_ASSERT(is_a<tensepsilon>(self->op(0)));
-	unsigned num = self->nops() - 1;
+	size_t num = self->nops() - 1;
 
 	if (is_exactly_a<tensepsilon>(other->op(0)) && num+1 == other->nops()) {
 
 		// Contraction of two epsilon tensors is a determinant
 		bool variance = is_a<varidx>(self->op(1));
 		matrix M(num, num);
-		for (unsigned i=0; i<num; i++) {
-			for (unsigned j=0; j<num; j++) {
+		for (size_t i=0; i<num; i++) {
+			for (size_t j=0; j<num; j++) {
 				if (minkowski)
 					M(i, j) = lorentz_g(self->op(i+1), other->op(j+1), pos_sig);
 				else if (variance)

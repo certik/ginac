@@ -95,9 +95,9 @@ matrix::matrix(unsigned r, unsigned c, const lst & l)
 {
 	m.resize(r*c, _ex0);
 
-	for (unsigned i=0; i<l.nops(); i++) {
-		unsigned x = i % c;
-		unsigned y = i / c;
+	for (size_t i=0; i<l.nops(); i++) {
+		size_t x = i % c;
+		size_t y = i / c;
 		if (y >= r)
 			break; // matrix smaller than list: throw away excessive elements
 		m[y*c+x] = l.op(i);
@@ -193,24 +193,22 @@ void matrix::print(const print_context & c, unsigned level) const
 }
 
 /** nops is defined to be rows x columns. */
-unsigned matrix::nops() const
+size_t matrix::nops() const
 {
-	return row*col;
+	return static_cast<size_t>(row) * static_cast<size_t>(col);
 }
 
 /** returns matrix entry at position (i/col, i%col). */
-ex matrix::op(int i) const
+ex matrix::op(size_t i) const
 {
-	GINAC_ASSERT(i>=0);
 	GINAC_ASSERT(i<nops());
 	
 	return m[i];
 }
 
 /** returns writable matrix entry at position (i/col, i%col). */
-ex & matrix::let_op(int i)
+ex & matrix::let_op(size_t i)
 {
-	GINAC_ASSERT(i>=0);
 	GINAC_ASSERT(i<nops());
 	
 	ensure_if_modifiable();
@@ -1455,7 +1453,7 @@ int matrix::pivot(unsigned ro, unsigned co, bool symbolic)
 ex lst_to_matrix(const lst & l)
 {
 	// Find number of rows and columns
-	unsigned rows = l.nops(), cols = 0, i, j;
+	size_t rows = l.nops(), cols = 0, i, j;
 	for (i=0; i<rows; i++)
 		if (l.op(i).nops() > cols)
 			cols = l.op(i).nops();
@@ -1474,11 +1472,11 @@ ex lst_to_matrix(const lst & l)
 
 ex diag_matrix(const lst & l)
 {
-	unsigned dim = l.nops();
+	size_t dim = l.nops();
 
 	matrix &m = *new matrix(dim, dim);
 	m.setflag(status_flags::dynallocated);
-	for (unsigned i=0; i<dim; i++)
+	for (size_t i=0; i<dim; i++)
 		m(i, i) = l.op(i);
 
 	return m;

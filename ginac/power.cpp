@@ -228,14 +228,13 @@ bool power::info(unsigned inf) const
 	return inherited::info(inf);
 }
 
-unsigned power::nops() const
+size_t power::nops() const
 {
 	return 2;
 }
 
-ex power::op(int i) const
+ex power::op(size_t i) const
 {
-	GINAC_ASSERT(i>=0);
 	GINAC_ASSERT(i<2);
 
 	return i==0 ? basis : exponent;
@@ -530,7 +529,7 @@ extern bool tryfactsubs(const ex &, const ex &, unsigned &, lst &);
 ex power::subs(const lst & ls, const lst & lr, unsigned options) const
 {
 	if (options & subs_options::subs_algebraic) {
-		for (unsigned i=0; i<ls.nops(); i++) {
+		for (size_t i=0; i<ls.nops(); i++) {
 			unsigned nummatches = std::numeric_limits<unsigned>::max();
 			lst repls;
 			if (tryfactsubs(*this, ls.op(i), nummatches, repls))
@@ -678,7 +677,7 @@ ex power::expand_add(const add & a, int n) const
 	if (n==2)
 		return expand_add_2(a);
 
-	const int m = a.nops();
+	const size_t m = a.nops();
 	exvector result;
 	// The number of terms will be the number of combinatorial compositions,
 	// i.e. the number of unordered arrangement of m nonnegative integers
@@ -690,7 +689,7 @@ ex power::expand_add(const add & a, int n) const
 	intvector upper_limit(m-1);
 	int l;
 
-	for (int l=0; l<m-1; ++l) {
+	for (size_t l=0; l<m-1; ++l) {
 		k[l] = 0;
 		k_cum[l] = 0;
 		upper_limit[l] = n;
@@ -746,10 +745,10 @@ ex power::expand_add(const add & a, int n) const
 		// recalc k_cum[] and upper_limit[]
 		k_cum[l] = (l==0 ? k[0] : k_cum[l-1]+k[l]);
 
-		for (int i=l+1; i<m-1; ++i)
+		for (size_t i=l+1; i<m-1; ++i)
 			k_cum[i] = k_cum[i-1]+k[i];
 
-		for (int i=l+1; i<m-1; ++i)
+		for (size_t i=l+1; i<m-1; ++i)
 			upper_limit[i] = n-k_cum[i-1];
 	}
 
@@ -763,7 +762,7 @@ ex power::expand_add(const add & a, int n) const
 ex power::expand_add_2(const add & a) const
 {
 	epvector sum;
-	unsigned a_nops = a.nops();
+	size_t a_nops = a.nops();
 	sum.reserve((a_nops*(a_nops+1))/2);
 	epvector::const_iterator last = a.seq.end();
 

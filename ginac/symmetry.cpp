@@ -205,8 +205,8 @@ void symmetry::print(const print_context & c, unsigned level) const
 				default: c.s << '?'; break;
 			}
 			c.s << '(';
-			unsigned num = children.size();
-			for (unsigned i=0; i<num; i++) {
+			size_t num = children.size();
+			for (size_t i=0; i<num; i++) {
 				children[i].print(c);
 				if (i != num - 1)
 					c.s << ",";
@@ -428,7 +428,7 @@ ex ex::symmetrize(const lst & l) const
 {
 	exvector v;
 	v.reserve(l.nops());
-	for (unsigned i=0; i<l.nops(); i++)
+	for (size_t i=0; i<l.nops(); i++)
 		v.push_back(l.op(i));
 	return symm(*this, v.begin(), v.end(), false);
 }
@@ -438,7 +438,7 @@ ex ex::antisymmetrize(const lst & l) const
 {
 	exvector v;
 	v.reserve(l.nops());
-	for (unsigned i=0; i<l.nops(); i++)
+	for (size_t i=0; i<l.nops(); i++)
 		v.push_back(l.op(i));
 	return symm(*this, v.begin(), v.end(), true);
 }
@@ -449,7 +449,7 @@ ex ex::symmetrize_cyclic(const lst & l) const
 {
 	exvector v;
 	v.reserve(l.nops());
-	for (unsigned i=0; i<l.nops(); i++)
+	for (size_t i=0; i<l.nops(); i++)
 		v.push_back(l.op(i));
 	return GiNaC::symmetrize_cyclic(*this, v.begin(), v.end());
 }

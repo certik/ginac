@@ -126,8 +126,8 @@ void pseries::print(const print_context & c, unsigned level) const
 		    << std::hex << ", hash=0x" << hashvalue << ", flags=0x" << flags << std::dec
 		    << std::endl;
 		unsigned delta_indent = static_cast<const print_tree &>(c).delta_indent;
-		unsigned num = seq.size();
-		for (unsigned i=0; i<num; ++i) {
+		size_t num = seq.size();
+		for (size_t i=0; i<num; ++i) {
 			seq[i].rest.print(c, level + delta_indent);
 			seq[i].coeff.print(c, level + delta_indent);
 			c.s << std::string(level + delta_indent, ' ') << "-----" << std::endl;
@@ -141,8 +141,8 @@ void pseries::print(const print_context & c, unsigned level) const
 		c.s << ',';
 		point.print(c);
 		c.s << "),[";
-		unsigned num = seq.size();
-		for (unsigned i=0; i<num; ++i) {
+		size_t num = seq.size();
+		for (size_t i=0; i<num; ++i) {
 			if (i)
 				c.s << ',';
 			c.s << '(';
@@ -254,15 +254,15 @@ int pseries::compare_same_type(const basic & other) const
 }
 
 /** Return the number of operands including a possible order term. */
-unsigned pseries::nops(void) const
+size_t pseries::nops(void) const
 {
 	return seq.size();
 }
 
 /** Return the ith term in the series when represented as a sum. */
-ex pseries::op(int i) const
+ex pseries::op(size_t i) const
 {
-	if (i < 0 || unsigned(i) >= seq.size())
+	if (i >= seq.size())
 		throw (std::out_of_range("op() out of range"));
 
 	return seq[i].rest * power(var - point, seq[i].coeff);

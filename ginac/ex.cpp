@@ -124,14 +124,14 @@ bool ex::find(const ex & pattern, lst & found) const
 		return true;
 	}
 	bool any_found = false;
-	for (unsigned i=0; i<nops(); i++)
+	for (size_t i=0; i<nops(); i++)
 		if (op(i).find(pattern, found))
 			any_found = true;
 	return any_found;
 }
 
 /** Return modifyable operand/member at position i. */
-ex & ex::let_op(int i)
+ex & ex::let_op(size_t i)
 {
 	makewriteable();
 	GINAC_ASSERT(bp!=0);
@@ -145,7 +145,7 @@ ex & ex::operator[](const ex & index)
 	return (*bp)[index];
 }
 
-ex & ex::operator[](int i)
+ex & ex::operator[](size_t i)
 {
 	makewriteable();
 	GINAC_ASSERT(bp!=0);

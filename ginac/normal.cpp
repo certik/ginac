@@ -97,7 +97,7 @@ static bool get_first_symbol(const ex &e, const symbol *&x)
 		x = &ex_to<symbol>(e);
 		return true;
 	} else if (is_exactly_a<add>(e) || is_exactly_a<mul>(e)) {
-		for (unsigned i=0; i<e.nops(); i++)
+		for (size_t i=0; i<e.nops(); i++)
 			if (get_first_symbol(e.op(i), x))
 				return true;
 	} else if (is_exactly_a<power>(e)) {
@@ -138,7 +138,7 @@ struct sym_desc {
 	int max_deg;
 
 	/** Maximum number of terms of leading coefficient of symbol in both polynomials */
-	int max_lcnops;
+	size_t max_lcnops;
 
 	/** Commparison operator for sorting */
 	bool operator<(const sym_desc &x) const
@@ -173,7 +173,7 @@ static void collect_symbols(const ex &e, sym_desc_vec &v)
 	if (is_a<symbol>(e)) {
 		add_symbol(&ex_to<symbol>(e), v);
 	} else if (is_exactly_a<add>(e) || is_exactly_a<mul>(e)) {
-		for (unsigned i=0; i<e.nops(); i++)
+		for (size_t i=0; i<e.nops(); i++)
 			collect_symbols(e.op(i), v);
 	} else if (is_exactly_a<power>(e)) {
 		collect_symbols(e.op(0), v);
@@ -234,12 +234,12 @@ static numeric lcmcoeff(const ex &e, const numeric &l)
 		return lcm(ex_to<numeric>(e).denom(), l);
 	else if (is_exactly_a<add>(e)) {
 		numeric c = _num1;
-		for (unsigned i=0; i<e.nops(); i++)
+		for (size_t i=0; i<e.nops(); i++)
 			c = lcmcoeff(e.op(i), c);
 		return lcm(c, l);
 	} else if (is_exactly_a<mul>(e)) {
 		numeric c = _num1;
-		for (unsigned i=0; i<e.nops(); i++)
+		for (size_t i=0; i<e.nops(); i++)
 			c *= lcmcoeff(e.op(i), _num1);
 		return lcm(c, l);
 	} else if (is_exactly_a<power>(e)) {
@@ -271,10 +271,10 @@ static numeric lcm_of_coefficients_denominators(const ex &e)
 static ex multiply_lcm(const ex &e, const numeric &lcm)
 {
 	if (is_exactly_a<mul>(e)) {
-		unsigned num = e.nops();
+		size_t num = e.nops();
 		exvector v; v.reserve(num + 1);
 		numeric lcm_accum = _num1;
-		for (unsigned i=0; i<e.nops(); i++) {
+		for (size_t i=0; i<num; i++) {
 			numeric op_lcm = lcmcoeff(e.op(i), _num1);
 			v.push_back(multiply_lcm(e.op(i), op_lcm));
 			lcm_accum *= op_lcm;
@@ -282,9 +282,9 @@ static ex multiply_lcm(const ex &e, const numeric &lcm)
 		v.push_back(lcm / lcm_accum);
 		return (new mul(v))->setflag(status_flags::dynallocated);
 	} else if (is_exactly_a<add>(e)) {
-		unsigned num = e.nops();
+		size_t num = e.nops();
 		exvector v; v.reserve(num);
-		for (unsigned i=0; i<num; i++)
+		for (size_t i=0; i<num; i++)
 			v.push_back(multiply_lcm(e.op(i), lcm));
 		return (new add(v))->setflag(status_flags::dynallocated);
 	} else if (is_exactly_a<power>(e)) {
@@ -1260,11 +1260,11 @@ ex gcd(const ex &a, const ex &b, ex *ca, ex *cb, bool check_args)
 		if (is_exactly_a<mul>(b) && b.nops() > a.nops())
 			goto factored_b;
 factored_a:
-		unsigned num = a.nops();
+		size_t num = a.nops();
 		exvector g; g.reserve(num);
 		exvector acc_ca; acc_ca.reserve(num);
 		ex part_b = b;
-		for (unsigned i=0; i<num; i++) {
+		for (size_t i=0; i<num; i++) {
 			ex part_ca, part_cb;
 			g.push_back(gcd(a.op(i), part_b, &part_ca, &part_cb, check_args));
 			acc_ca.push_back(part_ca);
@@ -1279,11 +1279,11 @@ factored_a:
 		if (is_exactly_a<mul>(a) && a.nops() > b.nops())
 			goto factored_a;
 factored_b:
-		unsigned num = b.nops();
+		size_t num = b.nops();
 		exvector g; g.reserve(num);
 		exvector acc_cb; acc_cb.reserve(num);
 		ex part_a = a;
-		for (unsigned i=0; i<num; i++) {
+		for (size_t i=0; i<num; i++) {
 			ex part_ca, part_cb;
 			g.push_back(gcd(part_a, b.op(i), &part_ca, &part_cb, check_args));
 			acc_cb.push_back(part_cb);
@@ -1620,15 +1620,15 @@ ex sqrfree_parfrac(const ex & a, const symbol & x)
 	// Factorize denominator and compute cofactors
 	exvector yun = sqrfree_yun(denom, x);
 //clog << "yun factors: " << exprseq(yun) << endl;
-	unsigned num_yun = yun.size();
+	size_t num_yun = yun.size();
 	exvector factor; factor.reserve(num_yun);
 	exvector cofac; cofac.reserve(num_yun);
-	for (unsigned i=0; i<num_yun; i++) {
+	for (size_t i=0; i<num_yun; i++) {
 		if (!yun[i].is_equal(_ex1)) {
-			for (unsigned j=0; j<=i; j++) {
+			for (size_t j=0; j<=i; j++) {
 				factor.push_back(pow(yun[i], j+1));
 				ex prod = _ex1;
-				for (unsigned k=0; k<num_yun; k++) {
+				for (size_t k=0; k<num_yun; k++) {
 					if (k == i)
 						prod *= pow(yun[k], i-j);
 					else
@@ -1638,7 +1638,7 @@ ex sqrfree_parfrac(const ex & a, const symbol & x)
 			}
 		}
 	}
-	unsigned num_factors = factor.size();
+	size_t num_factors = factor.size();
 //clog << "factors  : " << exprseq(factor) << endl;
 //clog << "cofactors: " << exprseq(cofac) << endl;
 
@@ -1647,7 +1647,7 @@ ex sqrfree_parfrac(const ex & a, const symbol & x)
 	matrix sys(max_denom_deg + 1, num_factors);
 	matrix rhs(max_denom_deg + 1, 1);
 	for (int i=0; i<=max_denom_deg; i++) {
-		for (unsigned j=0; j<num_factors; j++)
+		for (size_t j=0; j<num_factors; j++)
 			sys(i, j) = cofac[j].coeff(x, i);
 		rhs(i, 0) = red_numer.coeff(x, i);
 	}
@@ -1656,13 +1656,13 @@ ex sqrfree_parfrac(const ex & a, const symbol & x)
 
 	// Solve resulting linear system
 	matrix vars(num_factors, 1);
-	for (unsigned i=0; i<num_factors; i++)
+	for (size_t i=0; i<num_factors; i++)
 		vars(i, 0) = symbol();
 	matrix sol = sys.solve(vars, rhs);
 
 	// Sum up decomposed fractions
 	ex sum = 0;
-	for (unsigned i=0; i<num_factors; i++)
+	for (size_t i=0; i<num_factors; i++)
 		sum += sol(i, 0) / factor[i];
 
 	return red_poly + sum;
@@ -1689,7 +1689,7 @@ ex sqrfree_parfrac(const ex & a, const symbol & x)
 static ex replace_with_symbol(const ex &e, lst &sym_lst, lst &repl_lst)
 {
 	// Expression already in repl_lst? Then return the assigned symbol
-	for (unsigned i=0; i<repl_lst.nops(); i++)
+	for (size_t i=0; i<repl_lst.nops(); i++)
 		if (repl_lst.op(i).is_equal(e))
 			return sym_lst.op(i);
 	
@@ -1712,7 +1712,7 @@ static ex replace_with_symbol(const ex &e, lst &sym_lst, lst &repl_lst)
 static ex replace_with_symbol(const ex &e, lst &repl_lst)
 {
 	// Expression already in repl_lst? Then return the assigned symbol
-	for (unsigned i=0; i<repl_lst.nops(); i++)
+	for (size_t i=0; i<repl_lst.nops(); i++)
 		if (repl_lst.op(i).op(1).is_equal(e))
 			return repl_lst.op(i).op(0);
 	
@@ -2247,12 +2247,12 @@ static ex find_common_factor(const ex & e, ex & factor, lst & repl)
 {
 	if (is_exactly_a<add>(e)) {
 
-		unsigned num = e.nops();
+		size_t num = e.nops();
 		exvector terms; terms.reserve(num);
 		ex gc;
 
 		// Find the common GCD
-		for (unsigned i=0; i<num; i++) {
+		for (size_t i=0; i<num; i++) {
 			ex x = e.op(i).to_polynomial(repl);
 
 			if (is_exactly_a<add>(x) || is_exactly_a<mul>(x)) {
@@ -2276,16 +2276,16 @@ static ex find_common_factor(const ex & e, ex & factor, lst & repl)
 		factor *= gc;
 
 		// Now divide all terms by the GCD
-		for (unsigned i=0; i<num; i++) {
+		for (size_t i=0; i<num; i++) {
 			ex x;
 
 			// Try to avoid divide() because it expands the polynomial
 			ex &t = terms[i];
 			if (is_exactly_a<mul>(t)) {
-				for (unsigned j=0; j<t.nops(); j++) {
+				for (size_t j=0; j<t.nops(); j++) {
 					if (t.op(j).is_equal(gc)) {
 						exvector v; v.reserve(t.nops());
-						for (unsigned k=0; k<t.nops(); k++) {
+						for (size_t k=0; k<t.nops(); k++) {
 							if (k == j)
 								v.push_back(_ex1);
 							else
@@ -2305,10 +2305,10 @@ term_done:	;
 
 	} else if (is_exactly_a<mul>(e)) {
 
-		unsigned num = e.nops();
+		size_t num = e.nops();
 		exvector v; v.reserve(num);
 
-		for (unsigned i=0; i<num; i++)
+		for (size_t i=0; i<num; i++)
 			v.push_back(find_common_factor(e.op(i), factor, repl));
 
 		return (new mul(v))->setflag(status_flags::dynallocated);

@@ -115,7 +115,7 @@ public:
 	void dbgprint(void) const;
 	void dbgprinttree(void) const;
 	bool info(unsigned inf) const { return bp->info(inf); }
-	unsigned nops() const { return bp->nops(); }
+	size_t nops() const { return bp->nops(); }
 	ex expand(unsigned options=0) const;
 	bool has(const ex & pattern) const { return bp->has(pattern); }
 	ex map(map_function & f) const { return bp->map(f); }
@@ -159,12 +159,12 @@ public:
 	ex symmetrize_cyclic(void) const;
 	ex symmetrize_cyclic(const lst & l) const;
 	ex eval_ncmul(const exvector & v) const { return bp->eval_ncmul(v); }
-	ex op(int i) const { return bp->op(i); }
+	ex op(size_t i) const { return bp->op(i); }
 	ex operator[](const ex & index) const { return (*bp)[index]; }
-	ex operator[](int i) const { return (*bp)[i]; }
-	ex & let_op(int i);
+	ex operator[](size_t i) const { return (*bp)[i]; }
+	ex & let_op(size_t i);
 	ex & operator[](const ex & index);
-	ex & operator[](int i);
+	ex & operator[](size_t i);
 	ex lhs(void) const;
 	ex rhs(void) const;
 	int compare(const ex & other) const;
@@ -371,7 +371,7 @@ inline bool are_ex_trivially_equal(const ex &e1, const ex &e2)
 }
 
 // wrapper functions around member functions
-inline unsigned nops(const ex & thisex)
+inline size_t nops(const ex & thisex)
 { return thisex.nops(); }
 
 inline ex expand(const ex & thisex, unsigned options = 0)
@@ -461,7 +461,7 @@ inline ex symmetrize_cyclic(const ex & thisex)
 inline ex symmetrize_cyclic(const ex & thisex, const lst & l)
 { return thisex.symmetrize_cyclic(l); }
 
-inline ex op(const ex & thisex, int i)
+inline ex op(const ex & thisex, size_t i)
 { return thisex.op(i); }
 
 inline ex lhs(const ex & thisex)

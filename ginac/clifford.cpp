@@ -525,7 +525,7 @@ static bool is_clifford_tinfo(unsigned ti)
 
 /** Take trace of a string of an even number of Dirac gammas given a vector
  *  of indices. */
-static ex trace_string(exvector::const_iterator ix, unsigned num)
+static ex trace_string(exvector::const_iterator ix, size_t num)
 {
 	// Tr gamma.mu gamma.nu = 4 g.mu.nu
 	if (num == 2)
@@ -547,8 +547,8 @@ static ex trace_string(exvector::const_iterator ix, unsigned num)
 	exvector v(num - 2);
 	int sign = 1;
 	ex result;
-	for (unsigned i=1; i<num; i++) {
-		for (unsigned n=1, j=0; n<num; n++) {
+	for (size_t i=1; i<num; i++) {
+		for (size_t n=1, j=0; n<num; n++) {
 			if (n == i)
 				continue;
 			v[j++] = ix[n];
@@ -577,7 +577,7 @@ ex dirac_trace(const ex & e, unsigned char rl, const ex & trONE)
 
 		// Trace of product: pull out non-clifford factors
 		ex prod = _ex1;
-		for (unsigned i=0; i<e.nops(); i++) {
+		for (size_t i=0; i<e.nops(); i++) {
 			const ex &o = e.op(i);
 			if (is_clifford_tinfo(o.return_type_tinfo(), rl))
 				prod *= dirac_trace(o, rl, trONE);
@@ -601,7 +601,7 @@ ex dirac_trace(const ex & e, unsigned char rl, const ex & trONE)
 
 		// gamma5 gets moved to the front so this check is enough
 		bool has_gamma5 = is_a<diracgamma5>(e.op(0).op(0));
-		unsigned num = e.nops();
+		size_t num = e.nops();
 
 		if (has_gamma5) {
 
@@ -625,23 +625,23 @@ ex dirac_trace(const ex & e, unsigned char rl, const ex & trONE)
 			//   I/4! * epsilon0123.mu1.mu2.mu3.mu4 * Tr gamma.mu1 gamma.mu2 gamma.mu3 gamma.mu4 S_2k
 			// (the epsilon is always 4-dimensional)
 			exvector ix(num-1), bv(num-1);
-			for (unsigned i=1; i<num; i++)
+			for (size_t i=1; i<num; i++)
 				base_and_index(e.op(i), bv[i-1], ix[i-1]);
 			num--;
 			int *iv = new int[num];
 			ex result;
-			for (unsigned i=0; i<num-3; i++) {
+			for (size_t i=0; i<num-3; i++) {
 				ex idx1 = ix[i];
-				for (unsigned j=i+1; j<num-2; j++) {
+				for (size_t j=i+1; j<num-2; j++) {
 					ex idx2 = ix[j];
-					for (unsigned k=j+1; k<num-1; k++) {
+					for (size_t k=j+1; k<num-1; k++) {
 						ex idx3 = ix[k];
-						for (unsigned l=k+1; l<num; l++) {
+						for (size_t l=k+1; l<num; l++) {
 							ex idx4 = ix[l];
 							iv[0] = i; iv[1] = j; iv[2] = k; iv[3] = l;
 							exvector v;
 							v.reserve(num - 4);
-							for (unsigned n=0, t=4; n<num; n++) {
+							for (size_t n=0, t=4; n<num; n++) {
 								if (n == i || n == j || n == k || n == l)
 									continue;
 								iv[t++] = n;
@@ -672,7 +672,7 @@ ex dirac_trace(const ex & e, unsigned char rl, const ex & trONE)
 			}
 
 			exvector iv(num), bv(num);
-			for (unsigned i=0; i<num; i++)
+			for (size_t i=0; i<num; i++)
 				base_and_index(e.op(i), bv[i], iv[i]);
 
 			return trONE * (trace_string(iv.begin(), num) * mul(bv)).simplify_indexed();
@@ -693,7 +693,7 @@ ex canonicalize_clifford(const ex & e)
 	// Scan for any ncmul objects
 	lst srl;
 	ex aux = e.to_rational(srl);
-	for (unsigned i=0; i<srl.nops(); i++) {
+	for (size_t i=0; i<srl.nops(); i++) {
 
 		ex lhs = srl.op(i).lhs();
 		ex rhs = srl.op(i).rhs();
@@ -713,7 +713,7 @@ ex canonicalize_clifford(const ex & e)
 
 			exvector v;
 			v.reserve(rhs.nops());
-			for (unsigned j=0; j<rhs.nops(); j++)
+			for (size_t j=0; j<rhs.nops(); j++)
 				v.push_back(rhs.op(j));
 
 			// Stupid recursive bubble sort because we only want to swap adjacent gammas

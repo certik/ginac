@@ -23,6 +23,7 @@
 #ifndef __GINAC_BASIC_H__
 #define __GINAC_BASIC_H__
 
+#include <cstddef> // for size_t
 #include <vector>
 // CINT needs <algorithm> to work properly with <vector>
 #include <algorithm>
@@ -96,13 +97,13 @@ public: // only const functions please (may break reference counting)
 	virtual void dbgprinttree(void) const;
 	virtual unsigned precedence(void) const;
 	virtual bool info(unsigned inf) const;
-	virtual unsigned nops() const;
-	virtual ex op(int i) const;
+	virtual size_t nops() const;
+	virtual ex op(size_t i) const;
 	virtual ex operator[](const ex & index) const;
-	virtual ex operator[](int i) const;
-	virtual ex & let_op(int i);
+	virtual ex operator[](size_t i) const;
+	virtual ex & let_op(size_t i);
 	virtual ex & operator[](const ex & index);
-	virtual ex & operator[](int i);
+	virtual ex & operator[](size_t i);
 	virtual ex expand(unsigned options = 0) const;
 	virtual bool has(const ex & other) const;
 	virtual ex map(map_function & f) const;
@@ -140,7 +141,7 @@ protected: // functions that should be called from class ex only
 	// non-virtual functions in this class
 public:
 	ex subs(const ex & e, unsigned options = 0) const;
-	ex diff(const symbol & s, unsigned nth=1) const;
+	ex diff(const symbol & s, unsigned nth = 1) const;
 	int compare(const basic & other) const;
 	bool is_equal(const basic & other) const;
 	const basic & hold(void) const;

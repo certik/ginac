@@ -294,7 +294,7 @@ ex indexed::expand(unsigned options) const
 		// expand_indexed expands (a+b).i -> a.i + b.i
 		const ex & base = seq[0];
 		ex sum = _ex0;
-		for (unsigned i=0; i<base.nops(); i++) {
+		for (size_t i=0; i<base.nops(); i++) {
 			exvector s = seq;
 			s[0] = base.op(i);
 			sum += thisexprseq(s).expand();
@@ -459,7 +459,7 @@ exvector indexed::get_free_indices(void) const
 exvector add::get_free_indices(void) const
 {
 	exvector free_indices;
-	for (unsigned i=0; i<nops(); i++) {
+	for (size_t i=0; i<nops(); i++) {
 		if (i == 0)
 			free_indices = op(i).get_free_indices();
 		else {
@@ -475,7 +475,7 @@ exvector mul::get_free_indices(void) const
 {
 	// Concatenate free indices of all factors
 	exvector un;
-	for (unsigned i=0; i<nops(); i++) {
+	for (size_t i=0; i<nops(); i++) {
 		exvector free_indices_of_factor = op(i).get_free_indices();
 		un.insert(un.end(), free_indices_of_factor.begin(), free_indices_of_factor.end());
 	}
@@ -490,7 +490,7 @@ exvector ncmul::get_free_indices(void) const
 {
 	// Concatenate free indices of all factors
 	exvector un;
-	for (unsigned i=0; i<nops(); i++) {
+	for (size_t i=0; i<nops(); i++) {
 		exvector free_indices_of_factor = op(i).get_free_indices();
 		un.insert(un.end(), free_indices_of_factor.begin(), free_indices_of_factor.end());
 	}
@@ -517,8 +517,8 @@ exvector power::get_free_indices(void) const
  *    by the function */
 static ex rename_dummy_indices(const ex & e, exvector & global_dummy_indices, exvector & local_dummy_indices)
 {
-	unsigned global_size = global_dummy_indices.size(),
-	         local_size = local_dummy_indices.size();
+	size_t global_size = global_dummy_indices.size(),
+	       local_size = local_dummy_indices.size();
 
 	// Any local dummy indices at all?
 	if (local_size == 0)
@@ -528,7 +528,7 @@ static ex rename_dummy_indices(const ex & e, exvector & global_dummy_indices, ex
 
 		// More local indices than we encountered before, add the new ones
 		// to the global set
-		int old_global_size = global_size;
+		size_t old_global_size = global_size;
 		int remaining = local_size - global_size;
 		exvector::const_iterator it = local_dummy_indices.begin(), itend = local_dummy_indices.end();
 		while (it != itend && remaining > 0) {
@@ -548,10 +548,10 @@ static ex rename_dummy_indices(const ex & e, exvector & global_dummy_indices, ex
 
 	// Construct lists of index symbols
 	exlist local_syms, global_syms;
-	for (unsigned i=0; i<local_size; i++)
+	for (size_t i=0; i<local_size; i++)
 		local_syms.push_back(local_dummy_indices[i].op(0));
 	shaker_sort(local_syms.begin(), local_syms.end(), ex_is_less(), ex_swap());
-	for (unsigned i=0; i<local_size; i++) // don't use more global symbols than necessary
+	for (size_t i=0; i<local_size; i++) // don't use more global symbols than necessary
 		global_syms.push_back(global_dummy_indices[i].op(0));
 	shaker_sort(global_syms.begin(), global_syms.end(), ex_is_less(), ex_swap());
 
@@ -662,7 +662,7 @@ ex simplify_indexed_product(const ex & e, exvector & free_indices, exvector & du
 		v.push_back(e.op(0));
 		v.push_back(e.op(0));
 	} else {
-		for (unsigned i=0; i<e.nops(); i++) {
+		for (size_t i=0; i<e.nops(); i++) {
 			ex f = e.op(i);
 			if (is_exactly_a<power>(f) && f.op(1).is_equal(_ex2)) {
 				v.push_back(f.op(0));
@@ -670,7 +670,7 @@ ex simplify_indexed_product(const ex & e, exvector & free_indices, exvector & du
 			} else if (is_exactly_a<ncmul>(f)) {
 				// Noncommutative factor found, split it as well
 				non_commutative = true; // everything becomes noncommutative, ncmul will sort out the commutative factors later
-				for (unsigned j=0; j<f.nops(); j++)
+				for (size_t j=0; j<f.nops(); j++)
 					v.push_back(f.op(j));
 			} else
 				v.push_back(f);
@@ -711,7 +711,7 @@ try_again:
 			// Check whether the two factors share dummy indices
 			exvector free, dummy;
 			find_free_and_dummy(un, free, dummy);
-			unsigned num_dummies = dummy.size();
+			size_t num_dummies = dummy.size();
 			if (num_dummies == 0)
 				continue;
 
@@ -870,7 +870,7 @@ class symminfo {
 public:
 	symminfo() : num(0) {}
 
-	symminfo(const ex & symmterm_, const ex & orig_, unsigned num_) : orig(orig_), num(num_)
+	symminfo(const ex & symmterm_, const ex & orig_, size_t num_) : orig(orig_), num(num_)
 	{
 		if (is_exactly_a<mul>(symmterm_) && is_exactly_a<numeric>(symmterm_.op(symmterm_.nops()-1))) {
 			coeff = symmterm_.op(symmterm_.nops()-1);
@@ -884,7 +884,7 @@ public:
 	ex symmterm;  /**< symmetrized term */
 	ex coeff;     /**< coefficient of symmetrized term */
 	ex orig;      /**< original term */
-	unsigned num; /**< how many symmetrized terms resulted from the original term */
+	size_t num; /**< how many symmetrized terms resulted from the original term */
 };
 
 class symminfo_is_less_by_symmterm {
@@ -941,7 +941,7 @@ ex simplify_indexed(const ex & e, exvector & free_indices, exvector & dummy_indi
 		ex sum;
 		free_indices.clear();
 
-		for (unsigned i=0; i<e_expanded.nops(); i++) {
+		for (size_t i=0; i<e_expanded.nops(); i++) {
 			exvector free_indices_of_term;
 			ex term = simplify_indexed(e_expanded.op(i), free_indices_of_term, dummy_indices, sp);
 			if (!term.is_zero()) {
@@ -971,7 +971,7 @@ ex simplify_indexed(const ex & e, exvector & free_indices, exvector & dummy_indi
 		}
 
 		// More than one term and more than one dummy index?
-		int num_terms_orig = (is_exactly_a<add>(sum) ? sum.nops() : 1);
+		size_t num_terms_orig = (is_exactly_a<add>(sum) ? sum.nops() : 1);
 		if (num_terms_orig < 2 || dummy_indices.size() < 2)
 			return sum;
 
@@ -983,7 +983,7 @@ ex simplify_indexed(const ex & e, exvector & free_indices, exvector & dummy_indi
 		// Chop the sum into terms and symmetrize each one over the dummy
 		// indices
 		std::vector<terminfo> terms;
-		for (unsigned i=0; i<sum.nops(); i++) {
+		for (size_t i=0; i<sum.nops(); i++) {
 			const ex & term = sum.op(i);
 			ex term_symm = term.symmetrize(dummy_syms);
 			if (term_symm.is_zero())
@@ -997,7 +997,7 @@ ex simplify_indexed(const ex & e, exvector & free_indices, exvector & dummy_indi
 		// Combine equal symmetrized terms
 		std::vector<terminfo> terms_pass2;
 		for (std::vector<terminfo>::const_iterator i=terms.begin(); i!=terms.end(); ) {
-			unsigned num = 1;
+			size_t num = 1;
 			std::vector<terminfo>::const_iterator j = i + 1;
 			while (j != terms.end() && j->symm == i->symm) {
 				num++;
@@ -1015,8 +1015,8 @@ ex simplify_indexed(const ex & e, exvector & free_indices, exvector & dummy_indi
 		std::vector<symminfo> sy;
 		for (std::vector<terminfo>::const_iterator i=terms_pass2.begin(); i!=terms_pass2.end(); ++i) {
 			if (is_exactly_a<add>(i->symm)) {
-				unsigned num = i->symm.nops();
-				for (unsigned j=0; j<num; j++)
+				size_t num = i->symm.nops();
+				for (size_t j=0; j<num; j++)
 					sy.push_back(symminfo(i->symm.op(j), i->orig, num));
 			} else
 				sy.push_back(symminfo(i->symm, i->orig, 1));
@@ -1063,7 +1063,7 @@ ex simplify_indexed(const ex & e, exvector & free_indices, exvector & dummy_indi
 			for (std::vector<symminfo>::const_iterator i=sy_pass2.begin(); i!=sy_pass2.end(); ) {
 
 				// How many symmetrized terms of this original term are left?
-				unsigned num = 1;
+				size_t num = 1;
 				std::vector<symminfo>::const_iterator j = i + 1;
 				while (j != sy_pass2.end() && j->orig == i->orig) {
 					num++;
@@ -1224,10 +1224,10 @@ void scalar_products::add(const ex & v1, const ex & v2, const ex & dim, const ex
 void scalar_products::add_vectors(const lst & l, const ex & dim)
 {
 	// Add all possible pairs of products
-	unsigned num = l.nops();
-	for (unsigned i=0; i<num; i++) {
+	size_t num = l.nops();
+	for (size_t i=0; i<num; i++) {
 		ex a = l.op(i);
-		for (unsigned j=0; j<num; j++) {
+		for (size_t j=0; j<num; j++) {
 			ex b = l.op(j);
 			add(a, b, dim, a*b);
 		}

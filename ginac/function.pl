@@ -681,7 +681,7 @@ void function::print(const print_context & c, unsigned level) const
 		    << ", nops=" << nops()
 		    << std::endl;
 		unsigned delta_indent = static_cast<const print_tree &>(c).delta_indent;
-		for (unsigned i=0; i<seq.size(); ++i)
+		for (size_t i=0; i<seq.size(); ++i)
 			seq[i].print(c, level + delta_indent);
 		c.s << std::string(level + delta_indent, ' ') << "=====" << std::endl;
 
@@ -689,8 +689,8 @@ void function::print(const print_context & c, unsigned level) const
 
 		// Print function name in lowercase
 		std::string lname = registered_functions()[serial].name;
-		unsigned num = lname.size();
-		for (unsigned i=0; i<num; i++)
+		size_t num = lname.size();
+		for (size_t i=0; i<num; i++)
 			lname[i] = tolower(lname[i]);
 		c.s << lname << "(";
 
@@ -811,7 +811,7 @@ ${evalf_switch_statement}
 unsigned function::calchash(void) const
 {
 	unsigned v = golden_ratio_hash(golden_ratio_hash(tinfo()) ^ serial);
-	for (unsigned i=0; i<nops(); i++) {
+	for (size_t i=0; i<nops(); i++) {
 		v = rotate_left(v);
 		v ^= this->op(i).gethash();
 	}
@@ -875,8 +875,8 @@ ex function::derivative(const symbol & s) const
 	} else {
 		// Chain rule
 		ex arg_diff;
-		unsigned num = seq.size();
-		for (unsigned i=0; i<num; i++) {
+		size_t num = seq.size();
+		for (size_t i=0; i<num; i++) {
 			arg_diff = seq[i].diff(s);
 			// We apply the chain rule only when it makes sense.  This is not
 			// just for performance reasons but also to allow functions to
@@ -1005,8 +1005,8 @@ void function::store_remember_table(ex const & result) const
 
 unsigned function::register_new(function_options const & opt)
 {
-	unsigned same_name = 0;
-	for (unsigned i=0; i<registered_functions().size(); ++i) {
+	size_t same_name = 0;
+	for (size_t i=0; i<registered_functions().size(); ++i) {
 		if (registered_functions()[i].name==opt.name) {
 			++same_name;
 		}

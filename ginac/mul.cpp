@@ -181,7 +181,7 @@ void mul::print(const print_context & c, unsigned level) const
 	} else if (is_a<print_python_repr>(c)) {
 		c.s << class_name() << '(';
 		op(0).print(c);
-		for (unsigned i=1; i<nops(); ++i) {
+		for (size_t i=1; i<nops(); ++i) {
 			c.s << ',';
 			op(i).print(c);
 		}
@@ -566,7 +566,7 @@ ex mul::algebraic_subs_mul(const lst & ls, const lst & lr, unsigned options) con
 	std::vector<bool> subsed(seq.size(), false);
 	exvector subsresult(seq.size());
 
-	for (unsigned i=0; i<ls.nops(); i++) {
+	for (size_t i=0; i<ls.nops(); i++) {
 
 		if (is_exactly_a<mul>(ls.op(i))) {
 
@@ -575,9 +575,9 @@ ex mul::algebraic_subs_mul(const lst & ls, const lst & lr, unsigned options) con
 			bool succeed = true;
 			lst repls;
 
-			for (unsigned j=0; j<ls.op(i).nops(); j++) {
+			for (size_t j=0; j<ls.op(i).nops(); j++) {
 				bool found=false;
-				for (unsigned k=0; k<nops(); k++) {
+				for (size_t k=0; k<nops(); k++) {
 					if (currsubsed[k] || subsed[k])
 						continue;
 					if (tryfactsubs(op(k), ls.op(i).op(j), nummatches, repls)) {
@@ -595,7 +595,7 @@ ex mul::algebraic_subs_mul(const lst & ls, const lst & lr, unsigned options) con
 				continue;
 
 			bool foundfirstsubsedfactor = false;
-			for (unsigned j=0; j<subsed.size(); j++) {
+			for (size_t j=0; j<subsed.size(); j++) {
 				if (currsubsed[j]) {
 					if (foundfirstsubsedfactor)
 						subsresult[j] = op(j);
@@ -612,7 +612,7 @@ ex mul::algebraic_subs_mul(const lst & ls, const lst & lr, unsigned options) con
 			unsigned nummatches = std::numeric_limits<unsigned>::max();
 			lst repls;
 
-			for (unsigned j=0; j<this->nops(); j++) {
+			for (size_t j=0; j<this->nops(); j++) {
 				if (!subsed[j] && tryfactsubs(op(j), ls.op(i), nummatches, repls)) {
 					subsed[j] = true;
 					subsresult[j] = op(j) * power(lr.op(i).subs(ex(repls), subs_options::subs_no_pattern) / ls.op(i).subs(ex(repls), subs_options::subs_no_pattern), nummatches);
@@ -622,7 +622,7 @@ ex mul::algebraic_subs_mul(const lst & ls, const lst & lr, unsigned options) con
 	}
 
 	bool subsfound = false;
-	for (unsigned i=0; i<subsed.size(); i++) {
+	for (size_t i=0; i<subsed.size(); i++) {
 		if (subsed[i]) {
 			subsfound = true;
 			break;
@@ -632,7 +632,7 @@ ex mul::algebraic_subs_mul(const lst & ls, const lst & lr, unsigned options) con
 		return basic::subs(ls, lr, options | subs_options::subs_algebraic);
 
 	exvector ev; ev.reserve(nops());
-	for (unsigned i=0; i<nops(); i++) {
+	for (size_t i=0; i<nops(); i++) {
 		if (subsed[i])
 			ev.push_back(subsresult[i]);
 		else
@@ -648,7 +648,7 @@ ex mul::algebraic_subs_mul(const lst & ls, const lst & lr, unsigned options) con
  *  @see ex::diff */
 ex mul::derivative(const symbol & s) const
 {
-	unsigned num = seq.size();
+	size_t num = seq.size();
 	exvector addseq;
 	addseq.reserve(num);
 	
@@ -846,26 +846,7 @@ ex mul::expand(unsigned options) const
 			(cit->coeff.is_equal(_ex1))) {
 			++number_of_adds;
 			if (is_exactly_a<add>(last_expanded)) {
-#if 0
-				// Expand a product of two sums, simple and robust version.
-				const add & add1 = ex_to<add>(last_expanded);
-				const add & add2 = ex_to<add>(cit->rest);
-				const int n1 = add1.nops();
-				const int n2 = add2.nops();
-				ex tmp_accu;
-				exvector distrseq;
-				distrseq.reserve(n2);
-				for (int i1=0; i1<n1; ++i1) {
-					distrseq.clear();
-					// cache the first operand (for efficiency):
-					const ex op1 = add1.op(i1);
-					for (int i2=0; i2<n2; ++i2)
-						distrseq.push_back(op1 * add2.op(i2));
-					tmp_accu += (new add(distrseq))->
-					             setflag(status_flags::dynallocated);
-				}
-				last_expanded = tmp_accu;
-#else
+
 				// Expand a product of two sums, aggressive version.
 				// Caring for the overall coefficients in separate loops can
 				// sometimes give a performance gain of up to 15%!
@@ -917,7 +898,7 @@ ex mul::expand(unsigned options) const
 					tmp_accu += (new add(distrseq, oc))->setflag(status_flags::dynallocated);
 				}
 				last_expanded = tmp_accu;
-#endif
+
 			} else {
 				non_adds.push_back(split_ex_to_pair(last_expanded));
 				last_expanded = cit->rest;
@@ -935,9 +916,9 @@ ex mul::expand(unsigned options) const
 	if (is_exactly_a<add>(last_expanded)) {
 		const add & finaladd = ex_to<add>(last_expanded);
 		exvector distrseq;
-		int n = finaladd.nops();
+		size_t n = finaladd.nops();
 		distrseq.reserve(n);
-		for (int i=0; i<n; ++i) {
+		for (size_t i=0; i<n; ++i) {
 			epvector factors = non_adds;
 			factors.push_back(split_ex_to_pair(finaladd.op(i)));
 			distrseq.push_back((new mul(factors, overall_coeff))->

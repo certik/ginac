@@ -2984,8 +2984,8 @@ for an explanation of these.
 GiNaC provides the two methods
 
 @example
-unsigned ex::nops();
-ex ex::op(unsigned i);
+size_t ex::nops();
+ex ex::op(size_t i);
 @end example
 
 for accessing the subexpressions in the container-like GiNaC classes like
@@ -3450,7 +3450,7 @@ ex calc_trace(ex e)
         return ex_to<matrix>(e).trace();
     else if (is_a<add>(e)) @{
         ex sum = 0;
-        for (unsigned i=0; i<e.nops(); i++)
+        for (size_t i=0; i<e.nops(); i++)
             sum += calc_trace(e.op(i));
         return sum;
     @} else if (is_a<mul>)(e)) @{
@@ -4491,9 +4491,9 @@ static void my_print(const ex & e)
     else
         cout << e.bp->class_name();
     cout << "(";
-    unsigned n = e.nops();
+    size_t n = e.nops();
     if (n)
-        for (unsigned i=0; i<n; i++) @{
+        for (size_t i=0; i<n; i++) @{
             my_print(e.op(i));
             if (i != n-1)
                 cout << ",";
@@ -4678,8 +4678,8 @@ static void my_print2(const archive_node & n)
     archive_node::propinfovector p;
     n.get_properties(p);
 
-    unsigned num = p.size();
-    for (unsigned i=0; i<num; i++) @{
+    size_t num = p.size();
+    for (size_t i=0; i<num; i++) @{
         const string &name = p[i].name;
         if (name == "class")
             continue;
@@ -5548,9 +5548,9 @@ If your class stores sub-expressions you will probably want to override
 
 @cindex @code{let_op()}
 @example
-unsigned nops() cont;
-ex op(int i) const;
-ex & let_op(int i);
+size_t nops() cont;
+ex op(size_t i) const;
+ex & let_op(size_t i);
 ex map(map_function & f) const;
 ex subs(const lst & ls, const lst & lr, unsigned options = 0) const;
 @end example

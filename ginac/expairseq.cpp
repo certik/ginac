@@ -197,8 +197,8 @@ void expairseq::print(const print_context &c, unsigned level) const
 		    << std::hex << ", hash=0x" << hashvalue << ", flags=0x" << flags << std::dec
 		    << ", nops=" << nops()
 		    << std::endl;
-		unsigned num = seq.size();
-		for (unsigned i=0; i<num; ++i) {
+		size_t num = seq.size();
+		for (size_t i=0; i<num; ++i) {
 			seq[i].rest.print(c, level + delta_indent);
 			seq[i].coeff.print(c, level + delta_indent);
 			if (i != num - 1)
@@ -276,7 +276,7 @@ bool expairseq::info(unsigned inf) const
 	return inherited::info(inf);
 }
 
-unsigned expairseq::nops() const
+size_t expairseq::nops() const
 {
 	if (overall_coeff.is_equal(default_overall_coeff()))
 		return seq.size();
@@ -284,9 +284,9 @@ unsigned expairseq::nops() const
 		return seq.size()+1;
 }
 
-ex expairseq::op(int i) const
+ex expairseq::op(size_t i) const
 {
-	if (unsigned(i)<seq.size())
+	if (i < seq.size())
 		return recombine_pair_to_ex(seq[i]);
 	GINAC_ASSERT(!overall_coeff.is_equal(default_overall_coeff()));
 	return overall_coeff;
@@ -333,7 +333,7 @@ bool expairseq::match(const ex & pattern, lst & repl_lst) const
 		// expression", like "*" above) is present
 		bool has_global_wildcard = false;
 		ex global_wildcard;
-		for (unsigned int i=0; i<pattern.nops(); i++) {
+		for (size_t i=0; i<pattern.nops(); i++) {
 			if (is_exactly_a<wildcard>(pattern.op(i))) {
 				has_global_wildcard = true;
 				global_wildcard = pattern.op(i);
@@ -347,12 +347,12 @@ bool expairseq::match(const ex & pattern, lst & repl_lst) const
 		// Chop into terms
 		exvector ops;
 		ops.reserve(nops());
-		for (unsigned i=0; i<nops(); i++)
+		for (size_t i=0; i<nops(); i++)
 			ops.push_back(op(i));
 
 		// Now, for every term of the pattern, look for a matching term in
 		// the expression and remove the match
-		for (unsigned i=0; i<pattern.nops(); i++) {
+		for (size_t i=0; i<pattern.nops(); i++) {
 			ex p = pattern.op(i);
 			if (has_global_wildcard && p.is_equal(global_wildcard))
 				continue;
@@ -373,13 +373,13 @@ found:		;
 			// Assign all the remaining terms to the global wildcard (unless
 			// it has already been matched before, in which case the matches
 			// must be equal)
-			unsigned num = ops.size();
+			size_t num = ops.size();
 			epvector *vp = new epvector();
 			vp->reserve(num);
-			for (unsigned i=0; i<num; i++)
+			for (size_t i=0; i<num; i++)
 				vp->push_back(split_ex_to_pair(ops[i]));
 			ex rest = thisexpairseq(vp, default_overall_coeff());
-			for (unsigned i=0; i<repl_lst.nops(); i++) {
+			for (size_t i=0; i<repl_lst.nops(); i++) {
 				if (repl_lst.op(i).op(0).is_equal(global_wildcard))
 					return rest.is_equal(repl_lst.op(i).op(1));
 			}
@@ -1291,7 +1291,7 @@ void expairseq::drop_coeff_0_terms(epvector::iterator &first_numeric,
 	// move terms with coeff 0 to end and remove them from hashtab
 	// check only those elements which have been touched
 	epp current = seq.begin();
-	unsigned i = 0;
+	size_t i = 0;
 	while (current!=first_numeric) {
 		if (!touched[i]) {
 			++current;
@@ -1387,7 +1387,7 @@ void expairseq::combine_same_terms(void)
 	epvector::iterator first_numeric = seq.end();
 	epvector::iterator last_non_zero = seq.end()-1;
 	
-	unsigned num = seq.size();
+	size_t num = seq.size();
 	std::vector<bool> touched(num);
 	
 	unsigned number_of_zeroes = 0;
@@ -1565,7 +1565,7 @@ epvector * expairseq::subschildren(const lst &ls, const lst &lr, unsigned option
 	// is a product or power. In this case we have to recombine the pairs
 	// because the numeric coefficients may be part of the search pattern.
 	bool complex_subs = false;
-	for (unsigned i=0; i<ls.nops(); ++i) {
+	for (size_t i=0; i<ls.nops(); ++i) {
 		if (is_exactly_a<mul>(ls.op(i)) || is_exactly_a<power>(ls.op(i))) {
 			complex_subs = true;
 			break;

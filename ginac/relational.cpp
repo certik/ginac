@@ -160,14 +160,13 @@ bool relational::info(unsigned inf) const
 	return 0;
 }
 
-unsigned relational::nops() const
+size_t relational::nops() const
 {
 	return 2;
 }
 
-ex relational::op(int i) const
+ex relational::op(size_t i) const
 {
-	GINAC_ASSERT(i>=0);
 	GINAC_ASSERT(i<2);
 
 	return i==0 ? lh : rh;

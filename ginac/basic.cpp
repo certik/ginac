@@ -116,7 +116,7 @@ void basic::print(const print_context & c, unsigned level) const
 		    << std::hex << ", hash=0x" << hashvalue << ", flags=0x" << flags << std::dec
 		    << ", nops=" << nops()
 		    << std::endl;
-		for (unsigned i=0; i<nops(); ++i)
+		for (size_t i=0; i<nops(); ++i)
 			op(i).print(c, level + static_cast<const print_tree &>(c).delta_indent);
 
 	} else
@@ -168,7 +168,7 @@ bool basic::info(unsigned inf) const
 }
 
 /** Number of operands/members. */
-unsigned basic::nops() const
+size_t basic::nops() const
 {
 	// iterating from 0 to nops() on atomic objects should be an empty loop,
 	// and accessing their elements is a range error.  Container objects should
@@ -177,27 +177,27 @@ unsigned basic::nops() const
 }
 
 /** Return operand/member at position i. */
-ex basic::op(int i) const
+ex basic::op(size_t i) const
 {
-	throw(std::runtime_error(std::string("op() not implemented by ") + class_name()));
+	throw(std::range_error(std::string("basic::op(): ") + class_name() + std::string(" has no operands")));
 }
 
 /** Return modifyable operand/member at position i. */
-ex & basic::let_op(int i)
+ex & basic::let_op(size_t i)
 {
 	ensure_if_modifiable();
-	throw(std::runtime_error(std::string("let_op() not implemented by ") + class_name()));
+	throw(std::range_error(std::string("basic::let_op(): ") + class_name() + std::string(" has no operands")));
 }
 
 ex basic::operator[](const ex & index) const
 {
 	if (is_exactly_a<numeric>(index))
-		return op(ex_to<numeric>(index).to_int());
+		return op(static_cast<size_t>(ex_to<numeric>(index).to_int()));
 
-	throw(std::invalid_argument("non-numeric indices not supported by this type"));
+	throw(std::invalid_argument(std::string("non-numeric indices not supported by ") + class_name()));
 }
 
-ex basic::operator[](int i) const
+ex basic::operator[](size_t i) const
 {
 	return op(i);
 }
@@ -207,10 +207,10 @@ ex & basic::operator[](const ex & index)
 	if (is_exactly_a<numeric>(index))
 		return let_op(ex_to<numeric>(index).to_int());
 
-	throw(std::invalid_argument("non-numeric indices not supported by this type"));
+	throw(std::invalid_argument(std::string("non-numeric indices not supported by ") + class_name()));
 }
 
-ex & basic::operator[](int i)
+ex & basic::operator[](size_t i)
 {
 	return let_op(i);
 }
@@ -224,7 +224,7 @@ bool basic::has(const ex & pattern) const
 	lst repl_lst;
 	if (match(pattern, repl_lst))
 		return true;
-	for (unsigned i=0; i<nops(); i++)
+	for (size_t i=0; i<nops(); i++)
 		if (op(i).has(pattern))
 			return true;
 	
@@ -235,7 +235,7 @@ bool basic::has(const ex & pattern) const
  *  sub-expressions (one level only, not recursively). */
 ex basic::map(map_function & f) const
 {
-	unsigned num = nops();
+	size_t num = nops();
 	if (num == 0)
 		return *this;
 
@@ -243,7 +243,7 @@ ex basic::map(map_function & f) const
 	copy->setflag(status_flags::dynallocated);
 	copy->clearflag(status_flags::hash_calculated | status_flags::expanded);
 	ex e(*copy);
-	for (unsigned i=0; i<num; i++)
+	for (size_t i=0; i<num; i++)
 		e.let_op(i) = f(e.op(i));
 	return e.eval();
 }
@@ -286,7 +286,7 @@ ex basic::collect(const ex & s, bool distributed) const
 		else if (distributed) {
 
 			// Get lower/upper degree of all symbols in list
-			int num = s.nops();
+			size_t num = s.nops();
 			struct sym_info {
 				ex sym;
 				int ldeg, deg;
@@ -295,7 +295,7 @@ ex basic::collect(const ex & s, bool distributed) const
 			};
 			sym_info *si = new sym_info[num];
 			ex c = *this;
-			for (int i=0; i<num; i++) {
+			for (size_t i=0; i<num; i++) {
 				si[i].sym = s.op(i);
 				si[i].ldeg = si[i].cnt = this->ldegree(si[i].sym);
 				si[i].deg = this->degree(si[i].sym);
@@ -306,14 +306,14 @@ ex basic::collect(const ex & s, bool distributed) const
 
 				// Calculate coeff*x1^c1*...*xn^cn
 				ex y = _ex1;
-				for (int i=0; i<num; i++) {
+				for (size_t i=0; i<num; i++) {
 					int cnt = si[i].cnt;
 					y *= power(si[i].sym, cnt);
 				}
 				x += y * si[num - 1].coeff;
 
 				// Increment counters
-				int n = num - 1;
+				size_t n = num - 1;
 				while (true) {
 					++si[n].cnt;
 					if (si[n].cnt <= si[n].deg) {
@@ -323,7 +323,7 @@ ex basic::collect(const ex & s, bool distributed) const
 							c = *this;
 						else
 							c = si[n - 1].coeff;
-						for (int i=n; i<num; i++)
+						for (size_t i=n; i<num; i++)
 							c = si[i].coeff = c.coeff(si[i].sym, si[i].cnt);
 						break;
 					}
@@ -340,8 +340,13 @@ done:		delete[] si;
 
 			// Recursive form
 			x = *this;
-			for (int n=s.nops()-1; n>=0; n--)
+			size_t n = s.nops() - 1;
+			while (true) {
 				x = x.collect(s[n]);
+				if (n == 0)
+					break;
+				n--;
+			}
 		}
 
 	} else {
@@ -479,7 +484,7 @@ bool basic::match(const ex & pattern, lst & repl_lst) const
 		// Wildcard matches anything, but check whether we already have found
 		// a match for that wildcard first (if so, it the earlier match must
 		// be the same expression)
-		for (unsigned i=0; i<repl_lst.nops(); i++) {
+		for (size_t i=0; i<repl_lst.nops(); i++) {
 			if (repl_lst.op(i).op(0).is_equal(pattern))
 				return is_equal(ex_to<basic>(repl_lst.op(i).op(1)));
 		}
@@ -506,7 +511,7 @@ bool basic::match(const ex & pattern, lst & repl_lst) const
 			return false;
 
 		// Otherwise the subexpressions must match one-to-one
-		for (unsigned i=0; i<nops(); i++)
+		for (size_t i=0; i<nops(); i++)
 			if (!op(i).match(pattern.op(i), repl_lst))
 				return false;
 
@@ -522,12 +527,12 @@ ex basic::subs(const lst & ls, const lst & lr, unsigned options) const
 	GINAC_ASSERT(ls.nops() == lr.nops());
 
 	if (options & subs_options::subs_no_pattern) {
-		for (unsigned i=0; i<ls.nops(); i++) {
+		for (size_t i=0; i<ls.nops(); i++) {
 			if (is_equal(ex_to<basic>(ls.op(i))))
 				return lr.op(i);
 		}
 	} else {
-		for (unsigned i=0; i<ls.nops(); i++) {
+		for (size_t i=0; i<ls.nops(); i++) {
 			lst repl_lst;
 			if (match(ex_to<basic>(ls.op(i)), repl_lst))
 				return lr.op(i).subs(repl_lst, options | subs_options::subs_no_pattern); // avoid infinite recursion when re-substituting the wildcards
@@ -653,7 +658,7 @@ unsigned basic::return_type_tinfo(void) const
 unsigned basic::calchash(void) const
 {
 	unsigned v = golden_ratio_hash(tinfo());
-	for (unsigned i=0; i<nops(); i++) {
+	for (size_t i=0; i<nops(); i++) {
 		v = rotate_left(v);
 		v ^= (const_cast<basic *>(this))->op(i).gethash();
 	}
@@ -708,7 +713,7 @@ ex basic::subs(const ex & e, unsigned options) const
 	}
 	lst ls;
 	lst lr;
-	for (unsigned i=0; i<e.nops(); i++) {
+	for (size_t i=0; i<e.nops(); i++) {
 		ex r = e.op(i);
 		if (!r.info(info_flags::relation_equal)) {
 			throw(std::invalid_argument("basic::subs(ex): argument must be a list of equations"));

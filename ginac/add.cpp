@@ -164,7 +164,7 @@ void add::print(const print_context & c, unsigned level) const
 
 		c.s << class_name() << '(';
 		op(0).print(c);
-		for (unsigned i=1; i<nops(); ++i) {
+		for (size_t i=1; i<nops(); ++i) {
 			c.s << ',';
 			op(i).print(c);
 		}

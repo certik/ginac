@@ -33,11 +33,9 @@ bool exprseq::info(unsigned inf) const
 	return basic::info(inf);
 }
 
-ex exprseq::op(int i) const
+ex exprseq::op(size_t i) const
 {
-	GINAC_ASSERT(i>=0);
 	GINAC_ASSERT(i<nops());
-
 	return seq[i];
 }
 

@@ -110,7 +110,7 @@ ex symbol::unarchive(const archive_node &n, const lst &sym_lst)
 	ex s = (new symbol(n, sym_lst))->setflag(status_flags::dynallocated);
 	
 	// If symbol is in sym_lst, return the existing symbol
-	for (unsigned i=0; i<sym_lst.nops(); i++) {
+	for (size_t i=0; i<sym_lst.nops(); i++) {
 		if (is_a<symbol>(sym_lst.op(i)) && (ex_to<symbol>(sym_lst.op(i)).name == ex_to<symbol>(s).name))
 			return sym_lst.op(i);
 	}

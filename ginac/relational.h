@@ -54,8 +54,8 @@ public:
 	void print(const print_context & c, unsigned level = 0) const;
 	unsigned precedence(void) const {return 20;}
 	bool info(unsigned inf) const;
-	unsigned nops() const;
-	ex op(int i) const;
+	size_t nops() const;
+	ex op(size_t i) const;
 	ex map(map_function & f) const;
 	ex eval(int level=0) const;
 

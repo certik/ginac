@@ -44,9 +44,9 @@ public:
 	// functions overriding virtual functions from base classes
 public:
 	void print(const print_context & c, unsigned level = 0) const;
-	unsigned nops() const;
-	ex op(int i) const;
-	ex & let_op(int i);
+	size_t nops() const;
+	ex op(size_t i) const;
+	ex & let_op(size_t i);
 	ex eval(int level=0) const;
 	ex evalm(void) const {return *this;}
 	ex subs(const lst & ls, const lst & lr, unsigned options = 0) const;
@@ -98,7 +98,7 @@ protected:
 
 // wrapper functions around member functions
 
-inline unsigned nops(const matrix & m)
+inline size_t nops(const matrix & m)
 { return m.nops(); }
 
 inline ex expand(const matrix & m, unsigned options = 0)

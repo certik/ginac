@@ -50,8 +50,8 @@ public:
 public:
 	void print(const print_context & c, unsigned level = 0) const;
 	bool info(unsigned inf) const;
-	unsigned nops() const;
-	ex op(int i) const;
+	size_t nops() const;
+	ex op(size_t i) const;
 	ex map(map_function & f) const;
 	ex evalf(int level = 0) const;
 	ex subs(const lst & ls, const lst & lr, unsigned options = 0) const;
@@ -249,7 +249,7 @@ inline void find_dummy_indices(const exvector & v, exvector & out_dummy)
 }
 
 /** Count the number of dummy index pairs in an index vector. */
-inline unsigned count_dummy_indices(const exvector & v)
+inline size_t count_dummy_indices(const exvector & v)
 {
 	exvector free_indices, dummy_indices;
 	find_free_and_dummy(v.begin(), v.end(), free_indices, dummy_indices);
@@ -257,7 +257,7 @@ inline unsigned count_dummy_indices(const exvector & v)
 }
 
 /** Count the number of dummy index pairs in an index vector. */
-inline unsigned count_free_indices(const exvector & v)
+inline size_t count_free_indices(const exvector & v)
 {
 	exvector free_indices, dummy_indices;
 	find_free_and_dummy(v.begin(), v.end(), free_indices, dummy_indices);

@@ -269,13 +269,13 @@ bool idx::info(unsigned inf) const
 	return inherited::info(inf);
 }
 
-unsigned idx::nops() const
+size_t idx::nops() const
 {
 	// don't count the dimension as that is not really a sub-expression
 	return 1;
 }
 
-ex idx::op(int i) const
+ex idx::op(size_t i) const
 {
 	GINAC_ASSERT(i == 0);
 	return value;
@@ -376,7 +376,7 @@ ex idx::subs(const lst & ls, const lst & lr, unsigned options) const
 	GINAC_ASSERT(ls.nops() == lr.nops());
 
 	// First look for index substitutions
-	for (unsigned i=0; i<ls.nops(); i++) {
+	for (size_t i=0; i<ls.nops(); i++) {
 		if (is_equal(ex_to<basic>(ls.op(i)))) {
 
 			// Substitution index->index

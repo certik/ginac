@@ -75,7 +75,7 @@ protected:
 
 	// non-virtual functions in this class
 protected:
-	unsigned count_factors(const ex & e) const;
+	size_t count_factors(const ex & e) const;
 	void append_factors(exvector & v, const ex & e) const;
 	exvector expandchildren(unsigned options) const;
 public:
