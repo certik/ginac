@@ -1,5 +1,11 @@
 This file records noteworthy changes.
 
+1.2.3 (<date>)
+* Added variants of dirac_trace() and color_trace() that take the trace over
+  more than one representation label by specifying a set or list of labels.
+* diracgamma::contract_with() uses Chisholm identities in 4 dimensions to
+  produce more compact results.
+
 1.2.2 (3 August 2004)
 * Added const_preorder_iterator and const_postorder_iterator classes (and
   associated methods ex::pre/postorder_begin/end()) providing tree traversal
