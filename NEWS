@@ -1,8 +1,12 @@
 This file records noteworthy changes.
 
-1.2.4 (<date>)
+1.2.4 (12 October 2004)
 * binomial(n, k) evaluates for non-integer arguments n.
 * Fixed another bug in the series expansion of powers.
+* Li(2,x) now evaluates for +-I.
+* Fixed bug in Li(n,x) (if Li(2,x) was calculated with high precision the
+  enlargement of the look-up table caused a segmentation fault).
+* Optimized Li(2,x).
 
 1.2.3 (13 August 2004)
 * Added variants of dirac_trace() and color_trace() that take the trace over
