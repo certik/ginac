@@ -96,7 +96,7 @@ public:
 	ex eval(int level=0) const;
 	ex to_rational(lst &repl_lst) const;
 	bool match(const ex & pattern, lst & repl_lst) const;
-	ex subs(const lst & ls, const lst & lr, bool no_pattern = false) const;
+	ex subs(const lst & ls, const lst & lr, unsigned options = 0) const;
 protected:
 	int compare_same_type(const basic & other) const;
 	bool is_equal_same_type(const basic & other) const;
@@ -163,7 +163,7 @@ protected:
 	bool is_canonical() const;
 	epvector * expandchildren(unsigned options) const;
 	epvector * evalchildren(int level) const;
-	epvector * subschildren(const lst & ls, const lst & lr, bool no_pattern = false) const;
+	epvector * subschildren(const lst & ls, const lst & lr, unsigned options = 0) const;
 	
 // member variables
 	

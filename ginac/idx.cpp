@@ -351,7 +351,7 @@ ex idx::evalf(int level) const
 	return *this;
 }
 
-ex idx::subs(const lst & ls, const lst & lr, bool no_pattern) const
+ex idx::subs(const lst & ls, const lst & lr, unsigned options) const
 {
 	GINAC_ASSERT(ls.nops() == lr.nops());
 
@@ -372,7 +372,7 @@ ex idx::subs(const lst & ls, const lst & lr, bool no_pattern) const
 	}
 
 	// None, substitute objects in value (not in dimension)
-	const ex &subsed_value = value.subs(ls, lr, no_pattern);
+	const ex &subsed_value = value.subs(ls, lr, options);
 	if (are_ex_trivially_equal(value, subsed_value))
 		return *this;
 

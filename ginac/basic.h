@@ -112,7 +112,7 @@ public: // only const functions please (may break reference counting)
 	virtual ex evalm(void) const;
 	virtual ex series(const relational & r, int order, unsigned options = 0) const;
 	virtual bool match(const ex & pattern, lst & repl_lst) const;
-	virtual ex subs(const lst & ls, const lst & lr, bool no_pattern = false) const;
+	virtual ex subs(const lst & ls, const lst & lr, unsigned options = 0) const;
 	virtual ex normal(lst &sym_lst, lst &repl_lst, int level = 0) const;
 	virtual ex to_rational(lst &repl_lst) const;
 	virtual numeric integer_content(void) const;
@@ -135,7 +135,7 @@ protected: // functions that should be called from class ex only
 	
 	// non-virtual functions in this class
 public:
-	ex subs(const ex & e, bool no_pattern = false) const;
+	ex subs(const ex & e, unsigned options = 0) const;
 	ex diff(const symbol & s, unsigned nth=1) const;
 	int compare(const basic & other) const;
 	bool is_equal(const basic & other) const;

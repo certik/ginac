@@ -146,8 +146,8 @@ public:
 	ex series(const ex & r, int order, unsigned options = 0) const;
 	bool match(const ex & pattern) const;
 	bool match(const ex & pattern, lst & repl_lst) const { return bp->match(pattern, repl_lst); }
-	ex subs(const lst & ls, const lst & lr, bool no_pattern = false) const { return bp->subs(ls, lr, no_pattern); }
-	ex subs(const ex & e, bool no_pattern = false) const { return bp->subs(e, no_pattern); }
+	ex subs(const lst & ls, const lst & lr, unsigned options = 0) const { return bp->subs(ls, lr, options); }
+	ex subs(const ex & e, unsigned options = 0) const { return bp->subs(e, options); }
 	exvector get_free_indices(void) const { return bp->get_free_indices(); }
 	ex simplify_indexed(void) const;
 	ex simplify_indexed(const scalar_products & sp) const;
@@ -425,11 +425,11 @@ inline ex series(const ex & thisex, const ex & r, int order, unsigned options = 
 inline bool match(const ex & thisex, const ex & pattern, lst & repl_lst)
 { return thisex.match(pattern, repl_lst); }
 
-inline ex subs(const ex & thisex, const ex & e)
-{ return thisex.subs(e); }
+inline ex subs(const ex & thisex, const ex & e, unsigned options = 0)
+{ return thisex.subs(e, options); }
 
-inline ex subs(const ex & thisex, const lst & ls, const lst & lr)
-{ return thisex.subs(ls, lr); }
+inline ex subs(const ex & thisex, const lst & ls, const lst & lr, unsigned options = 0)
+{ return thisex.subs(ls, lr, options); }
 
 inline ex simplify_indexed(const ex & thisex)
 { return thisex.simplify_indexed(); }

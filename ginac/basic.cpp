@@ -503,11 +503,11 @@ bool basic::match(const ex & pattern, lst & repl_lst) const
 
 /** Substitute a set of objects by arbitrary expressions. The ex returned
  *  will already be evaluated. */
-ex basic::subs(const lst & ls, const lst & lr, bool no_pattern) const
+ex basic::subs(const lst & ls, const lst & lr, unsigned options) const
 {
 	GINAC_ASSERT(ls.nops() == lr.nops());
 
-	if (no_pattern) {
+	if (options & subs_options::subs_no_pattern) {
 		for (unsigned i=0; i<ls.nops(); i++) {
 			if (is_equal(ex_to<basic>(ls.op(i))))
 				return lr.op(i);
@@ -516,7 +516,7 @@ ex basic::subs(const lst & ls, const lst & lr, bool no_pattern) const
 		for (unsigned i=0; i<ls.nops(); i++) {
 			lst repl_lst;
 			if (match(ex_to<basic>(ls.op(i)), repl_lst))
-				return lr.op(i).subs(repl_lst, true); // avoid infinite recursion when re-substituting the wildcards
+				return lr.op(i).subs(repl_lst, options | subs_options::subs_no_pattern); // avoid infinite recursion when re-substituting the wildcards
 		}
 	}
 
@@ -684,10 +684,10 @@ ex basic::expand(unsigned options) const
  *  replacement arguments: 1) a relational like object==ex and 2) a list of
  *  relationals lst(object1==ex1,object2==ex2,...), which is converted to
  *  subs(lst(object1,object2,...),lst(ex1,ex2,...)). */
-ex basic::subs(const ex & e, bool no_pattern) const
+ex basic::subs(const ex & e, unsigned options) const
 {
 	if (e.info(info_flags::relation_equal)) {
-		return subs(lst(e), no_pattern);
+		return subs(lst(e), options);
 	}
 	if (!e.info(info_flags::list)) {
 		throw(std::invalid_argument("basic::subs(ex): argument must be a list"));
@@ -702,7 +702,7 @@ ex basic::subs(const ex & e, bool no_pattern) const
 		ls.append(r.op(0));
 		lr.append(r.op(1));
 	}
-	return subs(ls, lr, no_pattern);
+	return subs(ls, lr, options);
 }
 
 /** Compare objects syntactically to establish canonical ordering.

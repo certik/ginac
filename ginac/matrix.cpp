@@ -235,14 +235,14 @@ ex matrix::eval(int level) const
 											   status_flags::evaluated);
 }
 
-ex matrix::subs(const lst & ls, const lst & lr, bool no_pattern) const
-{
+ex matrix::subs(const lst & ls, const lst & lr, unsigned options) const
+{	
 	exvector m2(row * col);
 	for (unsigned r=0; r<row; ++r)
 		for (unsigned c=0; c<col; ++c)
-			m2[r*col+c] = m[r*col+c].subs(ls, lr, no_pattern);
+			m2[r*col+c] = m[r*col+c].subs(ls, lr, options);
 
-	return matrix(row, col, m2).basic::subs(ls, lr, no_pattern);
+	return matrix(row, col, m2).basic::subs(ls, lr, options);
 }
 
 // protected

@@ -23,12 +23,14 @@
 #include <iostream>
 #include <vector>
 #include <stdexcept>
+#include <limits>
 
 #include "mul.h"
 #include "add.h"
 #include "power.h"
 #include "operators.h"
 #include "matrix.h"
+#include "lst.h"
 #include "archive.h"
 #include "utils.h"
 
@@ -514,6 +516,130 @@ ex mul::eval_ncmul(const exvector & v) const
 		++i;
 	}
 	return inherited::eval_ncmul(v);
+}
+
+bool tryfactsubs(const ex & origfactor, const ex & patternfactor, unsigned & nummatches, lst & repls)
+{
+	ex origbase;
+	int origexponent;
+	int origexpsign;
+
+	if (is_exactly_a<power>(origfactor) && origfactor.op(1).info(info_flags::integer)) {
+		origbase = origfactor.op(0);
+		int expon = ex_to<numeric>(origfactor.op(1)).to_int();
+		origexponent = expon > 0 ? expon : -expon;
+		origexpsign = expon > 0 ? 1 : -1;
+	} else {
+		origbase = origfactor;
+		origexponent = 1;
+		origexpsign = 1;
+	}
+
+	ex patternbase;
+	int patternexponent;
+	int patternexpsign;
+
+	if (is_exactly_a<power>(patternfactor) && patternfactor.op(1).info(info_flags::integer)) {
+		patternbase = patternfactor.op(0);
+		int expon = ex_to<numeric>(patternfactor.op(1)).to_int();
+		patternexponent = expon > 0 ? expon : -expon;
+		patternexpsign = expon > 0 ? 1 : -1;
+	} else {
+		patternbase = patternfactor;
+		patternexponent = 1;
+		patternexpsign = 1;
+	}
+
+	lst saverepls = repls;
+	if (origexponent < patternexponent || origexpsign != patternexpsign || !origbase.match(patternbase,saverepls))
+		return false;
+	repls = saverepls;
+
+	int newnummatches = origexponent / patternexponent;
+	if (newnummatches < nummatches)
+		nummatches = newnummatches;
+	return true;
+}
+
+ex mul::algebraic_subs_mul(const lst & ls, const lst & lr, unsigned options) const
+{
+	std::vector<bool> subsed(seq.size(), false);
+	exvector subsresult(seq.size());
+
+	for (int i=0; i<ls.nops(); i++) {
+
+		if (is_exactly_a<mul>(ls.op(i))) {
+
+			unsigned nummatches = std::numeric_limits<unsigned>::max();
+			std::vector<bool> currsubsed(seq.size(), false);
+			bool succeed = true;
+			lst repls;
+
+			for (int j=0; j<ls.op(i).nops(); j++) {
+				bool found=false;
+				for (int k=0; k<nops(); k++) {
+					if (currsubsed[k] || subsed[k])
+						continue;
+					if (tryfactsubs(op(k), ls.op(i).op(j), nummatches, repls)) {
+						currsubsed[k] = true;
+						found = true;
+						break;
+					}
+				}
+				if (!found) {
+					succeed = false;
+					break;
+				}
+			}
+			if (!succeed)
+				continue;
+
+			bool foundfirstsubsedfactor = false;
+			for (int j=0; j<subsed.size(); j++) {
+				if (currsubsed[j]) {
+					if (foundfirstsubsedfactor)
+						subsresult[j] = op(j);
+					else {
+						foundfirstsubsedfactor = true;
+						subsresult[j] = op(j) * power(lr.op(i).subs(ex(repls), subs_options::subs_no_pattern) / ls.op(i).subs(ex(repls), subs_options::subs_no_pattern), nummatches);
+					}
+					subsed[j] = true;
+				}
+			}
+
+		} else {
+
+			unsigned nummatches = std::numeric_limits<unsigned>::max();
+			lst repls;
+
+			for (int j=0; j<this->nops(); j++) {
+				if (!subsed[j] && tryfactsubs(op(j), ls.op(i), nummatches, repls)) {
+					subsed[j] = true;
+					subsresult[j] = op(j) * power(lr.op(i).subs(ex(repls), subs_options::subs_no_pattern) / ls.op(i).subs(ex(repls), subs_options::subs_no_pattern), nummatches);
+				}
+			}
+		}
+	}
+
+	bool subsfound = false;
+	for (int i=0; i<subsed.size(); i++) {
+		if (subsed[i]) {
+			subsfound = true;
+			break;
+		}
+	}
+	if (!subsfound)
+		return basic::subs(ls, lr, options | subs_options::subs_algebraic);
+
+	exvector ev; ev.reserve(nops());
+	for (int i=0; i<nops(); i++) {
+		if (subsed[i])
+			ev.push_back(subsresult[i]);
+		else
+			ev.push_back(op(i));
+	}
+
+	return (new mul(ev))->setflag(status_flags::dynallocated);
 }
 
 // protected

@@ -241,7 +241,7 @@ public:
 	ex & let_op(int i);
 	ex map(map_function & f) const;
 	ex eval(int level=0) const;
-	ex subs(const lst & ls, const lst & lr, bool no_pattern = false) const;
+	ex subs(const lst & ls, const lst & lr, unsigned options = 0) const;
 protected:
 	bool is_equal_same_type(const basic & other) const;
 	unsigned return_type(void) const;
@@ -263,7 +263,7 @@ protected:
 protected:
 	bool is_canonical() const;
 	${STLT} evalchildren(int level) const;
-	${STLT} * subschildren(const lst & ls, const lst & lr, bool no_pattern = false) const;
+	${STLT} * subschildren(const lst & ls, const lst & lr, unsigned options = 0) const;
 
 protected:
 	${STLT} seq;
@@ -474,13 +474,13 @@ ex ${CONTAINER}::eval(int level) const
 	return this${CONTAINER}(evalchildren(level));
 }
 
-ex ${CONTAINER}::subs(const lst & ls, const lst & lr, bool no_pattern) const
-{
-	${STLT} *vp = subschildren(ls, lr, no_pattern);
+ex ${CONTAINER}::subs(const lst & ls, const lst & lr, unsigned options) const
+{	
+	${STLT} *vp = subschildren(ls, lr, options);
 	if (vp)
-		return ex_to<basic>(this${CONTAINER}(vp)).basic::subs(ls, lr, no_pattern);
+		return ex_to<basic>(this${CONTAINER}(vp)).basic::subs(ls, lr, options);
 	else
-		return basic::subs(ls, lr, no_pattern);
+		return basic::subs(ls, lr, options);
 }
 
 // protected
@@ -641,7 +641,7 @@ ${STLT} ${CONTAINER}::evalchildren(int level) const
 	return s;
 }
 
-${STLT} * ${CONTAINER}::subschildren(const lst & ls, const lst & lr, bool no_pattern) const
+${STLT} * ${CONTAINER}::subschildren(const lst & ls, const lst & lr, unsigned options) const
 {
 	// returns a NULL pointer if nothing had to be substituted
 	// returns a pointer to a newly created epvector otherwise
@@ -649,7 +649,7 @@ ${STLT} * ${CONTAINER}::subschildren(const lst & ls, const lst & lr, bool no_pat
 
 	${STLT}::const_iterator cit = seq.begin(), end = seq.end();
 	while (cit != end) {
-		const ex & subsed_ex = cit->subs(ls, lr, no_pattern);
+		const ex & subsed_ex = cit->subs(ls, lr, options);
 		if (!are_ex_trivially_equal(*cit, subsed_ex)) {
 
 			// something changed, copy seq, subs and return it
@@ -669,7 +669,7 @@ ${STLT} * ${CONTAINER}::subschildren(const lst & ls, const lst & lr, bool no_pat
 
 			// copy rest
 			while (cit2 != end) {
-				s->push_back(cit2->subs(ls, lr, no_pattern));
+				s->push_back(cit2->subs(ls, lr, options));
 				++cit2;
 			}
 			return s;

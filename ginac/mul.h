@@ -84,6 +84,8 @@ protected:
 	// none
 	
 	// non-virtual functions in this class
+public:
+	ex algebraic_subs_mul(const lst & ls, const lst & lr, unsigned options) const;
 protected:
 	epvector * expandchildren(unsigned options) const;
 };

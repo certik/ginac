@@ -53,7 +53,7 @@ public:
 	unsigned nops() const;
 	ex & let_op(int i);
 	ex evalf(int level = 0) const;
-	ex subs(const lst & ls, const lst & lr, bool no_pattern = false) const;
+	ex subs(const lst & ls, const lst & lr, unsigned options = 0) const;
 
 protected:
 	ex derivative(const symbol & s) const;

@@ -401,13 +401,16 @@ found:		;
 	return inherited::match(pattern, repl_lst);
 }
 
-ex expairseq::subs(const lst &ls, const lst &lr, bool no_pattern) const
-{
-	epvector *vp = subschildren(ls, lr, no_pattern);
+ex expairseq::subs(const lst &ls, const lst &lr, unsigned options) const
+{	
+	if ((options & subs_options::subs_algebraic) && is_exactly_a<mul>(*this))
+		return static_cast<const mul *>(this)->algebraic_subs_mul(ls, lr, options);
+
+	epvector *vp = subschildren(ls, lr, options);
 	if (vp)
 		return ex_to<basic>(thisexpairseq(vp, overall_coeff));
 	else
-		return basic::subs(ls, lr, no_pattern);
+		return basic::subs(ls, lr, options);
 }
 
 // protected
@@ -1559,7 +1562,7 @@ epvector * expairseq::evalchildren(int level) const
  *  @see expairseq::subs()
  *  @return pointer to epvector containing pairs after application of subs,
  *    or NULL pointer if no members were changed. */
-epvector * expairseq::subschildren(const lst &ls, const lst &lr, bool no_pattern) const
+epvector * expairseq::subschildren(const lst &ls, const lst &lr, unsigned options) const
 {
 	GINAC_ASSERT(ls.nops()==lr.nops());
 
@@ -1567,11 +1570,12 @@ epvector * expairseq::subschildren(const lst &ls, const lst &lr, bool no_pattern
 	// is a product or power. In this case we have to recombine the pairs
 	// because the numeric coefficients may be part of the search pattern.
 	bool complex_subs = false;
-	for (unsigned i=0; i<ls.nops(); ++i)
+	for (unsigned i=0; i<ls.nops(); ++i) {
 		if (is_exactly_a<mul>(ls.op(i)) || is_exactly_a<power>(ls.op(i))) {
 			complex_subs = true;
 			break;
 		}
+	}
 
 	if (complex_subs) {
 
@@ -1580,7 +1584,7 @@ epvector * expairseq::subschildren(const lst &ls, const lst &lr, bool no_pattern
 		while (cit != last) {
 
 			const ex &orig_ex = recombine_pair_to_ex(*cit);
-			const ex &subsed_ex = orig_ex.subs(ls, lr, no_pattern);
+			const ex &subsed_ex = orig_ex.subs(ls, lr, options);
 			if (!are_ex_trivially_equal(orig_ex, subsed_ex)) {
 
 				// Something changed, copy seq, subs and return it
@@ -1596,7 +1600,7 @@ epvector * expairseq::subschildren(const lst &ls, const lst &lr, bool no_pattern
 
 				// Copy rest
 				while (cit != last) {
-					s->push_back(split_ex_to_pair(recombine_pair_to_ex(*cit).subs(ls, lr, no_pattern)));
+					s->push_back(split_ex_to_pair(recombine_pair_to_ex(*cit).subs(ls, lr, options)));
 					++cit;
 				}
 				return s;
@@ -1611,7 +1615,7 @@ epvector * expairseq::subschildren(const lst &ls, const lst &lr, bool no_pattern
 		epvector::const_iterator cit = seq.begin(), last = seq.end();
 		while (cit != last) {
 
-			const ex &subsed_ex = cit->rest.subs(ls, lr, no_pattern);
+			const ex &subsed_ex = cit->rest.subs(ls, lr, options);
 			if (!are_ex_trivially_equal(cit->rest, subsed_ex)) {
 			
 				// Something changed, copy seq, subs and return it
@@ -1627,7 +1631,7 @@ epvector * expairseq::subschildren(const lst &ls, const lst &lr, bool no_pattern
 
 				// Copy rest
 				while (cit != last) {
-					s->push_back(combine_ex_with_coeff_to_pair(cit->rest.subs(ls, lr, no_pattern),
+					s->push_back(combine_ex_with_coeff_to_pair(cit->rest.subs(ls, lr, options),
 					                                           cit->coeff));
 					++cit;
 				}

@@ -61,7 +61,7 @@ public:
 	ex evalf(int level=0) const;
 	ex evalm(void) const;
 	ex series(const relational & s, int order, unsigned options = 0) const;
-	ex subs(const lst & ls, const lst & lr, bool no_pattern = false) const;
+	ex subs(const lst & ls, const lst & lr, unsigned options = 0) const;
 	ex normal(lst &sym_lst, lst &repl_lst, int level = 0) const;
 	ex to_rational(lst &repl_lst) const;
 	exvector get_free_indices(void) const;
