@@ -539,7 +539,7 @@ ex basic::series(const relational & r, int order, unsigned options) const
 	try {
 		ldeg = std::abs(deriv.ldegree(s));
 	}
-	catch (runtime_error) {
+	catch (std::runtime_error) {
 		ldeg = 0;
 	}
 	if (ldeg != 0) {
