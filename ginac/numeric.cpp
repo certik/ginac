@@ -758,8 +758,9 @@ const numeric numeric::div(const numeric &other) const
  *  returns result as a numeric object. */
 const numeric numeric::power(const numeric &other) const
 {
-	// Efficiency shortcut: trap the neutral exponent by pointer.
-	if (&other==_num1_p)
+	// Shortcut for efficiency and numeric stability (as in 1.0 exponent):
+	// trap the neutral exponent.
+	if (&other==_num1_p || cln::equal(cln::the<cln::cl_N>(other.value),cln::the<cln::cl_N>(_num1.value)))
 		return *this;
 	
 	if (cln::zerop(cln::the<cln::cl_N>(value))) {
@@ -782,7 +783,8 @@ const numeric numeric::power(const numeric &other) const
  *  an ex object, where the result would end up on the heap anyways. */
 const numeric &numeric::add_dyn(const numeric &other) const
 {
-	// Efficiency shortcut: trap the neutral element by pointer.
+	// Efficiency shortcut: trap the neutral element by pointer.  This hack
+	// is supposed to keep the number of distinct numeric objects low.
 	if (this==_num0_p)
 		return other;
 	else if (&other==_num0_p)
@@ -842,8 +844,10 @@ const numeric &numeric::div_dyn(const numeric &other) const
  *  heap anyways. */
 const numeric &numeric::power_dyn(const numeric &other) const
 {
-	// Efficiency shortcut: trap the neutral exponent by pointer.
-	if (&other==_num1_p)
+	// Efficiency shortcut: trap the neutral exponent (first try by pointer, then
+	// try harder, since calls to cln::expt() below may return amazing results for
+	// floating point exponent 1.0).
+	if (&other==_num1_p || cln::equal(cln::the<cln::cl_N>(other.value),cln::the<cln::cl_N>(_num1.value)))
 		return *this;
 	
 	if (cln::zerop(cln::the<cln::cl_N>(value))) {
