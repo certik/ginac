@@ -38,20 +38,7 @@ class expair
 {
 public:
 	expair() : rest(0), coeff(1) { }
-	~expair() { }
-	expair(const expair & other) : rest(other.rest), coeff(other.coeff)
-	{
-		GINAC_ASSERT(is_exactly_a<numeric>(coeff));
-	}
-	const expair & operator=(const expair & other)
-	{
-		if (this != &other) {
-			rest = other.rest;
-			coeff = other.coeff;
-		}
-		return *this;
-	}
-	
+
 	/** Construct an expair from two ex. */
 	expair(const ex & r, const ex & c) : rest(r), coeff(c)
 	{

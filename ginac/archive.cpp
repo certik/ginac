@@ -320,18 +320,11 @@ const std::string &archive::unatomize(archive_atom id) const
 }
 
 
-/** Copy constructor of archive_node. */
-archive_node::archive_node(const archive_node &other)
-  : a(other.a), props(other.props), has_expression(other.has_expression), e(other.e)
-{
-}
-
-
 /** Assignment operator of archive_node. */
 const archive_node &archive_node::operator=(const archive_node &other)
 {
 	if (this != &other) {
-		a = other.a;
+		// archive &a member doesn't get copied
 		props = other.props;
 		has_expression = other.has_expression;
 		e = other.e;
@@ -513,29 +506,6 @@ ex archive_node::unarchive(lst &sym_lst) const
 	e = f(*this, sym_lst);
 	has_expression = true;
 	return e;
-}
-
-
-/** Assignment operator of property_info. */
-const archive_node::property_info &archive_node::property_info::operator=(const property_info &other)
-{
-	if (this != &other) {
-		type = other.type;
-		name = other.name;
-		count = other.count;
-	}
-	return *this;
-}
-
-/** Assignment operator of property. */
-const archive_node::property &archive_node::property::operator=(const property &other)
-{
-	if (this != &other) {
-		type = other.type;
-		name = other.name;
-		value = other.value;
-	}
-	return *this;
 }
 
 

@@ -1203,16 +1203,6 @@ void spmapkey::debugprint(void) const
 	std::cerr << "(" << v1 << "," << v2 << "," << dim << ")";
 }
 
-scalar_products::scalar_products(const scalar_products & other) : spm(other.spm) {}
-
-const scalar_products & scalar_products::operator=(const scalar_products & other)
-{
-	if (this != &other) {
-		spm = other.spm;
-	}
-	return *this;
-}
-
 void scalar_products::add(const ex & v1, const ex & v2, const ex & sp)
 {
 	spm[spmapkey(v1, v2)] = sp;

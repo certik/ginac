@@ -65,10 +65,6 @@ public:
 	struct property_info {
 		property_info() {}
 		property_info(property_type t, const std::string &n, unsigned c = 1) : type(t), name(n), count(c) {}
-		~property_info() {}
-
-		property_info(const property_info &other) : type(other.type), name(other.name), count(other.count) {}
-		const property_info &operator=(const property_info &other);
 
 		property_type type;	/**< Data type of property. */
 		std::string name;   /**< Name of property. */
@@ -79,9 +75,7 @@ public:
 	archive_node() : a(*dummy_ar_creator()), has_expression(false) {} // hack for cint which always requires a default constructor
 	archive_node(archive &ar) : a(ar), has_expression(false) {}
 	archive_node(archive &ar, const ex &expr);
-	~archive_node() {}
 
-	archive_node(const archive_node &other);
 	const archive_node &operator=(const archive_node &other);
 
 	/** Add property of type "bool" to node. */
@@ -132,10 +126,6 @@ private:
 	struct property {
 		property() {}
 		property(archive_atom n, property_type t, unsigned v) : type(t), name(n), value(v) {}
-		~property() {}
-
-		property(const property &other) : type(other.type), name(other.name), value(other.value) {}
-		const property &operator=(const property &other);
 
 		property_type type; /**< Data type of property. */
 		archive_atom name;  /**< Name of property. */

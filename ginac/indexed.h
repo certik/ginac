@@ -197,7 +197,6 @@ class spmapkey {
 public:
 	spmapkey() : dim(wild()) {}
 	spmapkey(const ex & v1, const ex & v2, const ex & dim = wild());
-	~spmapkey() {}
 
 	bool operator==(const spmapkey &other) const;
 	bool operator<(const spmapkey &other) const;
@@ -216,11 +215,6 @@ typedef std::map<spmapkey, ex> spmap;
  *  @see simplify_indexed */
 class scalar_products {
 public:
-	scalar_products() {}
-	~scalar_products() {}
-	scalar_products(const scalar_products & other);
-	const scalar_products & operator=(const scalar_products & other);
-
 	/** Register scalar product pair and its value. */
 	void add(const ex & v1, const ex & v2, const ex & sp);
 
