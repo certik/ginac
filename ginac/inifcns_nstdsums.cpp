@@ -9,15 +9,14 @@
  *    multiple zeta value                  mZeta(lst(m_1,...,m_k))
  *
  *  Some remarks:
- *    - All formulae used can be looked up in the following publication:
- *      Nielsen's Generalized Polylogarithms, K.S.Kolbig, SIAM J.Math.Anal. 17 (1986), pp. 1232-1258.
- *      This document will be referenced as [Kol] throughout this source code.
+ *    - All formulae used can be looked up in the following publications:
+ *      [Kol] Nielsen's Generalized Polylogarithms, K.S.Kolbig, SIAM J.Math.Anal. 17 (1986), pp. 1232-1258.
+ *    	[Cra] Fast Evaluation of Multiple Zeta Sums, R.E.Crandall, Math.Comp. 67 (1998), pp. 1163-1172.
  *    - Classical polylogarithms (Li) and nielsen's generalized polylogarithms (S) can be numerically
- *    	evaluated in the whole complex plane. And of course, there is still room for speed optimizations ;-).
+ *    	evaluated in the whole complex plane.
  *    - The calculation of classical polylogarithms is speed up by using Euler-Maclaurin summation (EuMac).
  *    - The remaining functions can only be numerically evaluated with arguments lying in the unit sphere
- *      at the moment. Sorry. The evaluation especially for mZeta is very slow ... better not use it
- *      right now.
+ *      at the moment.
  *    - The functions have no series expansion. To do it, you have to convert these functions
  *      into the appropriate objects from the nestedsums library, do the expansion and convert the
  *      result back. 
@@ -157,7 +156,7 @@ static void fill_Xn(int n)
 
 
 // calculates Li(2,x) without EuMac
-static cln::cl_N Li2_series(const cln::cl_N& x)
+static cln::cl_N Li2_do_sum(const cln::cl_N& x)
 {
 	cln::cl_N res = x;
 	cln::cl_N resbuf;
@@ -176,7 +175,7 @@ static cln::cl_N Li2_series(const cln::cl_N& x)
 
 
 // calculates Li(2,x) with EuMac
-static cln::cl_N Li2_series_EuMac(const cln::cl_N& x)
+static cln::cl_N Li2_do_sum_EuMac(const cln::cl_N& x)
 {
 	std::vector<cln::cl_N>::const_iterator it = Xn[0].begin();
 	cln::cl_N u = -cln::log(1-x);
@@ -196,7 +195,7 @@ static cln::cl_N Li2_series_EuMac(const cln::cl_N& x)
 
 
 // calculates Li(n,x), n>2 without EuMac
-static cln::cl_N Lin_series(int n, const cln::cl_N& x)
+static cln::cl_N Lin_do_sum(int n, const cln::cl_N& x)
 {
 	cln::cl_N factor = x;
 	cln::cl_N res = x;
@@ -213,7 +212,7 @@ static cln::cl_N Lin_series(int n, const cln::cl_N& x)
 
 
 // calculates Li(n,x), n>2 with EuMac
-static cln::cl_N Lin_series_EuMac(int n, const cln::cl_N& x)
+static cln::cl_N Lin_do_sum_EuMac(int n, const cln::cl_N& x)
 {
 	std::vector<cln::cl_N>::const_iterator it = Xn[n-2].begin();
 	cln::cl_N u = -cln::log(1-x);
@@ -253,16 +252,16 @@ static cln::cl_N Li_projection(int n, const cln::cl_N& x, const cln::float_forma
 			// it solves also the problem with precision due to the u=-log(1-x) transformation
 			if (cln::abs(cln::realpart(x)) < 0.25) {
 				
-				return Li2_series(x);
+				return Li2_do_sum(x);
 			} else {
-				return Li2_series_EuMac(x);
+				return Li2_do_sum_EuMac(x);
 			}
 		} else {
 			// choose the faster algorithm
 			if (cln::abs(cln::realpart(x)) > 0.75) {
-				return -Li2_series(1-x) - cln::log(x) * cln::log(1-x) + cln::zeta(2);
+				return -Li2_do_sum(1-x) - cln::log(x) * cln::log(1-x) + cln::zeta(2);
 			} else {
-				return -Li2_series_EuMac(1-x) - cln::log(x) * cln::log(1-x) + cln::zeta(2);
+				return -Li2_do_sum_EuMac(1-x) - cln::log(x) * cln::log(1-x) + cln::zeta(2);
 			}
 		}
 	} else {
@@ -277,9 +276,9 @@ static cln::cl_N Li_projection(int n, const cln::cl_N& x, const cln::float_forma
 			// choose the faster algorithm
 			// with n>=12 the "normal" summation always wins against EuMac
 			if ((cln::abs(cln::realpart(x)) < 0.3) || (n >= 12)) {
-				return Lin_series(n, x);
+				return Lin_do_sum(n, x);
 			} else {
-				return Lin_series_EuMac(n, x);
+				return Lin_do_sum_EuMac(n, x);
 			}
 		} else {
 			cln::cl_N result = -cln::expt(cln::log(x), n-1) * cln::log(1-x) / cln::factorial(n-1);
@@ -365,26 +364,25 @@ static numeric Li_num(int n, const numeric& x)
 //////////////////////////////////////////////////////////////////////
 
 
-static cln::cl_N numeric_zsum(int n, std::vector<cln::cl_N>& x, std::vector<cln::cl_N>& m)
+static cln::cl_N multipleLi_do_sum(const std::vector<int>& s, const std::vector<cln::cl_N>& x)
 {
-	cln::cl_N res;
-	if (x.empty()) {
-		return 1;
-	}
-	for (int i=1; i<n; i++) {
-		std::vector<cln::cl_N>::iterator be;
-		std::vector<cln::cl_N>::iterator en;
-		be = x.begin();
-		be++;
-		en = x.end();
-		std::vector<cln::cl_N> xbuf(be, en);
-		be = m.begin();
-		be++;
-		en = m.end();
-		std::vector<cln::cl_N> mbuf(be, en);
-		res = res + cln::expt(x[0],i) / cln::expt(i,m[0]) * numeric_zsum(i, xbuf, mbuf);
-	}
-	return res;
+	const int j = s.size();
+
+	std::vector<cln::cl_N> t(j);
+	cln::cl_F one = cln::cl_float(1, cln::float_format(Digits));
+
+	cln::cl_N t0buf;
+	int q = 0;
+	do {
+		t0buf = t[0];
+		q++;
+		t[j-1] = t[j-1] + cln::expt(x[j-1], q) / cln::expt(cln::cl_I(q),s[j-1]) * one;
+		for (int k=j-2; k>=0; k--) {
+			t[k] = t[k] + t[k+1] * cln::expt(x[k], q+j-1-k) / cln::expt(cln::cl_I(q+j-1-k), s[k]);
+		}
+	} while (t[0] != t0buf);
+	
+	return t[0];
 }
 
 
@@ -405,6 +403,14 @@ static ex Li_eval(const ex& x1, const ex& x2)
 	else {
 		if (x2.info(info_flags::numeric) && (!x2.info(info_flags::crational)))
 			return Li_num(ex_to<numeric>(x1).to_int(), ex_to<numeric>(x2));
+		if (is_a<lst>(x2)) {
+			for (int i=0; i<x2.nops(); i++) {
+				if (!is_a<numeric>(x2.op(i))) {
+					return Li(x1,x2).hold();
+				}
+			}
+			return Li(x1,x2).evalf();
+		}
 		return Li(x1,x2).hold();
 	}
 }
@@ -419,35 +425,25 @@ static ex Li_evalf(const ex& x1, const ex& x2)
 	// multiple polylogs
 	else if (is_a<lst>(x1) && is_a<lst>(x2)) {
 		for (int i=0; i<x1.nops(); i++) {
-			if (!is_a<numeric>(x1.op(i)))
+			if (!x1.op(i).info(info_flags::posint)) {
 				return Li(x1,x2).hold();
-			if (!is_a<numeric>(x2.op(i)))
+			}
+			if (!is_a<numeric>(x2.op(i))) {
 				return Li(x1,x2).hold();
-			if (x2.op(i) >= 1)
+			}
+			if (x2.op(i) >= 1) {
 				return Li(x1,x2).hold();
+			}
 		}
 
-		cln::cl_N m_1 = ex_to<numeric>(x1.op(x1.nops()-1)).to_cl_N();
-		cln::cl_N x_1 = ex_to<numeric>(x2.op(x2.nops()-1)).to_cl_N();
+		std::vector<int> m;
 		std::vector<cln::cl_N> x;
-		std::vector<cln::cl_N> m;
-		const int nops = ex_to<numeric>(x1.nops()).to_int();
-		for (int i=nops-2; i>=0; i--) {
-			m.push_back(ex_to<numeric>(x1.op(i)).to_cl_N());
+		for (int i=ex_to<numeric>(x1.nops()).to_int()-1; i>=0; i--) {
+			m.push_back(ex_to<numeric>(x1.op(i)).to_int());
 			x.push_back(ex_to<numeric>(x2.op(i)).to_cl_N());
 		}
 
-		cln::cl_N res;
-		cln::cl_N resbuf;
-		for (int i=nops; true; i++) {
-			resbuf = res;
-			res = res + cln::expt(x_1,i) / cln::expt(i,m_1) * numeric_zsum(i, x, m);
-			if (cln::zerop(res-resbuf))
-				break;
-		}
-
-		return numeric(res);
-
+		return numeric(multipleLi_do_sum(m, x));
 	}
 
 	return Li(x1,x2).hold();
@@ -656,7 +652,7 @@ static cln::cl_N b_k(int k)
 
 
 // helper function for S(n,p,x)
-static cln::cl_N S_series(int n, int p, const cln::cl_N& x, const cln::float_format_t& prec)
+static cln::cl_N S_do_sum(int n, int p, const cln::cl_N& x, const cln::float_format_t& prec)
 {
 	if (p==1) {
 		return Li_projection(n+1, x, prec);
@@ -705,7 +701,7 @@ static cln::cl_N S_projection(int n, int p, const cln::cl_N& x, const cln::float
 			cln::cl_N res2;
 			for (int r=0; r<p; r++) {
 				res2 = res2 + cln::expt(cln::cl_I(-1),r) * cln::expt(cln::log(1-x),r)
-					* S_series(p-r,n-s,1-x,prec) / cln::factorial(r);
+					* S_do_sum(p-r,n-s,1-x,prec) / cln::factorial(r);
 			}
 			result = result + cln::expt(cln::log(x),s) * (S_num(n-s,p,1).to_cl_N() - res2) / cln::factorial(s);
 		}
@@ -713,7 +709,7 @@ static cln::cl_N S_projection(int n, int p, const cln::cl_N& x, const cln::float
 		return result;
 	}
 	
-	return S_series(n, p, x, prec);
+	return S_do_sum(n, p, x, prec);
 }
 
 
@@ -835,10 +831,6 @@ static ex S_eval(const ex& x1, const ex& x2, const ex& x3)
 static ex S_evalf(const ex& x1, const ex& x2, const ex& x3)
 {
 	if (is_a<numeric>(x1) && is_a<numeric>(x2) && is_a<numeric>(x3)) {
-		if ((x3 == -1) && (x2 != 1)) {
-			// no formula to evaluate this ... sorry
-//			return S(x1,x2,x3).hold();
-		}
 		return S_num(ex_to<numeric>(x1).to_int(), ex_to<numeric>(x2).to_int(), ex_to<numeric>(x3));
 	}
 	return S(x1,x2,x3).hold();
@@ -865,22 +857,28 @@ REGISTER_FUNCTION(S, eval_func(S_eval).evalf_func(S_evalf).do_not_evalf_params()
 //////////////////////////////////////////////////////////////////////
 
 
-static cln::cl_N numeric_harmonic(int n, std::vector<cln::cl_N>& m)
+static cln::cl_N H_do_sum(const std::vector<int>& s, const cln::cl_N& x)
 {
-	cln::cl_N res;
-	if (m.empty()) {
-		return 1;
-	}
-	for (int i=1; i<n; i++) {
-		std::vector<cln::cl_N>::iterator be;
-		std::vector<cln::cl_N>::iterator en;
-		be = m.begin();
-		be++;
-		en = m.end();
-		std::vector<cln::cl_N> mbuf(be, en);
-		res = res + cln::recip(cln::expt(i,m[0])) * numeric_harmonic(i, mbuf);
-	}
-	return res;
+	const int j = s.size();
+
+	std::vector<cln::cl_N> t(j);
+
+	cln::cl_F one = cln::cl_float(1, cln::float_format(Digits));
+	cln::cl_N factor = cln::expt(x, j) * one;
+	cln::cl_N t0buf;
+	int q = 0;
+	do {
+		t0buf = t[0];
+		q++;
+		t[j-1] = t[j-1] + 1 / cln::expt(cln::cl_I(q),s[j-1]);
+		for (int k=j-2; k>=1; k--) {
+			t[k] = t[k] + t[k+1] / cln::expt(cln::cl_I(q+j-1-k), s[k]);
+		}
+		t[0] = t[0] + t[1] * factor / cln::expt(cln::cl_I(q+j-1), s[0]);
+		factor = factor * x;
+	} while (t[0] != t0buf);
+	
+	return t[0];
 }
 
 
@@ -906,32 +904,29 @@ static ex H_evalf(const ex& x1, const ex& x2)
 {
 	if (is_a<lst>(x1) && is_a<numeric>(x2)) {
 		for (int i=0; i<x1.nops(); i++) {
-			if (!is_a<numeric>(x1.op(i)))
+			if (!x1.op(i).info(info_flags::posint)) {
 				return H(x1,x2).hold();
+			}
 		}
-		if (x2 >= 1) {
+		cln::cl_N x = ex_to<numeric>(x2).to_cl_N();
+		if (x == 1) {
+			lst x1rev;
+			for (int i=x1.nops()-1; i>=0; i--) {
+				x1rev.append(x1.op(i));
+			}
+			return mZeta(x1rev).evalf();
+		}
+		const int j = x1.nops();
+		if (x2 > 1 || j < 2) {
 			return H(x1,x2).hold();
 		}
 
-		cln::cl_N m_1 = ex_to<numeric>(x1.op(x1.nops()-1)).to_cl_N();
-		cln::cl_N x_1 = ex_to<numeric>(x2).to_cl_N();
-		std::vector<cln::cl_N> m;
-		const int nops = ex_to<numeric>(x1.nops()).to_int();
-		for (int i=nops-2; i>=0; i--) {
-			m.push_back(ex_to<numeric>(x1.op(i)).to_cl_N());
+		std::vector<int> r(j);
+		for (int i=0; i<j; i++) {
+			r[i] = ex_to<numeric>(x1.op(i)).to_int();
 		}
 
-		cln::cl_N res;
-		cln::cl_N resbuf;
-		for (int i=nops; true; i++) {
-			resbuf = res;
-			res = res + cln::expt(x_1,i) / cln::expt(i,m_1) * numeric_harmonic(i, m);
-			if (cln::zerop(res-resbuf))
-				break;
-		}
-
-		return numeric(res);
-
+		return numeric(H_do_sum(r,x));
 	}
 
 	return H(x1,x2).hold();
@@ -981,6 +976,7 @@ static void halfcyclic_convolute(const std::vector<cln::cl_N>& a, const std::vec
 }
 
 
+// [Cra] section 4
 static void initcX(const std::vector<int>& s)
 {
 	const int k = s.size();
@@ -1017,6 +1013,7 @@ static void initcX(const std::vector<int>& s)
 }
 
 
+// [Cra] section 4
 static cln::cl_N crandall_Y_loop(const cln::cl_N& Sqk)
 {
 	cln::cl_F one = cln::cl_float(1, cln::float_format(Digits));
@@ -1034,6 +1031,7 @@ static cln::cl_N crandall_Y_loop(const cln::cl_N& Sqk)
 }
 
 
+// [Cra] section 4
 static void calc_f(int maxr)
 {
 	f_kj.clear();
@@ -1063,6 +1061,7 @@ static void calc_f(int maxr)
 }
 
 
+// [Cra] (3.1)
 static cln::cl_N crandall_Z(const std::vector<int>& s)
 {
 	const int j = s.size();
@@ -1098,7 +1097,8 @@ static cln::cl_N crandall_Z(const std::vector<int>& s)
 }
 
 
-static cln::cl_N mZeta_Crandall(const std::vector<int>& s)
+// [Cra] (2.4)
+static cln::cl_N mZeta_do_sum_Crandall(const std::vector<int>& s)
 {
 	std::vector<int> r = s;
 	const int j = r.size();
@@ -1177,7 +1177,7 @@ static cln::cl_N mZeta_Crandall(const std::vector<int>& s)
 }
 
 
-static cln::cl_N mZeta_ordinary(const std::vector<int>& r)
+static cln::cl_N mZeta_do_sum_simple(const std::vector<int>& r)
 {
 	const int j = r.size();
 
@@ -1244,9 +1244,9 @@ static ex mZeta_evalf(const ex& x1)
 		// this is still a bit clumsy
 		int limit = (Digits>17) ? 10 : 6;
 		if (r[0]<limit || (j>3 && r[1]<limit/2)) {
-			return numeric(mZeta_Crandall(r));
+			return numeric(mZeta_do_sum_Crandall(r));
 		} else {
-			return numeric(mZeta_ordinary(r));
+			return numeric(mZeta_do_sum_simple(r));
 		}
 	} else if (x1.info(info_flags::posint) && (x1 != 1)) {
 		return numeric(cln::zeta(ex_to<numeric>(x1).to_int()));
