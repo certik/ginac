@@ -9,31 +9,79 @@ This file records noteworthy changes.
 * print_options
 * subs_options
 
-Backlog from 1.0.n:
+1.0.13 (27 January 2003)
+* Contracting epsilon tensors with Euclidean indices now works.
+* Improved dummy index symmetrization in sums.
+* Added dirac_gammaL/R(), which can be used instead of dirac_gamma6/7()
+  but are single objects, to allow for a more compact notation of Dirac
+  strings.
+* Powers with negative numeric exponents are printed as fractions in the
+  LaTeX output.
+* Added symbolic_matrix() for the convenient creation of matrices filled
+  with symbols.
+* Added collect_common_factors() which collects common factors from the
+  terms of sums.
+* simplify_indexed() converts "gamma~mu*p.mu" to "p\".
+
+1.0.12 (30 October 2002)
+* Fixed a bug in power::expand() that could produce invalid expressions.
+* The input parser no longer ignores extra data following accepted input.
+* Improved the CLN C-source output (integers are printed as integers, and
+  floating point numbers include the precision).
+* Fixed a problem in the LaTeX-output of negative fractions.
+* Added print_latex() and print_csrc() to ginsh.
+* The sprem() function is now public.
+
+1.0.11 (18 September 2002)
+* Fixed a possible memory corruption in contractions of indexed objects with
+  delta or metric tensors.
+* Computing the derivative of a power series object with respect to a symbol
+  that is not the expansion variable now works correctly.
+* Several bugfixes in code generation.
+
+1.0.10 (24 July 2002)
 * Powers of indexed objects are now parenthesized correctly in LaTeX output.
 * Input parser handles indices (they have to be specified in the same list
   as the symbols).
 * Added some limited support for subspaces in the idx and tensor classes.
 * Fixed a bug in canonicalize() (antisymmetric canonicalization of an already
   sorted list containing two or more equal objects failed to return 0).
+
+1.0.9 (11 June 2002)
 * simplify_indexed() now raises/lowers dummy indices to canonicalize the index
   variance. This allows some simplifications that weren't possible before,
   like eps~a.b~c~d*X.a*X~b -> 0 and X.a~a-X~a.a -> 0.
 * Implemented relational::subs().
 * Fixed bug in simplify_ncmul() for clifford objects.
-* Fixed LaTeX output of indexed and matrix objects and powers thereof.
-* Fixed matrix::pow(n) for n==0.
+
+1.0.8 (31 March 2002)
+* Improvements in memory usage of the expand() methods.
+
+1.0.7 (18 March 2002)
+* Fixed LaTeX output of indexed and matrix objects.
+* Fixed matrix::pow(n) for n==0 and added helper functions to create unit
+  matrices "ex unit_matrix(unsigned, unsigned)".
+
+1.0.6 (4 March 2002)
 * "(x+1).subs(x==x-1)" now returns the correct result "x" instead of "x-1".
+
+1.0.5 (27 January 2002)
 * (l)degree(s), coeff(s, n) and collect(s) were extended to accept expressions
   of any class (except add/mul/ncmul/numeric) for "s". They should even work
   if "s" is a "power" object, as long as the exponent is non-integer, but with
   some limitations. For example, you can "collect(a*2^x+b*2^x, 2^x)" to get
   "(a+b)*2^x", but "degree(2^(3*x), 2^x)" yields 0 instead of 3).
+* Fixed a small output bug.
+
+1.0.4 (24 January 2002)
 * Speedup in expand().
 * Faster Bernoulli numbers (Markus Nullmeier).
+* Some minor bugfixes and documentation updates.
+
+1.0.3 (21 December 2001)
 * Fixed a bug where quo() would call vector::reserve() with a negative
   argument.
-* Several small bugfices in code generation, output and documentation.
+* Fix several bugs in code generation.
 
 1.0.2 (19 December 2001)
 * Input parser recognizes "sqrt()", which is also used in the output.
