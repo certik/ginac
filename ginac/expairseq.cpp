@@ -549,16 +549,15 @@ unsigned expairseq::return_type(void) const
 unsigned expairseq::calchash(void) const
 {
 	unsigned v = golden_ratio_hash(this->tinfo());
-	epvector::const_iterator i = seq.begin(), end = seq.end();
+	epvector::const_iterator i = seq.begin();
+	const epvector::const_iterator end = seq.end();
 	while (i != end) {
-#if !EXPAIRSEQ_USE_HASHTAB
-		v = rotate_left_31(v); // rotation would spoil commutativity
-#endif // EXPAIRSEQ_USE_HASHTAB
 		v ^= i->rest.gethash();
 #if !EXPAIRSEQ_USE_HASHTAB
+		// rotation spoils commutativity!
 		v = rotate_left_31(v);
 		v ^= i->coeff.gethash();
-#endif // EXPAIRSEQ_USE_HASHTAB
+#endif // !EXPAIRSEQ_USE_HASHTAB
 		++i;
 	}
 	
