@@ -40,7 +40,7 @@
  */
 
 /*
- *  GiNaC Copyright (C) 1999-2003 Johannes Gutenberg University Mainz, Germany
+ *  GiNaC Copyright (C) 1999-2004 Johannes Gutenberg University Mainz, Germany
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -937,6 +937,10 @@ REGISTER_FUNCTION(S,
 namespace {
 
 
+// regulates the pole (used by 1/x-transformation)
+symbol H_polesign("IMSIGN");
+
+
 // forward declaration
 ex convert_from_RV(const lst& parameterlst, const ex& arg);
 
@@ -1206,7 +1210,7 @@ struct map_trafo_H_1overx : public map_function
 				// if all parameters are either zero or one return the transformed function
 				if (find(parameter.begin(), parameter.end(), 0) == parameter.end()) {
 					map_trafo_H_mult unify;
-					return unify((pow(H(lst(1),1/arg).hold() + H(lst(0),1/arg).hold() - I*Pi, parameter.nops()) / 
+					return unify((pow(H(lst(1),1/arg).hold() + H(lst(0),1/arg).hold() + H_polesign, parameter.nops()) / 
 								factorial(parameter.nops())).expand());
 				} else if (find(parameter.begin(), parameter.end(), 1) == parameter.end()) {
 					return pow(-1, parameter.nops()) * H(parameter, 1/arg).hold();
@@ -1469,6 +1473,11 @@ static ex H_evalf(const ex& x1, const ex& x2)
 			ex res = trafo(H(convert_to_RV(ex_to<lst>(x1)), xtemp));
 			map_trafo_H_convert converter;
 			res = converter(res);
+			if (cln::imagpart(x) <= 0) {
+				res = res.subs(H_polesign == -I*Pi);
+			} else {
+				res = res.subs(H_polesign == I*Pi);
+			}
 			return res.subs(xtemp==x2).evalf();
 		}
 
