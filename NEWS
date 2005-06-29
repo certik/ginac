@@ -1,8 +1,9 @@
 This file records noteworthy changes.
 
 1.3.2 (<DATE>)
-* GCD avoids to produce expanded expressions. [A. Sheplyakov]
+* GCD avoids to produce expanded expressions.
 * Fixed bug in expanding expressions containing dummy indices.
+* Fixed static initialization order bug.
 
 1.3.1 (04 May 2005)
 * integral() and eval_integ() can be used from ginsh.
