@@ -1,5 +1,8 @@
 This file records noteworthy changes.
 
+1.3.3 (<date>)
+* Added fsolve() numerical univariate real-valued function solver.
+
 1.3.2 (10 July 2005)
 * GCD avoids to produce expanded expressions.
 * Fixed bug in expanding expressions containing dummy indices.
