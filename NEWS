@@ -1,7 +1,16 @@
 This file records noteworthy changes.
 
 1.3.3 (<date>)
+* Fixed bug occuring in algebraic substitutions with expressions involving
+  indices.
+* Fixed bug that selected the wrong algorithm for determinants of purely
+  numeric matrices with at least one floating point element.
+* Fixed bug in function H that caused an infinite recursion for arguments
+  around +-I.
+* Fixed const-correctness in printing handler for GCC 4.0.2
+* Made lookup in adaptivesimpson precision-aware.
 * Added fsolve() numerical univariate real-valued function solver.
+* Small cleanups. Less warnings with latest GCC.
 
 1.3.2 (10 July 2005)
 * GCD avoids to produce expanded expressions.
