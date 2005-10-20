@@ -9,6 +9,7 @@ This file records noteworthy changes.
   around +-I.
 * Fixed const-correctness in printing handler for GCC 4.0.2
 * Made lookup in adaptivesimpson precision-aware.
+* Added series expansion for functions (classical) Li and S around x==0.
 * Added fsolve() numerical univariate real-valued function solver.
 * Added functions sub_matrix() and reduced_matrix().
 * Small cleanups. Less warnings with latest GCC.
