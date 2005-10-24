@@ -1,13 +1,13 @@
 This file records noteworthy changes.
 
-1.3.3 (<date>)
+1.3.3 (2005-10-24)
 * Fixed bug occuring in algebraic substitutions with expressions involving
   indices.
 * Fixed bug that selected the wrong algorithm for determinants of purely
   numeric matrices with at least one floating point element.
 * Fixed bug in function H that caused an infinite recursion for arguments
   around +-I.
-* Fixed const-correctness in printing handler for GCC 4.0.2
+* Fixed const-correctness in printing handler for GCC 4.0.2.
 * Made lookup in adaptivesimpson precision-aware.
 * Added series expansion for functions (classical) Li and S around x==0.
 * Added fsolve() numerical univariate real-valued function solver.
