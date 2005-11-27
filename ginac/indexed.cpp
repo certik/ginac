@@ -704,6 +704,9 @@ static void product_to_exvector(const ex & e, exvector & v, bool & non_commutati
 	}
 }
 
+// Forward declaration needed in absence of friend injection, C.f. [namespace.memdef]:
+ex simplify_indexed(const ex & e, exvector & free_indices, exvector & dummy_indices, const scalar_products & sp);
+
 /** Simplify product of indexed expressions (commutative, noncommutative and
  *  simple squares), return list of free indices. */
 ex simplify_indexed_product(const ex & e, exvector & free_indices, exvector & dummy_indices, const scalar_products & sp)
