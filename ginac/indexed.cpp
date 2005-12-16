@@ -297,6 +297,9 @@ ex indexed::eval(int level) const
 		return f * thiscontainer(v);
 	}
 
+	if(this->tinfo()==TINFO_indexed && seq.size()==1)
+		return base;
+
 	// Canonicalize indices according to the symmetry properties
 	if (seq.size() > 2) {
 		exvector v = seq;
@@ -532,6 +535,15 @@ exvector integral::get_free_indices() const
 	return f.get_free_indices();
 }
 
+template<class T> size_t number_of_type(const exvector&v)
+{
+	size_t number = 0;
+	for(exvector::const_iterator i=v.begin(); i!=v.end(); ++i)
+		if(is_exactly_a<T>(*i))
+			++number;
+	return number;
+}
+
 /** Rename dummy indices in an expression.
  *
  *  @param e Expression to work on
@@ -540,10 +552,10 @@ exvector integral::get_free_indices() const
  *  @param global_dummy_indices The set of dummy indices that have appeared
  *    before and which we would like to use in "e", too. This gets updated
  *    by the function */
-static ex rename_dummy_indices(const ex & e, exvector & global_dummy_indices, exvector & local_dummy_indices)
+template<class T> static ex rename_dummy_indices(const ex & e, exvector & global_dummy_indices, exvector & local_dummy_indices)
 {
-	size_t global_size = global_dummy_indices.size(),
-	       local_size = local_dummy_indices.size();
+	size_t global_size = number_of_type<T>(global_dummy_indices),
+	       local_size = number_of_type<T>(local_dummy_indices);
 
 	// Any local dummy indices at all?
 	if (local_size == 0)
@@ -557,7 +569,7 @@ static ex rename_dummy_indices(const ex & e, exvector & global_dummy_indices, ex
 		int remaining = local_size - global_size;
 		exvector::const_iterator it = local_dummy_indices.begin(), itend = local_dummy_indices.end();
 		while (it != itend && remaining > 0) {
-			if (find_if(global_dummy_indices.begin(), global_dummy_indices.end(), bind2nd(op0_is_equal(), *it)) == global_dummy_indices.end()) {
+			if (is_exactly_a<T>(*it) && find_if(global_dummy_indices.begin(), global_dummy_indices.end(), bind2nd(idx_is_equal_ignore_dim(), *it)) == global_dummy_indices.end()) {
 				global_dummy_indices.push_back(*it);
 				global_size++;
 				remaining--;
@@ -575,11 +587,13 @@ static ex rename_dummy_indices(const ex & e, exvector & global_dummy_indices, ex
 	exvector local_syms, global_syms;
 	local_syms.reserve(local_size);
 	global_syms.reserve(local_size);
-	for (size_t i=0; i<local_size; i++)
-		local_syms.push_back(local_dummy_indices[i].op(0));
+	for (size_t i=0; local_syms.size()!=local_size; i++)
+		if(is_exactly_a<T>(local_dummy_indices[i]))
+			local_syms.push_back(local_dummy_indices[i].op(0));
 	shaker_sort(local_syms.begin(), local_syms.end(), ex_is_less(), ex_swap());
-	for (size_t i=0; i<local_size; i++) // don't use more global symbols than necessary
-		global_syms.push_back(global_dummy_indices[i].op(0));
+	for (size_t i=0; global_syms.size()!=local_size; i++) // don't use more global symbols than necessary
+		if(is_exactly_a<T>(global_dummy_indices[i]))
+			global_syms.push_back(global_dummy_indices[i].op(0));
 	shaker_sort(global_syms.begin(), global_syms.end(), ex_is_less(), ex_swap());
 
 	// Remove common indices
@@ -707,6 +721,21 @@ static void product_to_exvector(const ex & e, exvector & v, bool & non_commutati
 // Forward declaration needed in absence of friend injection, C.f. [namespace.memdef]:
 ex simplify_indexed(const ex & e, exvector & free_indices, exvector & dummy_indices, const scalar_products & sp);
 
+template<class T> ex idx_symmetrization(const ex& r,const exvector& local_dummy_indices)
+{	exvector dummy_syms;
+	dummy_syms.reserve(r.nops());
+	for (exvector::const_iterator it = local_dummy_indices.begin(); it != local_dummy_indices.end(); ++it)
+			if(is_exactly_a<T>(*it))
+				dummy_syms.push_back(it->op(0));
+	if(dummy_syms.size() < 2)
+		return r;
+	ex q=symmetrize(r, dummy_syms);
+	return q;
+}
+
+// Forward declaration needed in absence of friend injection, C.f. [namespace.memdef]:
+ex simplify_indexed(const ex & e, exvector & free_indices, exvector & dummy_indices, const scalar_products & sp);
+
 /** Simplify product of indexed expressions (commutative, noncommutative and
  *  simple squares), return list of free indices. */
 ex simplify_indexed_product(const ex & e, exvector & free_indices, exvector & dummy_indices, const scalar_products & sp)
@@ -759,20 +788,12 @@ try_again:
 
 			// At least one dummy index, is it a defined scalar product?
 			bool contracted = false;
-			if (free.empty()) {
+			if (free.empty() && it1->nops()==2 && it2->nops()==2) {
 
-				// Find minimal dimension of all indices of both factors
-				exvector::const_iterator dit = ex_to<indexed>(*it1).seq.begin() + 1, ditend = ex_to<indexed>(*it1).seq.end();
-				ex dim = ex_to<idx>(*dit).get_dim();
-				++dit;
-				for (; dit != ditend; ++dit) {
-					dim = minimal_dim(dim, ex_to<idx>(*dit).get_dim());
-				}
-				dit = ex_to<indexed>(*it2).seq.begin() + 1;
-				ditend = ex_to<indexed>(*it2).seq.end();
-				for (; dit != ditend; ++dit) {
-					dim = minimal_dim(dim, ex_to<idx>(*dit).get_dim());
-				}
+				ex dim = minimal_dim(
+					ex_to<idx>(it1->op(1)).get_dim(),
+					ex_to<idx>(it2->op(1)).get_dim()
+				);
 
 				// User-defined scalar product?
 				if (sp.is_defined(*it1, *it2, dim)) {
@@ -867,19 +888,26 @@ contraction_done:
 	// The result should be symmetric with respect to exchange of dummy
 	// indices, so if the symmetrization vanishes, the whole expression is
 	// zero. This detects things like eps.i.j.k * p.j * p.k = 0.
-	if (local_dummy_indices.size() >= 2) {
-		exvector dummy_syms;
-		dummy_syms.reserve(local_dummy_indices.size());
-		for (exvector::const_iterator it = local_dummy_indices.begin(); it != local_dummy_indices.end(); ++it)
-			dummy_syms.push_back(it->op(0));
-		if (symmetrize(r, dummy_syms).is_zero()) {
-			free_indices.clear();
-			return _ex0;
-		}
+	ex q = idx_symmetrization<idx>(r, local_dummy_indices);
+	if (q.is_zero()) {
+		free_indices.clear();
+		return _ex0;
+	}
+	q = idx_symmetrization<varidx>(q, local_dummy_indices);
+	if (q.is_zero()) {
+		free_indices.clear();
+		return _ex0;
+	}
+	q = idx_symmetrization<spinidx>(q, local_dummy_indices);
+	if (q.is_zero()) {
+		free_indices.clear();
+		return _ex0;
 	}
 
 	// Dummy index renaming
-	r = rename_dummy_indices(r, dummy_indices, local_dummy_indices);
+	r = rename_dummy_indices<idx>(r, dummy_indices, local_dummy_indices);
+	r = rename_dummy_indices<varidx>(r, dummy_indices, local_dummy_indices);
+	r = rename_dummy_indices<spinidx>(r, dummy_indices, local_dummy_indices);
 
 	// Product of indexed object with a scalar?
 	if (is_exactly_a<mul>(r) && r.nops() == 2
@@ -946,6 +974,17 @@ public:
 	}
 };
 
+bool hasindex(const ex &x, const ex &sym)
+{	
+	if(is_a<idx>(x) && x.op(0)==sym)
+		return true;
+	else
+		for(size_t i=0; i<x.nops(); ++i)
+			if(hasindex(x.op(i), sym))
+				return true;
+	return false;
+}
+
 /** Simplify indexed expression, return list of free indices. */
 ex simplify_indexed(const ex & e, exvector & free_indices, exvector & dummy_indices, const scalar_products & sp)
 {
@@ -974,7 +1013,10 @@ ex simplify_indexed(const ex & e, exvector & free_indices, exvector & dummy_indi
 		}
 
 		// Rename the dummy indices
-		return rename_dummy_indices(e_expanded, dummy_indices, local_dummy_indices);
+		e_expanded = rename_dummy_indices<idx>(e_expanded, dummy_indices, local_dummy_indices);
+		e_expanded = rename_dummy_indices<varidx>(e_expanded, dummy_indices, local_dummy_indices);
+		e_expanded = rename_dummy_indices<spinidx>(e_expanded, dummy_indices, local_dummy_indices);
+		return e_expanded;
 	}
 
 	// Simplification of sum = sum of simplifications, check consistency of
@@ -1018,18 +1060,19 @@ ex simplify_indexed(const ex & e, exvector & free_indices, exvector & dummy_indi
 		if (num_terms_orig < 2 || dummy_indices.size() < 2)
 			return sum;
 
-		// Yes, construct vector of all dummy index symbols
-		exvector dummy_syms;
-		dummy_syms.reserve(dummy_indices.size());
-		for (exvector::const_iterator it = dummy_indices.begin(); it != dummy_indices.end(); ++it)
-			dummy_syms.push_back(it->op(0));
-
 		// Chop the sum into terms and symmetrize each one over the dummy
 		// indices
 		std::vector<terminfo> terms;
 		for (size_t i=0; i<sum.nops(); i++) {
 			const ex & term = sum.op(i);
-			ex term_symm = symmetrize(term, dummy_syms);
+			exvector dummy_indices_of_term;
+			dummy_indices_of_term.reserve(dummy_indices.size());
+			for(exvector::iterator i=dummy_indices.begin(); i!=dummy_indices.end(); ++i)
+				if(hasindex(term,i->op(0)))
+					dummy_indices_of_term.push_back(*i);
+			ex term_symm = idx_symmetrization<idx>(term, dummy_indices_of_term);
+			term_symm = idx_symmetrization<varidx>(term_symm, dummy_indices_of_term);
+			term_symm = idx_symmetrization<spinidx>(term_symm, dummy_indices_of_term);
 			if (term_symm.is_zero())
 				continue;
 			terms.push_back(terminfo(term, term_symm));
