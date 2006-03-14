@@ -1,5 +1,12 @@
 This file records noteworthy changes.
 
+1.3.4 (2006-03-??)
+* More general index dimensions are now possible.
+* Improved algebraic substitutions.
+* Fixed bug in function bernoulli.
+* Fixed wrong matching in .has(). 
+* Code clean-up and preparations for upcoming cln 1.2.
+
 1.3.3 (2005-10-24)
 * Fixed bug occuring in algebraic substitutions with expressions involving
   indices.
