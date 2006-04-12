@@ -1,9 +1,11 @@
 This file records noteworthy changes.
 
-1.3.4 (2006-03-??)
+1.3.4 (2006-04-12)
 * More general index dimensions are now possible.
 * Improved algebraic substitutions.
 * Fixed wrong matching in .has(). 
+* Fixed bug in differentiation of a power.
+* collect_common_factors also works with negative powers of common factors now.
 * Code clean-up and preparations for upcoming cln 1.2.
 
 1.3.3 (2005-10-24)
