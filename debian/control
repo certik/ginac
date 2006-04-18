@@ -5,12 +5,14 @@ Maintainer: Richard Kreckel <kreckel@ginac.de>
 Build-Depends: cdbs (>= 0.4.28), debhelper (>= 4.0.0), libcln-dev, libgmp3-dev, libreadline5-dev, flex, bison
 Standards-Version: 3.6.2
 
-Package: libginac1.3
+Package: libginac1.3c2a
 Architecture: any
 Section: libs
 Depends: ${shlibs:Depends}
+Conflicts: libginac1.3, libginac1.3c2
+Replaces: libginac1.3, libginac1.3c2
 Suggests: ginac-tools
-Description: The GiNaC framework (runtime library)
+Description: The GiNaC symbolic framework (runtime library)
  GiNaC (which stands for "GiNaC is Not a CAS (Computer Algebra System)") is a
  library for doing symbolic (i.e. non-numeric) computation directly in the C++
  programming language.
@@ -21,10 +23,10 @@ Description: The GiNaC framework (runtime library)
 Package: libginac-dev
 Architecture: any
 Section: libdevel
-Depends: libginac1.3 (= ${Source-Version}), libc6-dev, g++, libcln-dev
+Depends: libginac1.3c2a (= ${Source-Version}), libc6-dev, g++, libcln-dev
 Recommends: info | info-browser, libginac1.3-dbg (= ${Source-Version})
 Suggests: ginac-tools
-Description: The GiNaC framework (development files)
+Description: The GiNaC symbolic framework (development files)
  GiNaC (which stands for "GiNaC is Not a CAS (Computer Algebra System)") is a
  library for doing symbolic (i.e. non-numeric) computation directly in the C++
  programming language.
@@ -37,7 +39,7 @@ Architecture: any
 Section: math
 Depends: ${shlibs:Depends}
 Recommends: doc-base
-Description: Some tools for the GiNaC framework
+Description: Some tools for the GiNaC symbolic framework
  GiNaC (which stands for "GiNaC is Not a CAS (Computer Algebra System)") is a
  library for doing symbolic (i.e. non-numeric) computation directly in the C++
  programming language.
@@ -46,12 +48,14 @@ Description: Some tools for the GiNaC framework
  interactive shell) and viewgar (for inspecting GiNaC archive files).  See
  <http://www.ginac.de/> for detailed information about GiNaC.
 
-Package: libginac1.3-dbg
+Package: libginac1.3c2a-dbg
 Architecture: any
 Section: libdevel
-Depends: libginac1.3 (= ${Source-Version})
+Depends: libginac1.3c2a (= ${Source-Version})
+Conflicts: libginac1.3c2-dbg
+Replaces: libginac1.3c2-dbg
 Recommends: gdb (>= 6.3) 
-Description: The GiNaC framework (debugging symbols)
+Description: The GiNaC symbolic framework (debugging symbols)
  GiNaC (which stands for "GiNaC is Not a CAS (Computer Algebra System)") is a
  library for doing symbolic (i.e. non-numeric) computation directly in the C++
  programming language.
