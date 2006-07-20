@@ -1,6 +1,13 @@
 This file records noteworthy changes.
 
-1.3.4 (2006-04-12)
+1.3.5 (24 July 2006)
+* Re-built bison related files that caused bugs with gcc 4.
+* Fixed bug in fderivative::match_same_type().
+* Fixed bug in expairseq::match().
+* Fixed template specialization for container to be gcc 4.2 compliant.
+* Debian packaging files updated.
+
+1.3.4 (12 April 2006)
 * More general index dimensions are now possible.
 * Improved algebraic substitutions.
 * Fixed wrong matching in .has(). 
@@ -8,7 +15,7 @@ This file records noteworthy changes.
 * collect_common_factors also works with negative powers of common factors now.
 * Code clean-up and preparations for upcoming cln 1.2.
 
-1.3.3 (2005-10-24)
+1.3.3 (24 October 2005)
 * Fixed bug occuring in algebraic substitutions with expressions involving
   indices.
 * Fixed bug that selected the wrong algorithm for determinants of purely
