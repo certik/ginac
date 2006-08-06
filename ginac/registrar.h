@@ -3,7 +3,7 @@
  *  GiNaC's class registrar (for class basic and all classes derived from it). */
 
 /*
- *  GiNaC Copyright (C) 1999-2005 Johannes Gutenberg University Mainz, Germany
+ *  GiNaC Copyright (C) 1999-2006 Johannes Gutenberg University Mainz, Germany
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@ namespace GiNaC {
 class ex;
 class archive_node;
 
-template <template <class> class> class container;
+template <template <class T, class = std::allocator<T> > class> class container;
 typedef container<std::list> lst;
 
 

@@ -3,7 +3,7 @@
  *  Wrapper template for making GiNaC classes out of STL containers. */
 
 /*
- *  GiNaC Copyright (C) 1999-2005 Johannes Gutenberg University Mainz, Germany
+ *  GiNaC Copyright (C) 1999-2006 Johannes Gutenberg University Mainz, Germany
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -39,7 +39,7 @@ namespace GiNaC {
 
 
 /** Helper template for encapsulating the reserve() mechanics of STL containers. */
-template <template <class> class C>
+template <template <class T, class = std::allocator<T> > class C>
 class container_storage {
 protected:
 	typedef C<ex> STLT;
@@ -125,7 +125,7 @@ private:
 };
 
 /** Wrapper template for making GiNaC classes out of STL containers. */
-template <template <class> class C>
+template <template <class T, class = std::allocator<T> > class C>
 class container : public basic, public container_storage<C> {
 	GINAC_DECLARE_REGISTERED_CLASS(container, basic)
 
@@ -452,14 +452,14 @@ protected:
 };
 
 /** Default constructor */
-template <template <class> class C>
+template <template <class T, class = std::allocator<T> > class C>
 container<C>::container() : inherited(get_tinfo())
 {
 	setflag(get_default_flags());
 }
 
 /** Construct object from archive_node. */
-template <template <class> class C>
+template <template <class T, class = std::allocator<T> > class C>
 container<C>::container(const archive_node &n, lst &sym_lst) : inherited(n, sym_lst)
 {
 	setflag(get_default_flags());
@@ -474,14 +474,14 @@ container<C>::container(const archive_node &n, lst &sym_lst) : inherited(n, sym_
 }
 
 /** Unarchive the object. */
-template <template <class> class C>
+template <template <class T, class = std::allocator<T> > class C>
 ex container<C>::unarchive(const archive_node &n, lst &sym_lst)
 {
 	return (new container(n, sym_lst))->setflag(status_flags::dynallocated);
 }
 
 /** Archive the object. */
-template <template <class> class C>
+template <template <class T, class = std::allocator<T> > class C>
 void container<C>::archive(archive_node &n) const
 {
 	inherited::archive(n);
@@ -492,14 +492,14 @@ void container<C>::archive(archive_node &n) const
 	}
 }
 
-template <template <class> class C>
+template <template <class T, class = std::allocator<T> > class C>
 void container<C>::do_print(const print_context & c, unsigned level) const
 {
 	// always print brackets around seq, ignore upper_precedence
 	printseq(c, get_open_delim(), ',', get_close_delim(), precedence(), precedence()+1);
 }
 
-template <template <class> class C>
+template <template <class T, class = std::allocator<T> > class C>
 void container<C>::do_print_tree(const print_tree & c, unsigned level) const
 {
 	c.s << std::string(level, ' ') << class_name() << " @" << this
@@ -514,20 +514,20 @@ void container<C>::do_print_tree(const print_tree & c, unsigned level) const
 	c.s << std::string(level + c.delta_indent,' ') << "=====" << std::endl;
 }
 
-template <template <class> class C>
+template <template <class T, class = std::allocator<T> > class C>
 void container<C>::do_print_python(const print_python & c, unsigned level) const
 {
 	printseq(c, '[', ',', ']', precedence(), precedence()+1);
 }
 
-template <template <class> class C>
+template <template <class T, class = std::allocator<T> > class C>
 void container<C>::do_print_python_repr(const print_python_repr & c, unsigned level) const
 {
 	c.s << class_name();
 	printseq(c, '(', ',', ')', precedence(), precedence()+1);
 }
 
-template <template <class> class C>
+template <template <class T, class = std::allocator<T> > class C>
 ex container<C>::op(size_t i) const
 {
 	GINAC_ASSERT(i < nops());
@@ -537,7 +537,7 @@ ex container<C>::op(size_t i) const
 	return *it;
 }
 
-template <template <class> class C>
+template <template <class T, class = std::allocator<T> > class C>
 ex & container<C>::let_op(size_t i)
 {
 	GINAC_ASSERT(i < nops());
@@ -548,7 +548,7 @@ ex & container<C>::let_op(size_t i)
 	return *it;
 }
 
-template <template <class> class C>
+template <template <class T, class = std::allocator<T> > class C>
 ex container<C>::eval(int level) const
 {
 	if (level == 1)
@@ -557,7 +557,7 @@ ex container<C>::eval(int level) const
 		return thiscontainer(evalchildren(level));
 }
 
-template <template <class> class C>
+template <template <class T, class = std::allocator<T> > class C>
 ex container<C>::subs(const exmap & m, unsigned options) const
 {
 	std::auto_ptr<STLT> vp = subschildren(m, options);
@@ -568,7 +568,7 @@ ex container<C>::subs(const exmap & m, unsigned options) const
 }
 
 /** Compare two containers of the same type. */
-template <template <class> class C>
+template <template <class T, class = std::allocator<T> > class C>
 int container<C>::compare_same_type(const basic & other) const
 {
 	GINAC_ASSERT(is_a<container>(other));
@@ -587,7 +587,7 @@ int container<C>::compare_same_type(const basic & other) const
 	return (it1 == it1end) ? (it2 == it2end ? 0 : -1) : 1;
 }
 
-template <template <class> class C>
+template <template <class T, class = std::allocator<T> > class C>
 bool container<C>::is_equal_same_type(const basic & other) const
 {
 	GINAC_ASSERT(is_a<container>(other));
@@ -607,7 +607,7 @@ bool container<C>::is_equal_same_type(const basic & other) const
 }
 
 /** Add element at front. */
-template <template <class> class C>
+template <template <class T, class = std::allocator<T> > class C>
 container<C> & container<C>::prepend(const ex & b)
 {
 	ensure_if_modifiable();
@@ -616,7 +616,7 @@ container<C> & container<C>::prepend(const ex & b)
 }
 
 /** Add element at back. */
-template <template <class> class C>
+template <template <class T, class = std::allocator<T> > class C>
 container<C> & container<C>::append(const ex & b)
 {
 	ensure_if_modifiable();
@@ -625,7 +625,7 @@ container<C> & container<C>::append(const ex & b)
 }
 
 /** Remove first element. */
-template <template <class> class C>
+template <template <class T, class = std::allocator<T> > class C>
 container<C> & container<C>::remove_first()
 {
 	ensure_if_modifiable();
@@ -634,7 +634,7 @@ container<C> & container<C>::remove_first()
 }
 
 /** Remove last element. */
-template <template <class> class C>
+template <template <class T, class = std::allocator<T> > class C>
 container<C> & container<C>::remove_last()
 {
 	ensure_if_modifiable();
@@ -643,7 +643,7 @@ container<C> & container<C>::remove_last()
 }
 
 /** Remove all elements. */
-template <template <class> class C>
+template <template <class T, class = std::allocator<T> > class C>
 container<C> & container<C>::remove_all()
 {
 	ensure_if_modifiable();
@@ -652,7 +652,7 @@ container<C> & container<C>::remove_all()
 }
 
 /** Sort elements. */
-template <template <class> class C>
+template <template <class T, class = std::allocator<T> > class C>
 container<C> & container<C>::sort()
 {
 	ensure_if_modifiable();
@@ -667,7 +667,7 @@ template<> inline void container<std::list>::unique_()
 }
 
 /** Remove adjacent duplicate elements. */
-template <template <class> class C>
+template <template <class T, class = std::allocator<T> > class C>
 container<C> & container<C>::unique()
 {
 	ensure_if_modifiable();
@@ -676,7 +676,7 @@ container<C> & container<C>::unique()
 }
 
 /** Print sequence of contained elements. */
-template <template <class> class C>
+template <template <class T, class = std::allocator<T> > class C>
 void container<C>::printseq(const print_context & c, char openbracket, char delim,
                             char closebracket, unsigned this_precedence,
                             unsigned upper_precedence) const
@@ -699,7 +699,7 @@ void container<C>::printseq(const print_context & c, char openbracket, char deli
 		c.s << closebracket;
 }
 
-template <template <class> class C>
+template <template <class T, class = std::allocator<T> > class C>
 typename container<C>::STLT container<C>::evalchildren(int level) const
 {
 	if (level == 1)
@@ -720,7 +720,7 @@ typename container<C>::STLT container<C>::evalchildren(int level) const
 	return s;
 }
 
-template <template <class> class C>
+template <template <class T, class = std::allocator<T> > class C>
 std::auto_ptr<typename container<C>::STLT> container<C>::subschildren(const exmap & m, unsigned options) const
 {
 	// returns a NULL pointer if nothing had to be substituted
