@@ -2,7 +2,7 @@ Source: ginac
 Section: math
 Priority: optional
 Maintainer: Richard Kreckel <kreckel@ginac.de>
-Build-Depends: cdbs (>= 0.4.28), debhelper (>= 4.0.0), libcln-dev, libgmp3-dev, libreadline5-dev, flex, bison
+Build-Depends: cdbs (>= 0.4.28), debhelper (>= 5), libcln-dev, libgmp3-dev, libreadline5-dev
 Standards-Version: 3.6.2
 
 Package: libginac1.3c2a
@@ -24,7 +24,7 @@ Package: libginac-dev
 Architecture: any
 Section: libdevel
 Depends: libginac1.3c2a (= ${Source-Version}), libc6-dev, g++, libcln-dev
-Recommends: info | info-browser, libginac1.3-dbg (= ${Source-Version})
+Recommends: info | info-browser, libginac1.3c2a-dbg (= ${Source-Version})
 Suggests: ginac-tools
 Description: The GiNaC symbolic framework (development files)
  GiNaC (which stands for "GiNaC is Not a CAS (Computer Algebra System)") is a
