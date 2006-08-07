@@ -258,7 +258,7 @@ ex rename_dummy_indices_uniquely(const ex & a, const ex & b);
 
 /** This function returns the given expression with expanded sums
  *  for all dummy index summations, where the dimensionality of 
- *  the dummy index is numeric.
+ *  the dummy index is a nonnegative integer.
  *  Optionally all indices with a variance will be substituted by 
  *  indices with the corresponding numeric values without variance.
  *
