@@ -283,7 +283,7 @@ ex expairseq::op(size_t i) const
 ex expairseq::map(map_function &f) const
 {
 	std::auto_ptr<epvector> v(new epvector);
-	v->reserve(seq.size());
+	v->reserve(seq.size()+1);
 
 	epvector::const_iterator cit = seq.begin(), last = seq.end();
 	while (cit != last) {
@@ -293,8 +293,15 @@ ex expairseq::map(map_function &f) const
 
 	if (overall_coeff.is_equal(default_overall_coeff()))
 		return thisexpairseq(v, default_overall_coeff());
-	else
-		return thisexpairseq(v, f(overall_coeff));
+	else {
+      ex newcoeff = f(overall_coeff);
+      if(is_a<numeric>(newcoeff))
+         return thisexpairseq(v, newcoeff);
+      else {
+         v->push_back(split_ex_to_pair(newcoeff));
+         return thisexpairseq(v, default_overall_coeff());
+      }
+   }
 }
 
 /** Perform coefficient-wise automatic term rewriting rules in this class. */
