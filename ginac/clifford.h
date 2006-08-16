@@ -303,9 +303,14 @@ ex clifford_inverse(const ex & e);
  *  @param mu Index (must be of class varidx or a derived class)
  *  @param metr Metric (should be of class tensmetric or a derived class, or a matrix)
  *  @param rl Representation label
- *  @param e Clifford unit object
  *  @return Clifford vector with given components */
 ex lst_to_clifford(const ex & v, const ex & mu,  const ex & metr, unsigned char rl = 0);
+
+/** List or vector conversion into the Clifford vector.
+ *
+ *  @param v List or vector of coordinates
+ *  @param e Clifford unit object
+ *  @return Clifford vector with given components */
 ex lst_to_clifford(const ex & v, const ex & e);
 
 /** An inverse function to lst_to_clifford(). For given Clifford vector extracts
