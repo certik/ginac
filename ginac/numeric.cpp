@@ -7,7 +7,7 @@
  *  of special functions or implement the interface to the bignum package. */
 
 /*
- *  GiNaC Copyright (C) 1999-2005 Johannes Gutenberg University Mainz, Germany
+ *  GiNaC Copyright (C) 1999-2006 Johannes Gutenberg University Mainz, Germany
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -92,10 +92,16 @@ numeric::numeric(int i) : basic(TINFO_numeric)
 	// emphasizes efficiency.  However, if the integer is small enough
 	// we save space and dereferences by using an immediate type.
 	// (C.f. <cln/object.h>)
+	// The #if clause prevents compiler warnings on 64bit machines where the
+	// comparision is always true.
+#if cl_value_len >= 32
+	value = cln::cl_I(i);
+#else
 	if (i < (1L << (cl_value_len-1)) && i >= -(1L << (cl_value_len-1)))
 		value = cln::cl_I(i);
 	else
 		value = cln::cl_I(static_cast<long>(i));
+#endif
 	setflag(status_flags::evaluated | status_flags::expanded);
 }
 
@@ -107,10 +113,16 @@ numeric::numeric(unsigned int i) : basic(TINFO_numeric)
 	// emphasizes efficiency.  However, if the integer is small enough
 	// we save space and dereferences by using an immediate type.
 	// (C.f. <cln/object.h>)
+	// The #if clause prevents compiler warnings on 64bit machines where the
+	// comparision is always true.
+#if cl_value_len >= 32
+	value = cln::cl_I(i);
+#else
 	if (i < (1UL << (cl_value_len-1)))
 		value = cln::cl_I(i);
 	else
 		value = cln::cl_I(static_cast<unsigned long>(i));
+#endif
 	setflag(status_flags::evaluated | status_flags::expanded);
 }
 
