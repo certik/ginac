@@ -1,5 +1,9 @@
 This file records noteworthy changes.
 
+1.3.6 (<date>)
+* Better worst case behavior in heuristic gcd [Alexei Sheplyakov].
+* ...<please continue here>...
+
 1.3.5 (17 August 2006)
 * Re-built bison related files that caused bugs with gcc 4.
 * Fixed bugs in fderivative::match_same_type(), expairseq::match(),
