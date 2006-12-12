@@ -1,8 +1,12 @@
 This file records noteworthy changes.
 
-1.3.6 (<date>)
-* Better worst case behavior in heuristic gcd [Alexei Sheplyakov].
-* ...<please continue here>...
+1.3.6 (12 December 2006)
+* Better worst case behavior in heuristic gcd.
+* Improved collecting for sparse multivariate polynomials.
+* Improved collect_common_factors.
+* Fixed bug in numerical evaluation of multiple polylogs.
+* Fixed numerical integration of complex functions.
+* Fixed bug in tensor::replace_contr_index().
 
 1.3.5 (17 August 2006)
 * Re-built bison related files that caused bugs with gcc 4.
