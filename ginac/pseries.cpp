@@ -4,7 +4,7 @@
  *  methods for series expansion. */
 
 /*
- *  GiNaC Copyright (C) 1999-2007 Johannes Gutenberg University Mainz, Germany
+ *  GiNaC Copyright (C) 1999-2005 Johannes Gutenberg University Mainz, Germany
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -1035,7 +1035,10 @@ ex power::series(const relational & r, int order, unsigned options) const
 	}
 	const ex& sym = r.lhs();
 	// find existing minimal degree
-	int real_ldegree = basis.expand().ldegree(sym-r.rhs());
+	ex eb = basis.expand();
+	int real_ldegree = 0;
+	if (eb.info(info_flags::rational_function))
+		real_ldegree = eb.ldegree(sym-r.rhs());
 	if (real_ldegree == 0) {
 		int orderloop = 0;
 		do {
