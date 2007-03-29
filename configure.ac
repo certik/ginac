@@ -117,18 +117,12 @@ if test "x$CONFIG_RUSAGE" = "xno"; then
 fi
 
 dnl We need to have Bruno Haible's CLN installed.
-dnl (CLN versions >= 1.1.0 must have installed cln.m4 at a visible place,
-dnl which provides this macro):
-AC_PATH_CLN(1.1.0, [
-  LIBS="$LIBS $CLN_LIBS"
-  CPPFLAGS="$CPPFLAGS $CLN_CPPFLAGS"
-], GINAC_ERROR([No suitable installed version of CLN could be found.]))
-
-dnl Expand the cppflags and libraries needed by apps using GiNaC
-GINACLIB_CPPFLAGS=$CPPFLAGS
-GINACLIB_LIBS=$LIBS
-AC_SUBST(GINACLIB_CPPFLAGS)
-AC_SUBST(GINACLIB_LIBS)
+dnl (pkg-config must have installed pkg.m4 at a visible place, which provides
+dnl this macro. CLN >= 1.1.6 must have installed cln.pc at a visible place,
+dnl which provides the actual dependency information.)
+PKG_CHECK_MODULES(CLN, cln >= 1.1.6)
+LIBS="$LIBS $CLN_LIBS"
+CPPFLAGS="$CPPFLAGS $CLN_CFLAGS"
 
 dnl Check for utilities needed by the different kinds of documentation.
 dnl Documentation needs only be built when extending it, so never mind if it
@@ -147,8 +141,6 @@ dnl Output makefiles etc.
 AC_CONFIG_FILES([
 Makefile
 GiNaC.spec
-ginac-config
-ginac-config.1
 ginac.pc
 ginac/Makefile
 ginac/version.h
@@ -165,7 +157,6 @@ doc/reference/DoxyfileTEX
 doc/reference/DoxyfilePDF
 doc/reference/Doxyfooter
 ])
-AC_CONFIG_COMMANDS([default],[[chmod +x ginac-config]],[[]])
 AC_OUTPUT
 dnl Display a final warning if there has been a GINAC_ERROR or a GINAC_WARNING
 GINAC_CHECK_ERRORS
