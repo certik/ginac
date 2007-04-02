@@ -22,6 +22,7 @@
 
 #include <iostream>
 #include <stdexcept>
+#include <limits>
 
 #include "add.h"
 #include "mul.h"
@@ -256,7 +257,7 @@ bool add::info(unsigned inf) const
 
 int add::degree(const ex & s) const
 {
-	int deg = INT_MIN;
+	int deg = std::numeric_limits<int>::min();
 	if (!overall_coeff.is_zero())
 		deg = 0;
 	
@@ -273,7 +274,7 @@ int add::degree(const ex & s) const
 
 int add::ldegree(const ex & s) const
 {
-	int deg = INT_MAX;
+	int deg = std::numeric_limits<int>::max();
 	if (!overall_coeff.is_zero())
 		deg = 0;
 	
