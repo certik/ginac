@@ -150,8 +150,17 @@ void idx::print_index(const print_context & c, unsigned level) const
 
 void idx::do_print(const print_context & c, unsigned level) const
 {
-	c.s << ".";
-	print_index(c, level);
+	if (is_a<print_csrc_double>(c)) {
+		c.s << "[";
+		if (value.info(info_flags::integer))
+			c.s << ex_to<numeric>(value).to_int();
+		else
+			value.print(c);
+		c.s << "]";
+	} else {
+		c.s << ".";
+		print_index(c, level);
+	}
 }
 
 void idx::do_print_latex(const print_latex & c, unsigned level) const
