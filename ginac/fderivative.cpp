@@ -103,12 +103,21 @@ void fderivative::print(const print_context & c, unsigned level) const
 
 void fderivative::do_print(const print_context & c, unsigned level) const
 {
-	c.s << "D[";
 	paramset::const_iterator i = parameter_set.begin(), end = parameter_set.end();
 	--end;
-	while (i != end)
-		c.s << *i++ << ",";
-	c.s << *i << "](" << registered_functions()[serial].name << ")";
+	if (is_a<print_csrc_double>(c)) {
+		c.s << "D_";
+		while (i != end) {
+			c.s << *i++ << "_";
+		}
+		c.s << *i << "_" << registered_functions()[serial].name;
+	} else {
+		c.s << "D[";
+		while (i != end) {
+			c.s << *i++ << ",";
+		}
+		c.s << *i << "](" << registered_functions()[serial].name << ")";
+	}
 	printseq(c, '(', ',', ')', exprseq::precedence(), function::precedence());
 }
 
