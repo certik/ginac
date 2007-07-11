@@ -463,6 +463,30 @@ ex power::eval(int level) const
 			return expand_mul(ex_to<mul>(ebasis), *num_exponent, 0);
 		}
 	
+		// (2*x + 6*y)^(-4) -> 1/16*(x + 3*y)^(-4)
+		if (num_exponent->is_integer() && is_exactly_a<add>(ebasis)) {
+			const numeric icont = ebasis.integer_content();
+			const numeric& lead_coeff = 
+				ex_to<numeric>(ex_to<add>(ebasis).seq.begin()->coeff).div_dyn(icont);
+
+			const bool canonicalizable = lead_coeff.is_integer();
+			const bool unit_normal = lead_coeff.is_pos_integer();
+
+			if (icont != *_num1_p) {
+				return (new mul(power(ebasis/icont, *num_exponent), power(icont, *num_exponent))
+				       )->setflag(status_flags::dynallocated);
+			}
+
+			if (canonicalizable && (! unit_normal)) {
+				if (num_exponent->is_even()) {
+					return power(-ebasis, *num_exponent);
+				} else {
+					return (new mul(power(-ebasis, *num_exponent), *_num_1_p)
+					       )->setflag(status_flags::dynallocated);
+				}
+			}
+		}
+
 		// ^(*(...,x;c1),c2) -> *(^(*(...,x;1),c2),c1^c2)  (c1, c2 numeric(), c1>0)
 		// ^(*(...,x;c1),c2) -> *(^(*(...,x;-1),c2),(-c1)^c2)  (c1, c2 numeric(), c1<0)
 		if (is_exactly_a<mul>(ebasis)) {
