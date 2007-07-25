@@ -770,9 +770,9 @@ static ex atan2_eval(const ex & y, const ex & x)
 			if (x.info(info_flags::positive))
 				return _ex0;
 
-			// atan(0, x), x real and negative -> -Pi
+			// atan(0, x), x real and negative -> Pi
 			if (x.info(info_flags::negative))
-				return _ex_1*Pi;
+				return Pi;
 		}
 
 		if (x.is_zero()) {
@@ -816,7 +816,7 @@ static ex atan2_eval(const ex & y, const ex & x)
 		if (y.info(info_flags::real) && x.info(info_flags::real)) {
 			if (x.info(info_flags::positive))
 				return atan(y/x);
-			else if(y.info(info_flags::positive))
+			else if (y.info(info_flags::positive))
 				return atan(y/x)+Pi;
 			else
 				return atan(y/x)-Pi;
