@@ -1,9 +1,14 @@
 This file records noteworthy changes.
 
 1.3.8 (<date>)
-
 * Drop support of ginac-config and ginac.m4. Please use pkg-config instead.
 * atan2(y,x) branch cut correction.
+* Fixed bug in series expansion.
+* Additional transformations for mul and power.
+* Clifford units now honor representation labels.
+* Correct csrc output for idx and fderivative.
+* Improved handling of convergence transformationis for Li/G.
+* Fix compilation issues with prereleases of GCC 4.3.
 
 1.3.7 (05 February 2007)
 * Fixed bug in expansion of power.
