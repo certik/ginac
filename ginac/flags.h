@@ -236,7 +236,10 @@ public:
 		has_indices,  // object has at least one index
 
 		// answered by class idx
-		idx
+		idx,
+
+		// answered by classes numeric, symbol, add, mul, power
+		expanded
 	};
 };
 
