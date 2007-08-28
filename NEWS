@@ -1,6 +1,6 @@
 This file records noteworthy changes.
 
-1.3.8 (<date>)
+1.3.8 (28 August 2007)
 * Drop support of ginac-config and ginac.m4. Please use pkg-config instead.
 * atan2(y,x) branch cut correction.
 * Fixed bug in series expansion.
