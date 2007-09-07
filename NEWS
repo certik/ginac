@@ -1,5 +1,8 @@
 This file records noteworthy changes.
 
+1.4.1 (<date>)
+* Improved CLN output.
+
 1.4.0 (31 August 2007)
 * New tinfo mechanism.
 * Removed rtt from class symbol.
