@@ -940,6 +940,7 @@ bool mul::can_be_further_expanded(const ex & e)
 
 ex mul::expand(unsigned options) const
 {
+	const bool skip_idx_rename = ! info(info_flags::has_indices);
 	// First, expand the children
 	std::auto_ptr<epvector> expanded_seqp = expandchildren(options);
 	const epvector & expanded_seq = (expanded_seqp.get() ? *expanded_seqp : seq);
@@ -1003,7 +1004,7 @@ ex mul::expand(unsigned options) const
 					for (epvector::const_iterator i2=add2begin; i2!=add2end; ++i2) {
 						// Don't push_back expairs which might have a rest that evaluates to a numeric,
 						// since that would violate an invariant of expairseq:
-						const ex rest = (new mul(i1->rest, rename_dummy_indices_uniquely(i1->rest, i2->rest)))->setflag(status_flags::dynallocated);
+						const ex rest = (new mul(i1->rest, skip_idx_rename ? i2->rest : rename_dummy_indices_uniquely(i1->rest, i2->rest)))->setflag(status_flags::dynallocated);
 						if (is_exactly_a<numeric>(rest)) {
 							oc += ex_to<numeric>(rest).mul(ex_to<numeric>(i1->coeff).mul(ex_to<numeric>(i2->coeff)));
 						} else {
@@ -1034,7 +1035,10 @@ ex mul::expand(unsigned options) const
 
 		for (size_t i=0; i<n; ++i) {
 			epvector factors = non_adds;
-			factors.push_back(split_ex_to_pair(rename_dummy_indices_uniquely(mul(non_adds), last_expanded.op(i))));
+			if (skip_idx_rename)
+				factors.push_back(split_ex_to_pair(last_expanded.op(i)));
+			else
+				factors.push_back(split_ex_to_pair(rename_dummy_indices_uniquely(mul(non_adds), last_expanded.op(i))));
 			ex term = (new mul(factors, overall_coeff))->setflag(status_flags::dynallocated);
 			if (can_be_further_expanded(term)) {
 				distrseq.push_back(term.expand());
