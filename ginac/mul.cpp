@@ -34,6 +34,7 @@
 #include "lst.h"
 #include "archive.h"
 #include "utils.h"
+#include "symbol.h"
 #include "compiler.h"
 
 namespace GiNaC {
@@ -940,7 +941,18 @@ bool mul::can_be_further_expanded(const ex & e)
 
 ex mul::expand(unsigned options) const
 {
+	{
+  	// trivial case: expanding the monomial (~ 30% of all calls)
+		epvector::const_iterator i = seq.begin(), seq_end = seq.end();
+		while ((i != seq.end()) &&  is_a<symbol>(i->rest) && i->coeff.info(info_flags::integer))
+			++i;
+		if (i == seq_end)
+			return (new mul(*this))->setflag(status_flags::dynallocated | status_flags::expanded);
+	}
+
 	const bool skip_idx_rename = ! info(info_flags::has_indices);
+	if (skip_idx_rename)
+		++(mul_expand_stats::n_indexless);
 	// First, expand the children
 	std::auto_ptr<epvector> expanded_seqp = expandchildren(options);
 	const epvector & expanded_seq = (expanded_seqp.get() ? *expanded_seqp : seq);
