@@ -1,6 +1,13 @@
 This file records noteworthy changes.
 
-1.4.1 (<date>)
+1.4.1 (21 November 2007)
+* Fixed memory leak in ginac_yylex().
+* Fix memory leaks in mul::eval() and power::eval().
+* Fixed macro checking for version of libreadline (Mac OS X).
+* Fixed broken preprocessor instruction in excompiler.cpp.
+* Fixed broken module loading in excompiler.cpp.
+* info(info_flags::has_indices) now works for sums and products.
+* Improved mul::expand().
 * Improved CLN output.
 
 1.4.0 (31 August 2007)
