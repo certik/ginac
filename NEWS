@@ -2,7 +2,7 @@ This file records noteworthy changes.
 
 1.3.9 (21 November 2007)
 * Fixed memory leak in ginac_yylex().
-* Fix memory leaks in mul::eval() and power::eval().
+* Fixed memory leaks in mul::eval() and power::eval().
 * Fixed macro checking for version of libreadline (Mac OS X).
 * info(info_flags::has_indices) now works for sums and products.
 * Improved CLN output.
