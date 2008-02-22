@@ -1,5 +1,8 @@
 This file records noteworthy changes.
 
+1.4.2 (<date>
+* Improved lsolve() of systems containing non-numeric coefficients.
+
 1.4.1 (21 November 2007)
 * Fixed memory leak in ginac_yylex().
 * Fixed memory leaks in mul::eval() and power::eval().
