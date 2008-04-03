@@ -2,12 +2,12 @@ This file records noteworthy changes.
 
 1.4.2 (03 April 2008)
 * Fixed VPATH building of documentation.
-* Fixed issues with GCC 4.3.
 * Fixed bug in numerical evaluation of multiple polylogarithms for arguments
   equal to certain roots of unity (thanks to Jianqiang Zhao).
 * Fixed check for memory leakage in parser.
+* Made internal function coerce() standard compliant.
 * Improved lsolve() of systems containing non-numeric coefficients.
-* Improved automatic test programs.
+* Improved automatic test programs. Now they work on MinGW and Cygwin as well.
 
 1.4.1 (21 November 2007)
 * Fixed memory leak in ginac_yylex().
