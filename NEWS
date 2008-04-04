@@ -1,5 +1,12 @@
 This file records noteworthy changes.
 
+1.4.3 (04 April 2008)
+* Fixed bug in numerical evaluation of multiple polylogarithms and
+  alternating multiple zeta values introduced in version 1.4.2.
+* Nielsen polylog now invalidates its lookup tables in case the precision
+  (Digits) has been changed.
+* Added new checks for recent bugs in the numerical evaluation of Li and zeta.
+
 1.4.2 (03 April 2008)
 * Fixed VPATH building of documentation.
 * Fixed bug in numerical evaluation of multiple polylogarithms for arguments
