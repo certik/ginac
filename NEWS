@@ -1,5 +1,13 @@
 This file records noteworthy changes.
 
+1.4.4 (<DATE>)
+* Fixed a bug in the multiple polylogarithms Li/G that caused imaginary parts
+  of the arguments to be ignored. 
+* Fixed archiving of complex numbers.
+* Made the behaviour of class function more consistent with respect to
+  ncmul::eval().
+* Improved heur_gcd() so it can handle rational polynomials.
+
 1.4.3 (04 April 2008)
 * Fixed bug in numerical evaluation of multiple polylogarithms and
   alternating multiple zeta values introduced in version 1.4.2.
