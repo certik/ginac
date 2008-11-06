@@ -285,6 +285,8 @@ ex power::map(map_function & f) const
 
 bool power::is_polynomial(const ex & var) const
 {
+	if (!(basis.has(var) || exponent.has(var)))
+		return true; // i.e. 2^x is polynomial in s
 	if (exponent.has(var))
 		return false;
 	if (!exponent.info(info_flags::nonnegint))

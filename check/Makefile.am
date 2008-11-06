@@ -3,7 +3,8 @@
 CHECKS = check_numeric \
 	 check_inifcns \
 	 check_matrices \
-	 check_lsolve 
+	 check_lsolve \
+	 check_is_polynomial
 
 EXAMS = exam_paranoia \
 	exam_heur_gcd \
@@ -65,6 +66,9 @@ check_matrices_LDADD = ../ginac/libginac.la
 
 check_lsolve_SOURCES = check_lsolve.cpp genex.cpp
 check_lsolve_LDADD = ../ginac/libginac.la
+
+check_is_polynomial_SOURCES = check_is_polynomial.cpp
+check_is_polynomial_LDADD = ../ginac/libginac.la
 
 exam_paranoia_SOURCES = exam_paranoia.cpp
 exam_paranoia_LDADD = ../ginac/libginac.la
