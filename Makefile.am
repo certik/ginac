@@ -8,7 +8,7 @@ pkgconfig_DATA = ginac.pc
 $(pkgconfig_DATA): config.status
 
 # All the rest of the distributed files
-EXTRA_DIST = ginac.pc GiNaC.spec
+EXTRA_DIST = ginac.pc GiNaC.spec m4
 
 # Rule to build tar-bzipped distribution package
 $(PACKAGE)-$(VERSION).tar.gz: dist
