@@ -3,7 +3,7 @@ dnl Process this file with autoconf to produce a configure script.
 dnl GiNaC version number
 m4_define([ginac_major_version], [1])
 m4_define([ginac_minor_version], [5])
-m4_define([ginac_micro_version], [4])
+m4_define([ginac_micro_version], [5])
 m4_define([ginac_version], [ginac_major_version.ginac_minor_version.ginac_micro_version])
 m4_define([ginac_release], [ginac_major_version.ginac_minor_version])
 
@@ -58,8 +58,9 @@ AC_DEFINE_UNQUOTED(ARCHIVE_VERSION, $ARCHIVE_VERSION, [Current GiNaC archive fil
 AC_DEFINE_UNQUOTED(ARCHIVE_AGE, $ARCHIVE_AGE, [GiNaC archive file version age])
 
 dnl libtool versioning (We don't use libtool's age numbering since we promise
-dnl to keep the binary interface compatible if only ginac_micro_version changes.)
-LT_VERSION_INFO="ginac_lt_current:ginac_lt_revision:0"
+dnl to keep the binary interface compatible if only ginac_micro_version changes.
+dnl In effect, age is pinned to current.)
+LT_VERSION_INFO="ginac_lt_current:ginac_lt_revision:ginac_lt_current"
 LT_RELEASE="ginac_release"
 
 AC_SUBST(LT_VERSION_INFO)
